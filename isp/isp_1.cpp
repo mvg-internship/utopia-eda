@@ -151,13 +151,13 @@ list <string> reshape(list <string> sequence){
 
 string paste_operations(string a, string b, string operation, int len){
     if(operation == "+" && len == 3)
-        a =  a + "+" + b;
+        a =  a + " + " + b;
     else if(operation == "-" && len == 3)
-        a =  a + "-" + b;
+        a =  a + " - " + b;
     else if(operation == "+")
-        a = "(" + a + "+" + b + ")";
+        a = "(" + a + " + " + b + ")";
     else if(operation == "-")
-        a = "(" + a + "-" + b + ")";
+        a = "(" + a + " - " + b + ")";
     else if(operation == "*")
         a = a + " * " + b;
     else
