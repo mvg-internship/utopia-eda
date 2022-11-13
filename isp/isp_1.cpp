@@ -2,20 +2,18 @@
 #include <string>
 #include <list>
 
-using namespace std;
-
-int operations(int , int , string );
-string paste_operations(string , string , string , int );
-list <string> calculations(list <string> );
-list <string> reshape(list <string> );
+int operations(int , int , std::string );
+std::string paste_operations(std::string , std::string , std::string , int );
+std::list <std::string> calculations(std::list <std::string> );
+std::list <std::string> reshape(std::list <std::string> );
 
 int main(void) {
-    list <string> sequence;
-    list <string> sequence2;
-    cout << "start" << endl;
+    std::list <std::string> sequence;
+    std::list <std::string> sequence2;
+    std::cout << "start" << std::endl;
     int index = 0;
-        string line, temp;
-        getline(cin, line);
+        std::string line, temp;
+        getline(std::cin, line);
         while(line.size() > 1){
             index = line.find(" ");
             temp = line.substr(0, index);
@@ -33,7 +31,7 @@ int main(void) {
         t++;
     }
     for(const auto& i : sequence2)
-        cout<< i << endl;
+        std::cout << i << std::endl;
 // end calc
 
 // start reshape
@@ -41,18 +39,18 @@ int main(void) {
         sequence = reshape(sequence);
     }
     for(const auto& i : sequence)
-        cout<< i << "\t";
+        std::cout << i << "\t";
 // end reshape
 
 return 0;
 }
 
-list <string> calculations(list <string> sequence){
-    list<string>::iterator pos = sequence.begin();
-    list<string>::iterator start;
-    list<string>::iterator end;
+std::list <std::string> calculations(std::list <std::string> sequence){
+    std::list<std::string>::iterator pos = sequence.begin();
+    std::list<std::string>::iterator start;
+    std::list<std::string>::iterator end;
 
-    string a, b, temp, operation;
+    std::string a, b, temp, operation;
     for(const auto& i : sequence){
         if(i == "+" || i == "-" || i == "/" || i == "*"){
             operation = i;
@@ -79,7 +77,7 @@ list <string> calculations(list <string> sequence){
     }
     counter = 0;
 
-    a = to_string(operations(stoi(a), stoi(b), operation));
+    a = std::to_string(operations(stoi(a), stoi(b), operation));
 
     start = pos;
     end = pos;
@@ -92,7 +90,7 @@ list <string> calculations(list <string> sequence){
     return sequence;
 }
 
-int operations(int a, int b, string operation){
+int operations(int a, int b, std::string operation){
     if(operation == "+"){
             a = a + b;
         } else if(operation == "-"){
@@ -105,12 +103,12 @@ int operations(int a, int b, string operation){
     return a;
 }
 
-list <string> reshape(list <string> sequence){
-    list<string>::iterator pos = sequence.begin();
-    list<string>::iterator start;
-    list<string>::iterator end;
+std::list <std::string> reshape(std::list <std::string> sequence){
+    std::list<std::string>::iterator pos = sequence.begin();
+    std::list<std::string>::iterator start;
+    std::list<std::string>::iterator end;
 
-    string a, b, temp, operation;
+    std::string a, b, temp, operation;
     for(const auto& i : sequence){
         if(i == "+" || i == "-" || i == "/" || i == "*"){
             operation = i;
@@ -149,7 +147,7 @@ list <string> reshape(list <string> sequence){
     return sequence;
 }
 
-string paste_operations(string a, string b, string operation, int len){
+std::string paste_operations(std::string a, std::string b, std::string operation, int len){
     if(operation == "+" && len == 3)
         a =  a + " + " + b;
     else if(operation == "-" && len == 3)
