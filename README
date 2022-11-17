@@ -1,0 +1,41 @@
+### Requirements
+
+The list of tools required to build the project:
+
+* `cmake` 3.13+
+* `flex`
+* `bison`
+* `clang-tidy`
+* C++17-compatible compiler (e.g, `gcc` or `clang`)
+* CMake-supported "build" system (e.g., `make` or `ninja`)
+
+### Compiling from Command Line
+
+```
+cmake -S . -B build # -G Ninja etc.
+cd build
+make # ninja, etc.
+```
+
+### Configuring with `yosys`
+
+1. Get `yosys` source code from the [^yosys] into `<yosys-dir>`
+2. Make sure your system meets the requirements listed in `<yosys-dir>/README.md`
+3. Edit `<yosys-dir>/Makefile`
+    - set `ENABLE_LIBYOSYS` to 1
+4. Configure and build `yosys` as described in the `<yosys-dir>/README.md`
+5. Configure `Utopia` to find `yosys`
+    - add `-DYosys_ROOT=<yosys-dir>` to the `cmake` invocation
+    - e.g. `cmake -S <utopia-source-dir> -B <utopia-build-dir> -DYosys_ROOT=<yosys-dir>`
+
+[^yosys]: https://github.com/YosysHQ/yosys
+
+### Running Tests
+
+Running applications and tests based on `libueda` requires environment variable
+`UTOPIA_HOME` to contain the path to the source code directory.
+
+```
+export UTOPIA_HOME=<utopia-source-dir>
+<build-dir>/test/utest
+```

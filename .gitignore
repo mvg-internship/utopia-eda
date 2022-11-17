@@ -1,0 +1,8 @@
+build
+src/build
+*.cnf
+*.dot
+*.log
+.cproject
+.project
+.vscode
