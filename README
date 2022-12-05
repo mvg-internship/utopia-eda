@@ -6,6 +6,7 @@ The list of tools required to build the project:
 * `flex`
 * `bison`
 * `clang-tidy`
+* `zlib1g-dev`
 * C++17-compatible compiler (e.g, `gcc` or `clang`)
 * CMake-supported "build" system (e.g., `make` or `ninja`)
 
