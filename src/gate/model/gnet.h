@@ -17,6 +17,10 @@
 #include <unordered_set>
 #include <vector>
 
+namespace eda::gate::premapper {
+  class PreMapper;
+} // namespace eda::gate::premapper
+
 namespace eda::rtl::compiler {
   class Compiler;
 } // namespace eda::rtl::compiler
@@ -28,6 +32,7 @@ namespace eda::gate::model {
  * \author <a href="mailto:kamkin@ispras.ru">Alexander Kamkin</a>
  */
 class GNet final {
+  friend class eda::gate::premapper::PreMapper;
   friend class eda::rtl::compiler::Compiler;
 
 public:
@@ -126,6 +131,11 @@ public:
   //===--------------------------------------------------------------------===//
   // Statistics 
   //===--------------------------------------------------------------------===//
+
+  /// Returns the net level.
+  unsigned getLevel() const {
+    return _level;
+  }
 
   /// Returns the number of gates.
   size_t nGates() const {

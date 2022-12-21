@@ -131,6 +131,9 @@ GNet::GateId GNet::addGate(Gate *gate, SubnetId sid) {
   // Do some integrity checks.
   assert(!(_sourceLinks.empty() && _triggers.empty()));
 
+  // Structural hashing.
+  Gate::add(gate);
+
   return gate->id();
 }
 

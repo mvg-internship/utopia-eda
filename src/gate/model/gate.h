@@ -49,6 +49,11 @@ public:
     return static_cast<Gate*>(GateBase::get(func, inputs));
   }
 
+  /// Saves the gate in the hash table.
+  static void add(Gate *gate) {
+    GateBase::add(gate);
+  }
+
   bool isSource() const {
     return _func == GateSymbol::NOP && _inputs.empty();
   }
@@ -76,6 +81,43 @@ private:
   /// Creates a source gate.
   Gate(): Gate(GateSymbol::NOP, {}) {}
 };
+
+//===----------------------------------------------------------------------===//
+// Signal Utilities
+//===----------------------------------------------------------------------===//
+
+inline bool isValue(const Gate::Signal &arg) {
+  const auto *gate = Gate::get(arg.node());
+  return gate->isValue();
+}
+
+inline bool isZero(const Gate::Signal &arg) {
+  const auto *gate = Gate::get(arg.node());
+  return gate->isValue() && gate->func() == GateSymbol::ZERO;
+}
+
+inline bool isOne(const Gate::Signal &arg) {
+  const auto *gate = Gate::get(arg.node());
+  return gate->isValue() && gate->func() == GateSymbol::ONE;
+}
+
+inline bool areIdentical(const Gate::Signal &lhs, const Gate::Signal &rhs) {
+  return lhs.node() == rhs.node();
+}
+
+inline bool areContrary(const Gate::Signal &lhs, const Gate::Signal &rhs) {
+  const auto *lhsGate = Gate::get(lhs.node());
+  const auto *rhsGate = Gate::get(rhs.node());
+
+  if (lhsGate->func() == GateSymbol::NOT) {
+    return areIdentical(lhsGate->input(0), rhs); 
+  }
+  if (rhsGate->func() == GateSymbol::NOT) {
+    return areIdentical(lhs, rhsGate->input(0));
+  }
+
+  return false;
+}
 
 //===----------------------------------------------------------------------===//
 // Output
