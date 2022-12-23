@@ -23,6 +23,7 @@ enable_testing()
 
 add_executable(utest
   gate/debugger/checker_test.cpp
+  gate/library/parser_lib_test.cpp
   gate/model/gnet_test.cpp
   gate/simulator/simulator_test.cpp
   lib/minisat/minisat_test.cpp
