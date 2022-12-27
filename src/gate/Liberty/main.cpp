@@ -1,7 +1,8 @@
 #include "passes/techmap/libparse.h"
 #include "kernel/register.h"
-#include "kernel/log.h"
+#include "kernel/hashlib.h"
 #include<iostream>
+#include <vector>
 struct token_t {
     char type;
     Yosys::RTLIL::SigSpec sig;
@@ -374,6 +375,7 @@ static bool create_latch(Yosys::RTLIL::Module *module, Yosys::LibertyAst *node, 
 
 void parse_type_map(std::map<std::string, std::tuple<int, int, bool>> &type_map, Yosys::LibertyAst *ast)
 {
+    if (ast->children.size()!=0){
     for (auto type_node : ast->children)
     {
         if (type_node->id != "type" || type_node->args.size() != 1)
@@ -408,7 +410,7 @@ void parse_type_map(std::map<std::string, std::tuple<int, int, bool>> &type_map,
 
         type_map[type_name] = std::tuple<int, int, bool>(bit_width, std::min(bit_from, bit_to), upto);
     next_type:;
-    }
+    }}
 }
 
 
@@ -417,7 +419,6 @@ void parse_type_map(std::map<std::string, std::tuple<int, int, bool>> &type_map,
 
 int main(){
     std::vector<std::string> args;
-    std::cout << args.size();
     bool flag_lib = false;
     bool flag_wb = false;
     bool flag_nooverwrite = false;
@@ -426,18 +427,20 @@ int main(){
     bool flag_ignore_miss_dir  = false;
     bool flag_ignore_miss_data_latch = false;
     std::vector<std::string> attributes;
-    //log_header(design, "Executing Liberty frontend.\n");
     size_t argidx;
-    std::ifstream in("normal.lib"); // окрываем файл для чтения
-    std::cout <<"Hi";
+    std::ifstream in("/home/white_wlf/Документы/Project/utopia-eda-main/normal.lib"); // окрываем файл для чтения
+    if (in.is_open()) {
+       // std::cout <<"Hi";
+    }
+
     Yosys::LibertyParser parser(in);
     int cell_count = 0;
     Yosys::RTLIL::Design des;
-    Yosys::RTLIL::Design *design;
+    Yosys::RTLIL::Design *design=&des;
 
     std::map<std::string, std::tuple<int, int, bool>> global_type_map;
     parse_type_map(global_type_map, parser.ast);
-
+    if (parser.ast->children.size()!=0){
     for (auto cell : parser.ast->children)
     {
         if (cell->id != "cell" || cell->args.size() != 1)
@@ -597,7 +600,36 @@ int main(){
         skip_cell:;
     }
 
+}
+    std::cout<<"hashidx_  "<<des.hashidx_<<"\n";
+    std::cout<<"refcount_modules_  "<<des.refcount_modules_<<"\n";
+    std::cout<<"selected_active_module "<<des.selected_active_module<<"\n";
+    std::cout<<"scratchpad:\n";
+    for(auto it = des.scratchpad.begin(); it != des.scratchpad.end(); ++it)
+    {
+        std::cout << it->first << " " << it->second<< "\n";
+    }
+    std::cout<<"Monitors:\n";
+//    for(auto it = des.monitors.begin(); it != des.monitors.end(); ++it)
+//    {
+//        std::cout << it->hashidx_ << "\n";
+//    }
+    std::cout<<"Modules:\n";
 
+    for(auto it = des.modules_.begin(); it != des.modules_.end(); ++it)
+    {
+        std::cout<<"global_id_storage_: "<<std::endl;
+        for (char* i: it->first.global_id_storage_)
+            std::cout << i << ' ';
+        std::cout<<"global_id_index_: "<<std::endl;
+                for(auto it1 = it->first.global_id_index_.begin(); it1 != it->first.global_id_index_.end(); ++it1)
+                {
+                    std::cout << it1->first << " " << it1->second<< "\n";
+                }
+        std::cout<<"refcount_wires_: "<<it->second->refcount_wires_<<"\n";
+        std::cout<<"refcount_cells_: "<<it->second->refcount_cells_<<"\n";
+
+    }
     return 0;
 }
 
