@@ -417,7 +417,8 @@ void parse_type_map(std::map<std::string, std::tuple<int, int, bool>> &type_map,
 
 
 
-int main(){
+int main(int argc, char* argv[]){
+    for (size_t o=1;o<argc;++o){
     std::vector<std::string> args;
     bool flag_lib = false;
     bool flag_wb = false;
@@ -428,7 +429,10 @@ int main(){
     bool flag_ignore_miss_data_latch = false;
     std::vector<std::string> attributes;
     size_t argidx;
-    std::ifstream in("/home/white_wlf/Документы/Project/utopia-eda-main/normal.lib"); // окрываем файл для чтения
+   // std::string path;
+    //std::cout<<"Enter filename: \n";
+    //std::cin>>path;
+    std::ifstream in(argv[o]); // окрываем файл для чтения
     if (in.is_open()) {
        // std::cout <<"Hi";
     }
@@ -610,10 +614,9 @@ int main(){
         std::cout << it->first << " " << it->second<< "\n";
     }
     std::cout<<"Monitors:\n";
-//    for(auto it = des.monitors.begin(); it != des.monitors.end(); ++it)
-//    {
-//        std::cout << it->hashidx_ << "\n";
-//    }
+
+    for (auto i: des.monitors)
+        std::cout << i->hashidx_<< ' ';
     std::cout<<"Modules:\n";
 
     for(auto it = des.modules_.begin(); it != des.modules_.end(); ++it)
@@ -628,7 +631,36 @@ int main(){
                 }
         std::cout<<"refcount_wires_: "<<it->second->refcount_wires_<<"\n";
         std::cout<<"refcount_cells_: "<<it->second->refcount_cells_<<"\n";
+        for (auto it2 = it->second->wires_.begin(); it2 != it->second->wires_.end(); ++it2){
+            std::cout<<"width: "<<it2->second->width<<"\n";
+            std::cout<<"start_offset: "<<it2->second->start_offset<<"\n";
+            std::cout<<"port_id: "<<it2->second->port_id<<"\n";
+            std::cout<<"port_input: "<<it2->second->port_input<<"\n";
+            std::cout<<"port_output: "<<it2->second->port_output<<"\n";
+            std::cout<<"upto: "<<it2->second->upto<<"\n";
+        }
+        std::cout <<"memories: \n";
+        for (auto it2 = it->second->memories.begin(); it2 != it->second->memories.end(); ++it2){
+            std::cout<<"width: "<<it2->second->width<<"\n";
+            std::cout<<"start_offset: "<<it2->second->start_offset<<"\n";
+            std::cout<<"size: "<<it2->second->size<<"\n";
+        }
+//        std::cout <<"processes: syncs: \n";
+//        for (auto it2 = it->second->processes.begin(); it2 != it->second->processes.end(); ++it2){
+//            for (char* i: it2->second->syncs)
+//                std::cout << i.type << '\n ';
+//        }
 
+    }
+    std::cout << "selection stack: \n";
+    for (auto i: des.selection_stack){
+        std::cout << i.full_selection << '\n';
+        std::cout <<"selected_modules & selected_members\n";
+//        for (auto j: i.selected_modules){
+
+//        } уже выведены
+        std::cout << "Look up at the field IdString\n";
+    }
     }
     return 0;
 }
