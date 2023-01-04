@@ -6,7 +6,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "gate/premapper/aigmapper.h"
+#include "gate/premapper/xagmapper.h"
 
 #include <cassert>
 #include <unordered_set>
@@ -14,7 +14,7 @@
 namespace eda::gate::premapper {
 
 Gate::SignalList getNewInputs(const Gate &oldGate,
-                              const AigMapper::GateIdMap &oldToNewGates,
+                              const XagMapper::GateIdMap &oldToNewGates,
                               size_t &n0, size_t &n1) {
   const auto k = oldGate.arity();
 
@@ -39,7 +39,7 @@ Gate::SignalList getNewInputs(const Gate &oldGate,
   return newInputs;
 }
 
-Gate::Id AigMapper::mapGate(const Gate &oldGate,
+Gate::Id XagMapper::mapGate(const Gate &oldGate,
                             const GateIdMap &oldToNewGates,
                             GNet &newNet) const {
   if (oldGate.isSource() || oldGate.isTrigger()) {
@@ -71,7 +71,7 @@ Gate::Id AigMapper::mapGate(const Gate &oldGate,
 // ONE/ZERO
 //===----------------------------------------------------------------------===//
 
-Gate::Id AigMapper::mapVal(bool value, GNet &newNet) const {
+Gate::Id XagMapper::mapVal(bool value, GNet &newNet) const {
   return newNet.addGate(value ? GateSymbol::ONE : GateSymbol::ZERO, {});
 }
 
@@ -79,7 +79,7 @@ Gate::Id AigMapper::mapVal(bool value, GNet &newNet) const {
 // NOP/NOT
 //===----------------------------------------------------------------------===//
 
-Gate::Id AigMapper::mapNop(const Gate::SignalList &newInputs,
+Gate::Id XagMapper::mapNop(const Gate::SignalList &newInputs,
                            bool sign, GNet &newNet) const {
   // NOP(x) = x.
   const auto inputId = newInputs.at(0).node();
@@ -97,7 +97,7 @@ Gate::Id AigMapper::mapNop(const Gate::SignalList &newInputs,
   return newNet.addGate(GateSymbol::NOT, newInputs);
 }
 
-Gate::Id AigMapper::mapNop(const Gate::SignalList &newInputs,
+Gate::Id XagMapper::mapNop(const Gate::SignalList &newInputs,
                            size_t n0, size_t n1, bool sign, GNet &newNet) const {
   assert(newInputs.size() + n0 + n1 == 1);
 
@@ -112,7 +112,7 @@ Gate::Id AigMapper::mapNop(const Gate::SignalList &newInputs,
 // AND/NAND
 //===----------------------------------------------------------------------===//
 
-Gate::Id AigMapper::mapAnd(const Gate::SignalList &newInputs,
+Gate::Id XagMapper::mapAnd(const Gate::SignalList &newInputs,
                            bool sign, GNet &newNet) const {
   Gate::SignalList inputs(newInputs.begin(), newInputs.end());
   inputs.reserve(2 * newInputs.size() - 1);
@@ -144,7 +144,7 @@ Gate::Id AigMapper::mapAnd(const Gate::SignalList &newInputs,
   return mapNop({inputs[l]}, sign, newNet);
 }
 
-Gate::Id AigMapper::mapAnd(const Gate::SignalList &newInputs,
+Gate::Id XagMapper::mapAnd(const Gate::SignalList &newInputs,
                            size_t n0, size_t n1, bool sign, GNet &newNet) const {
   if (n0 > 0) {
     return mapVal(!sign, newNet);
@@ -157,7 +157,7 @@ Gate::Id AigMapper::mapAnd(const Gate::SignalList &newInputs,
 // OR/NOR
 //===----------------------------------------------------------------------===//
 
-Gate::Id AigMapper::mapOr(const Gate::SignalList &newInputs,
+Gate::Id XagMapper::mapOr(const Gate::SignalList &newInputs,
                           bool sign, GNet &newNet) const {
   // OR(x[1],...,x[n]) = NOT(AND(NOT(x[1]),...,NOT(x[n]))).
   Gate::SignalList negInputs(newInputs.size());
@@ -169,7 +169,7 @@ Gate::Id AigMapper::mapOr(const Gate::SignalList &newInputs,
   return mapAnd(negInputs, !sign, newNet);
 }
 
-Gate::Id AigMapper::mapOr(const Gate::SignalList &newInputs,
+Gate::Id XagMapper::mapOr(const Gate::SignalList &newInputs,
                           size_t n0, size_t n1, bool sign, GNet &newNet) const {
   if (n1 > 0) {
     return mapVal(sign, newNet);
@@ -182,7 +182,7 @@ Gate::Id AigMapper::mapOr(const Gate::SignalList &newInputs,
 // XOR/XNOR
 //===----------------------------------------------------------------------===//
 
-Gate::Id AigMapper::mapXor(const Gate::SignalList &newInputs,
+Gate::Id XagMapper::mapXor(const Gate::SignalList &newInputs,
                            bool sign, GNet &newNet) const {
   Gate::SignalList inputs(newInputs.begin(), newInputs.end());
   inputs.reserve(2 * newInputs.size() - 1);
@@ -190,21 +190,19 @@ Gate::Id AigMapper::mapXor(const Gate::SignalList &newInputs,
   size_t l = 0;
   size_t r = 1;
   while (r < inputs.size()) {
-    // XOR (x,y)=AND(NAND(x,y),NAND(NOT(x),NOT(y))): 7 AND and NOT gates.
-    // XNOR(x,y)=AND(NAND(x,NOT(y)),NAND(NOT(x),y)): 7 AND and NOT gates.
-    const auto x1 = mapNop({inputs[l]},  true, newNet);
-    const auto y1 = mapNop({inputs[r]},  sign, newNet);
-    const auto x2 = mapNop({inputs[l]}, false, newNet);
-    const auto y2 = mapNop({inputs[r]}, !sign, newNet);
 
-    const auto z1 = mapAnd({Gate::Signal::always(x1), Gate::Signal::always(y1)},
-                           false, newNet);
-    const auto z2 = mapAnd({Gate::Signal::always(x2), Gate::Signal::always(y2)},
-                           false, newNet);
-    const auto id = mapAnd({Gate::Signal::always(z1), Gate::Signal::always(z2)},
-                           true,  newNet);
+    // XOR(x,y) = XOR(x,y)
+    // XNOR(x,y) = NOT(XOR(x,y))
+    const auto x = inputs[l];
+    const auto y = inputs[r];
+    Gate::Id gateId;
 
-    inputs.push_back(Gate::Signal::always(id));
+    gateId = newNet.addGate(GateSymbol::XOR, {x, y});
+    if (!sign) {
+        gateId = mapNop({Gate::Signal::always(gateId)}, false, newNet);
+    }
+
+    inputs.push_back(Gate::Signal::always(gateId));
 
     l += 2;
     r += 2;
@@ -215,7 +213,7 @@ Gate::Id AigMapper::mapXor(const Gate::SignalList &newInputs,
   return inputs[l].node();
 }
 
-Gate::Id AigMapper::mapXor(const Gate::SignalList &newInputs,
+Gate::Id XagMapper::mapXor(const Gate::SignalList &newInputs,
                            size_t n0, size_t n1, bool sign, GNet &newNet) const {
   if (n1 > 1) {
     return mapXor(newInputs, sign ^ (n1 & 1), newNet);
