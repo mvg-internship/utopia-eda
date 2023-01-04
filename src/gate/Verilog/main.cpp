@@ -40,14 +40,14 @@ static void add_package_types1(dict<std::string, AST::AstNode *> &user_types, st
 }
 
 //struct VerilogFrontend : public Frontend {
-//	VerilogFrontend() : Frontend("verilog", "read modules from Verilog file") { }
-
-//	void execute(std::istream *&f, std::string filename, std::vector<std::string> args, RTLIL::Design *design) override
-//	{
-
-
-//        //log("Successfully finished Verilog frontend.\n");
-//	}
+//    VerilogFrontend() : Frontend("verilog", "read modules from Verilog file") { }
+//    //std::istream *&f, std::string filename, std::vector<std::string> args, RTLIL::Design *design
+//    void execute() override
+//    {
+//        std::cout<<"Hello World!"<<std::endl;
+//
+//        log("Successfully finished Verilog frontend.\n");
+//    }
 //} VerilogFrontend;
 
 //struct VerilogDefaults : public Pass {
@@ -159,19 +159,13 @@ YOSYS_NAMESPACE_END
 //	exit(1);
 //}
 
-int main(){
-
-    std::ifstream f("test.v"); // open file for reading
-    //if (f.is_open()){
-    //    std::cout<<"open"<<std::endl;
-    //}
-    std::string filename = "test.v";
-
-    std::vector<std::string> args;
-
+void parse(std::string filename, std::vector<std::string> args){
+    std::ifstream f(filename); // open file for reading
+    if (f.is_open()){
+        std::cout<<"Opened file..."<<std::endl<<std::endl;
+    }
     Yosys::RTLIL::Design des;
     Yosys::RTLIL::Design *design=&des;
-
     bool flag_dump_ast1 = false;
     bool flag_dump_ast2 = false;
     bool flag_no_dump_ptr = false;
@@ -520,6 +514,15 @@ int main(){
 //        for (auto j: i.selected_modules){ }
         std::cout << "Look up at the field IdString\n";
     }
+}
+
+int main(){
+
+    std::string filename;
+    std::cin>>filename;
+    std::vector<std::string> args;
+    parse(filename, args);
+
     return 0;
 }
 
