@@ -44,6 +44,8 @@ public:
     NOR,
     /// Exclusive NOR: OUT <= ~(X + Y (+ ...) (mod 2)).
     XNOR,
+    /// Majority function: OUT = Majority(X, Y, (...))  //+
+    MAJ,
 
     //----------------------------------------------------------------------------
     // Flip-flops and latches
