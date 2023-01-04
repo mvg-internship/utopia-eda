@@ -39,108 +39,6 @@ static void add_package_types1(dict<std::string, AST::AstNode *> &user_types, st
 	}
 }
 
-//struct VerilogFrontend : public Frontend {
-//    VerilogFrontend() : Frontend("verilog", "read modules from Verilog file") { }
-//    //std::istream *&f, std::string filename, std::vector<std::string> args, RTLIL::Design *design
-//    void execute() override
-//    {
-//        std::cout<<"Hello World!"<<std::endl;
-//
-//        log("Successfully finished Verilog frontend.\n");
-//    }
-//} VerilogFrontend;
-
-//struct VerilogDefaults : public Pass {
-//	VerilogDefaults() : Pass("verilog_defaults", "set default options for read_verilog") { }
-
-//	void execute(std::vector<std::string> args, RTLIL::Design*) override
-//	{
-//		if (args.size() < 2)
-//			cmd_error(args, 1, "Missing argument.");
-
-//		if (args[1] == "-add") {
-//			verilog_defaults.insert(verilog_defaults.end(), args.begin()+2, args.end());
-//			return;
-//		}
-
-//		if (args.size() != 2)
-//			cmd_error(args, 2, "Extra argument.");
-
-//		if (args[1] == "-clear") {
-//			verilog_defaults.clear();
-//			return;
-//		}
-
-//		if (args[1] == "-push") {
-//			verilog_defaults_stack.push_back(verilog_defaults);
-//			return;
-//		}
-
-//		if (args[1] == "-pop") {
-//			if (verilog_defaults_stack.empty()) {
-//				verilog_defaults.clear();
-//			} else {
-//				verilog_defaults.swap(verilog_defaults_stack.back());
-//				verilog_defaults_stack.pop_back();
-//			}
-//			return;
-//		}
-//	}
-//} VerilogDefaults;
-
-//struct VerilogDefines : public Pass {
-//    VerilogDefines() : Yosys::RTLIL::Pass("verilog_defines", "define and undefine verilog defines") { }
-
-//	void execute(std::vector<std::string> args, RTLIL::Design *design) override
-//	{
-//		size_t argidx;
-//		for (argidx = 1; argidx < args.size(); argidx++) {
-//			std::string arg = args[argidx];
-//			if (arg == "-D" && argidx+1 < args.size()) {
-//				std::string name = args[++argidx], value;
-//				size_t equal = name.find('=');
-//				if (equal != std::string::npos) {
-//					value = name.substr(equal+1);
-//					name = name.substr(0, equal);
-//				}
-//				design->verilog_defines->add(name, value);
-//				continue;
-//			}
-//			if (arg.compare(0, 2, "-D") == 0) {
-//				size_t equal = arg.find('=', 2);
-//				std::string name = arg.substr(2, equal-2);
-//				std::string value;
-//				if (equal != std::string::npos)
-//					value = arg.substr(equal+1);
-//				design->verilog_defines->add(name, value);
-//				continue;
-//			}
-//			if (arg == "-U" && argidx+1 < args.size()) {
-//				std::string name = args[++argidx];
-//				design->verilog_defines->erase(name);
-//				continue;
-//			}
-//			if (arg.compare(0, 2, "-U") == 0) {
-//				std::string name = arg.substr(2);
-//				design->verilog_defines->erase(name);
-//				continue;
-//			}
-//			if (arg == "-reset") {
-//				design->verilog_defines->clear();
-//				continue;
-//			}
-//			if (arg == "-list") {
-//				design->verilog_defines->log();
-//				continue;
-//			}
-//			break;
-//		}
-
-//		if (args.size() != argidx)
-//			cmd_error(args, argidx, "Extra argument.");
-//	}
-//} VerilogDefines;
-
 YOSYS_NAMESPACE_END
 
 // the yyerror function used by bison to report parser errors
@@ -389,16 +287,11 @@ void parse(std::string filename, std::vector<std::string> args){
 
     //Yosys::Pass::extra_args(f, filename, args, argidx);
 
-    //log_header(design, "Executing Verilog-2005 frontend: %s\n", filename.c_str());
-
-    //log("Parsing %s%s input from `%s' to AST representation.\n",
-            //formal_mode ? "formal " : "", sv_mode ? "SystemVerilog" : "Verilog", filename.c_str());
 
     Yosys::AST::current_filename = filename;
     Yosys::AST::set_line_num = &frontend_verilog_yyset_lineno;
     Yosys::AST::get_line_num = &frontend_verilog_yyget_lineno;
 
-    //current_ast = new AST_H::AstNode(AST::AST_DESIGN);
     Yosys::VERILOG_FRONTEND::current_ast = new Yosys::AST::AstNode(Yosys::AST::AST_DESIGN);
 
     Yosys::VERILOG_FRONTEND::lexin = &f;
@@ -406,8 +299,6 @@ void parse(std::string filename, std::vector<std::string> args){
 
     if (!flag_nopp) {
         code_after_preproc = frontend_verilog_preproc(f, filename, defines_map, *design->verilog_defines, include_dirs);
-        //if (flag_ppdump)
-            //log("-- Verilog code after preprocessor --\n%s-- END OF DUMP --\n", code_after_preproc.c_str());
         Yosys::VERILOG_FRONTEND::lexin = new std::istringstream(code_after_preproc);
     }
 
@@ -421,7 +312,6 @@ void parse(std::string filename, std::vector<std::string> args){
         }
     }
 
-    //log_assert(user_type_stack.empty());
     // use previous global typedefs as bottom level of user type stack
     Yosys::VERILOG_FRONTEND::user_type_stack.push_back(std::move(global_types_map));
     // add a new empty type map to allow overriding existing global definitions
@@ -450,14 +340,10 @@ void parse(std::string filename, std::vector<std::string> args){
         delete Yosys::VERILOG_FRONTEND::lexin;
 
     // only the previous and new global type maps remain
-    //log_assert(user_type_stack.size() == 2);
     Yosys::VERILOG_FRONTEND::user_type_stack.clear();
 
     delete Yosys::VERILOG_FRONTEND::current_ast;
     Yosys::VERILOG_FRONTEND::current_ast = NULL;
-
-
-    //std::cout<<"Hello World"<<std::endl;
 
 
     std::cout<<"hashidx_  "<<des.hashidx_<<std::endl;
