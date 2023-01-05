@@ -414,197 +414,185 @@ void parse_type_map(std::map<std::string, std::tuple<int, int, bool>> &type_map,
 }
 
 
+void createRTLIL(Yosys::RTLIL::Design *design, std::ifstream &in){
+std::vector<std::string> args;
+bool flag_lib = false;
+bool flag_wb = false;
+bool flag_nooverwrite = false;
+bool flag_overwrite = false;
+bool flag_ignore_miss_func = false;
+bool flag_ignore_miss_dir  = false;
+bool flag_ignore_miss_data_latch = false;
+size_t argidx;
+std::vector<std::string> attributes;
+Yosys::LibertyParser parser(in);
+ int cell_count = 0;
+ std::map<std::string, std::tuple<int, int, bool>> global_type_map;
+ parse_type_map(global_type_map, parser.ast);
+ if (parser.ast->children.size()!=0){
+ for (auto cell : parser.ast->children)
+ {
+     if (cell->id != "cell" || cell->args.size() != 1)
+         continue;
+     std::string cell_name = Yosys::RTLIL::escape_id(cell->args.at(0));
+     if (design->has(cell_name)) {
+         Yosys::Module *existing_mod = design->module(cell_name);
+         if (!flag_nooverwrite && !flag_overwrite && !existing_mod->get_bool_attribute(Yosys::ID::blackbox)) {
+            // log_error("Re-definition of cell/module %s!\n", log_id(cell_name));
+         } else if (flag_nooverwrite) {
+             //log("Ignoring re-definition of module %s.\n", log_id(cell_name));
+             continue;
+         } else {
+            // log("Replacing existing%s module %s.\n", existing_mod->get_bool_attribute(Yosys::ID::blackbox) ? " blackbox" : "", log_id(cell_name));
+             design->remove(existing_mod);
+         }
+     }
+     // log("Processing cell type %s.\n", Yosys::RTLIL::unescape_id(cell_name).c_str());
+     std::map<std::string, std::tuple<int, int, bool>> type_map = global_type_map;
+     parse_type_map(type_map, cell);
+
+     Yosys::RTLIL::Module *module = new Yosys::RTLIL::Module;
+     module->name = cell_name;
+
+     if (flag_lib)
+         module->set_bool_attribute(Yosys::ID::blackbox);
+
+     if (flag_wb)
+         module->set_bool_attribute(Yosys::ID::whitebox);
+
+     for (auto &attr : attributes)
+         module->attributes[attr] = 1;
+
+     for (auto node : cell->children)
+     {
+         if (node->id == "pin" && node->args.size() == 1) {
+             Yosys::LibertyAst *dir = node->find("direction");
+             if (!dir || (dir->value != "input" && dir->value != "output" && dir->value != "inout" && dir->value != "internal"))
+             {
+                 if (!flag_ignore_miss_dir)
+                 {
+                  //   log_error("Missing or invalid direction for pin %s on cell %s.\n", node->args.at(0).c_str(), log_id(module->name));
+                 } else {
+                  //   log("Ignoring cell %s with missing or invalid direction for pin %s.\n", log_id(module->name), node->args.at(0).c_str());
+                     delete module;
+                     goto skip_cell;
+                 }
+             }
+             if (!flag_lib || dir->value != "internal")
+                 module->addWire(Yosys::RTLIL::escape_id(node->args.at(0)));
+         }
+
+         if (node->id == "bus" && node->args.size() == 1)
+         {
+
+              //   log_error("Error in cell %s: bus interfaces are only supported in -lib mode.\n", log_id(cell_name));
+
+             Yosys::LibertyAst *dir = node->find("direction");
+
+             if (dir == nullptr) {
+                 Yosys::LibertyAst *pin = node->find("pin");
+                 if (pin != nullptr)
+                     dir = pin->find("direction");
+             }
 
 
+             if (dir->value == "internal")
+                 continue;
 
-int main(int argc, char* argv[]){
-    for (size_t o=1;o<argc;++o){
-    std::vector<std::string> args;
-    bool flag_lib = false;
-    bool flag_wb = false;
-    bool flag_nooverwrite = false;
-    bool flag_overwrite = false;
-    bool flag_ignore_miss_func = false;
-    bool flag_ignore_miss_dir  = false;
-    bool flag_ignore_miss_data_latch = false;
-    std::vector<std::string> attributes;
-    size_t argidx;
-   // std::string path;
-    //std::cout<<"Enter filename: \n";
-    //std::cin>>path;
-    std::ifstream in(argv[o]); // окрываем файл для чтения
-    if (in.is_open()) {
-       // std::cout <<"Hi";
-    }
-
-    Yosys::LibertyParser parser(in);
-    int cell_count = 0;
-    Yosys::RTLIL::Design des;
-    Yosys::RTLIL::Design *design=&des;
-
-    std::map<std::string, std::tuple<int, int, bool>> global_type_map;
-    parse_type_map(global_type_map, parser.ast);
-    if (parser.ast->children.size()!=0){
-    for (auto cell : parser.ast->children)
-    {
-        if (cell->id != "cell" || cell->args.size() != 1)
-            continue;
-
-        std::string cell_name = Yosys::RTLIL::escape_id(cell->args.at(0));
-
-        if (design->has(cell_name)) {
-            Yosys::Module *existing_mod = design->module(cell_name);
-            if (!flag_nooverwrite && !flag_overwrite && !existing_mod->get_bool_attribute(Yosys::ID::blackbox)) {
-               // log_error("Re-definition of cell/module %s!\n", log_id(cell_name));
-            } else if (flag_nooverwrite) {
-                //log("Ignoring re-definition of module %s.\n", log_id(cell_name));
-                continue;
-            } else {
-               // log("Replacing existing%s module %s.\n", existing_mod->get_bool_attribute(Yosys::ID::blackbox) ? " blackbox" : "", log_id(cell_name));
-                design->remove(existing_mod);
-            }
-        }
-
-        // log("Processing cell type %s.\n", Yosys::RTLIL::unescape_id(cell_name).c_str());
-
-        std::map<std::string, std::tuple<int, int, bool>> type_map = global_type_map;
-        parse_type_map(type_map, cell);
-
-        Yosys::RTLIL::Module *module = new Yosys::RTLIL::Module;
-        module->name = cell_name;
-
-        if (flag_lib)
-            module->set_bool_attribute(Yosys::ID::blackbox);
-
-        if (flag_wb)
-            module->set_bool_attribute(Yosys::ID::whitebox);
-
-        for (auto &attr : attributes)
-            module->attributes[attr] = 1;
-
-        for (auto node : cell->children)
-        {
-            if (node->id == "pin" && node->args.size() == 1) {
-                Yosys::LibertyAst *dir = node->find("direction");
-                if (!dir || (dir->value != "input" && dir->value != "output" && dir->value != "inout" && dir->value != "internal"))
-                {
-                    if (!flag_ignore_miss_dir)
-                    {
-                     //   log_error("Missing or invalid direction for pin %s on cell %s.\n", node->args.at(0).c_str(), log_id(module->name));
-                    } else {
-                     //   log("Ignoring cell %s with missing or invalid direction for pin %s.\n", log_id(module->name), node->args.at(0).c_str());
-                        delete module;
-                        goto skip_cell;
-                    }
-                }
-                if (!flag_lib || dir->value != "internal")
-                    module->addWire(Yosys::RTLIL::escape_id(node->args.at(0)));
-            }
-
-            if (node->id == "bus" && node->args.size() == 1)
-            {
-
-                 //   log_error("Error in cell %s: bus interfaces are only supported in -lib mode.\n", log_id(cell_name));
-
-                Yosys::LibertyAst *dir = node->find("direction");
-
-                if (dir == nullptr) {
-                    Yosys::LibertyAst *pin = node->find("pin");
-                    if (pin != nullptr)
-                        dir = pin->find("direction");
-                }
+             Yosys::LibertyAst *bus_type_node = node->find("bus_type");
 
 
-                if (dir->value == "internal")
-                    continue;
+             int bus_type_width = std::get<0>(type_map.at(bus_type_node->value));
+             int bus_type_offset = std::get<1>(type_map.at(bus_type_node->value));
+             bool bus_type_upto = std::get<2>(type_map.at(bus_type_node->value));
 
-                Yosys::LibertyAst *bus_type_node = node->find("bus_type");
+             Yosys::Wire *wire = module->addWire(Yosys::RTLIL::escape_id(node->args.at(0)), bus_type_width);
+             wire->start_offset = bus_type_offset;
+             wire->upto = bus_type_upto;
 
+             if (dir->value == "input" || dir->value == "inout")
+                 wire->port_input = true;
 
-                int bus_type_width = std::get<0>(type_map.at(bus_type_node->value));
-                int bus_type_offset = std::get<1>(type_map.at(bus_type_node->value));
-                bool bus_type_upto = std::get<2>(type_map.at(bus_type_node->value));
+             if (dir->value == "output" || dir->value == "inout")
+                 wire->port_output = true;
+         }
+     }
 
-                Yosys::Wire *wire = module->addWire(Yosys::RTLIL::escape_id(node->args.at(0)), bus_type_width);
-                wire->start_offset = bus_type_offset;
-                wire->upto = bus_type_upto;
+     if (!flag_lib)
+     {
+         // some liberty files do not put ff/latch at the beginning of a cell
+         // try to find "ff" or "latch" and create FF/latch _before_ processing all other nodes
+         for (auto node : cell->children)
+         {
+             if (node->id == "ff" && node->args.size() == 2)
+                 create_ff(module, node);
+             if (node->id == "latch" && node->args.size() == 2)
+                 if (!create_latch(module, node, flag_ignore_miss_data_latch)) {
+                     delete module;
+                     goto skip_cell;
+                 }
+         }
+     }
 
-                if (dir->value == "input" || dir->value == "inout")
-                    wire->port_input = true;
+     for (auto node : cell->children)
+     {
+         if (node->id == "pin" && node->args.size() == 1)
+         {
+             Yosys::LibertyAst *dir = node->find("direction");
 
-                if (dir->value == "output" || dir->value == "inout")
-                    wire->port_output = true;
-            }
-        }
+             if (flag_lib && dir->value == "internal")
+                 continue;
 
-        if (!flag_lib)
-        {
-            // some liberty files do not put ff/latch at the beginning of a cell
-            // try to find "ff" or "latch" and create FF/latch _before_ processing all other nodes
-            for (auto node : cell->children)
-            {
-                if (node->id == "ff" && node->args.size() == 2)
-                    create_ff(module, node);
-                if (node->id == "latch" && node->args.size() == 2)
-                    if (!create_latch(module, node, flag_ignore_miss_data_latch)) {
-                        delete module;
-                        goto skip_cell;
-                    }
-            }
-        }
+             Yosys::RTLIL::Wire *wire = module->wires_.at(Yosys::RTLIL::escape_id(node->args.at(0)));
 
-        for (auto node : cell->children)
-        {
-            if (node->id == "pin" && node->args.size() == 1)
-            {
-                Yosys::LibertyAst *dir = node->find("direction");
+             if (dir && dir->value == "inout") {
+                 wire->port_input = true;
+                 wire->port_output = true;
+             }
 
-                if (flag_lib && dir->value == "internal")
-                    continue;
+             if (dir && dir->value == "input") {
+                 wire->port_input = true;
+                 continue;
+             }
 
-                Yosys::RTLIL::Wire *wire = module->wires_.at(Yosys::RTLIL::escape_id(node->args.at(0)));
+             if (dir && dir->value == "output")
+                 wire->port_output = true;
 
-                if (dir && dir->value == "inout") {
-                    wire->port_input = true;
-                    wire->port_output = true;
-                }
+             if (flag_lib)
+                 continue;
 
-                if (dir && dir->value == "input") {
-                    wire->port_input = true;
-                    continue;
-                }
+             Yosys::LibertyAst *func = node->find("function");
+             if (func == NULL)
+             {
+                 if (!flag_ignore_miss_func)
+                 {
+                     //log_error("Missing function on output %s of cell %s.\n", log_id(wire->name), log_id(module->name));
+                 } else {
+                     //og("Ignoring cell %s with missing function on output %s.\n", log_id(module->name), log_id(wire->name));
+                     delete module;
+                     goto skip_cell;
+                 }
+             }
 
-                if (dir && dir->value == "output")
-                    wire->port_output = true;
+             Yosys::RTLIL::SigSpec out_sig = parse_func_expr(module, func->value.c_str());
+             module->connect(Yosys::RTLIL::SigSig(wire, out_sig));
+         }
+     }
 
-                if (flag_lib)
-                    continue;
-
-                Yosys::LibertyAst *func = node->find("function");
-                if (func == NULL)
-                {
-                    if (!flag_ignore_miss_func)
-                    {
-                        //log_error("Missing function on output %s of cell %s.\n", log_id(wire->name), log_id(module->name));
-                    } else {
-                        //og("Ignoring cell %s with missing function on output %s.\n", log_id(module->name), log_id(wire->name));
-                        delete module;
-                        goto skip_cell;
-                    }
-                }
-
-                Yosys::RTLIL::SigSpec out_sig = parse_func_expr(module, func->value.c_str());
-                module->connect(Yosys::RTLIL::SigSig(wire, out_sig));
-            }
-        }
-
-        module->fixup_ports();
-        design->add(module);
-        cell_count++;
-        skip_cell:;
-    }
+     module->fixup_ports();
+     design->add(module);
+     cell_count++;
+     skip_cell:;
+ }
 
 }
+}
+int main(int argc, char* argv[]){
+    for (size_t o=1;o<argc;++o){
+    std::ifstream in(argv[o]);
+    Yosys::RTLIL::Design des;
+    Yosys::RTLIL::Design *design=&des;
+    createRTLIL(design, in);
     std::cout<<"hashidx_  "<<des.hashidx_<<"\n";
     std::cout<<"refcount_modules_  "<<des.refcount_modules_<<"\n";
     std::cout<<"selected_active_module "<<des.selected_active_module<<"\n";
