@@ -362,10 +362,10 @@ void parse(std::string filename, std::vector<std::string> args){
 
     for(auto it = des.modules_.begin(); it != des.modules_.end(); ++it)
     {
-        std::cout<<"global_id_storage_: "<<std::endl;
+        std::cout<<std::endl<<"global_id_storage_: "<<std::endl;
         for (char* i: it->first.global_id_storage_)
-            std::cout << i << " ";
-        std::cout<<"global_id_index_: "<<std::endl;
+            std::cout << i << std::endl;
+        std::cout<<std::endl<<"global_id_index_: "<<std::endl;
                 for(auto it1 = it->first.global_id_index_.begin(); it1 != it->first.global_id_index_.end(); ++it1)
                 {
                     std::cout << it1->first << " " << it1->second<< std::endl;
@@ -402,10 +402,11 @@ void parse(std::string filename, std::vector<std::string> args){
     }
 }
 
-int main(){
+int main(int argc, char *argv[]){
 
-    std::string filename;
-    std::cin>>filename;
+    std::string filename = argv[1];
+    //std::cout<<filename<<std::endl;
+    //std::cin>>filename;
     std::vector<std::string> args;
     parse(filename, args);
 
