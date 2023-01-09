@@ -7,6 +7,7 @@ add_library(Gate OBJECT
   model/gsymbol.cpp
   model/hMetis_formatter.cpp
   premapper/aigmapper.cpp
+  premapper/xagmapper.cpp
   premapper/premapper.cpp
   simulator/simulator.cpp
 )
