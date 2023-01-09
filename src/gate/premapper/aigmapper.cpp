@@ -193,9 +193,9 @@ Gate::Id AigMapper::mapXor(const Gate::SignalList &newInputs,
     // XOR (x,y)=AND(NAND(x,y),NAND(NOT(x),NOT(y))): 7 AND and NOT gates.
     // XNOR(x,y)=AND(NAND(x,NOT(y)),NAND(NOT(x),y)): 7 AND and NOT gates.
     const auto x1 = mapNop({inputs[l]},  true, newNet);
-    const auto y1 = mapNop({inputs[l]},  sign, newNet);
+    const auto y1 = mapNop({inputs[r]},  sign, newNet);
     const auto x2 = mapNop({inputs[l]}, false, newNet);
-    const auto y2 = mapNop({inputs[l]}, !sign, newNet);
+    const auto y2 = mapNop({inputs[r]}, !sign, newNet);
 
     const auto z1 = mapAnd({Gate::Signal::always(x1), Gate::Signal::always(y1)},
                            false, newNet);
