@@ -1,0 +1,638 @@
+{
+    "sky130_fd_sc_hd__a2111o_1": {
+        "input": "A1 A2 B1 C1 D1 ",
+        "output": {
+            "X": "(A1&A2) | (B1) | (C1) | (D1)"
+        }
+    },
+    "sky130_fd_sc_hd__a2111oi_0": {
+        "input": "A1 A2 B1 C1 D1 ",
+        "output": {
+            "Y": "(!A1&!B1&!C1&!D1) | (!A2&!B1&!C1&!D1)"
+        }
+    },
+    "sky130_fd_sc_hd__a211o_1": {
+        "input": "A1 A2 B1 C1 ",
+        "output": {
+            "X": "(A1&A2) | (B1) | (C1)"
+        }
+    },
+    "sky130_fd_sc_hd__a211oi_1": {
+        "input": "A1 A2 B1 C1 ",
+        "output": {
+            "Y": "(!A1&!B1&!C1) | (!A2&!B1&!C1)"
+        }
+    },
+    "sky130_fd_sc_hd__a21bo_1": {
+        "input": "A1 A2 B1_N ",
+        "output": {
+            "X": "(A1&A2) | (!B1_N)"
+        }
+    },
+    "sky130_fd_sc_hd__a21boi_0": {
+        "input": "A1 A2 B1_N ",
+        "output": {
+            "Y": "(!A1&B1_N) | (!A2&B1_N)"
+        }
+    },
+    "sky130_fd_sc_hd__a21o_1": {
+        "input": "A1 A2 B1 ",
+        "output": {
+            "X": "(A1&A2) | (B1)"
+        }
+    },
+    "sky130_fd_sc_hd__a21oi_1": {
+        "input": "A1 A2 B1 ",
+        "output": {
+            "Y": "(!A1&!B1) | (!A2&!B1)"
+        }
+    },
+    "sky130_fd_sc_hd__a221o_1": {
+        "input": "A1 A2 B1 B2 C1 ",
+        "output": {
+            "X": "(B1&B2) | (A1&A2) | (C1)"
+        }
+    },
+    "sky130_fd_sc_hd__a221oi_1": {
+        "input": "A1 A2 B1 B2 C1 ",
+        "output": {
+            "Y": "(!A1&!B1&!C1) | (!A1&!B2&!C1) | (!A2&!B1&!C1) | (!A2&!B2&!C1)"
+        }
+    },
+    "sky130_fd_sc_hd__a222oi_1": {
+        "input": "A1 A2 B1 B2 C1 C2 ",
+        "output": {
+            "Y": "(!A1&!B1&!C1) | (!A1&!B1&!C2) | (!A1&!B2&!C1) | (!A2&!B1&!C1) | (!A1&!B2&!C2) | (!A2&!B1&!C2) | (!A2&!B2&!C1) | (!A2&!B2&!C2)"
+        }
+    },
+    "sky130_fd_sc_hd__a22o_1": {
+        "input": "A1 A2 B1 B2 ",
+        "output": {
+            "X": "(B1&B2) | (A1&A2)"
+        }
+    },
+    "sky130_fd_sc_hd__a22oi_1": {
+        "input": "A1 A2 B1 B2 ",
+        "output": {
+            "Y": "(!A1&!B1) | (!A1&!B2) | (!A2&!B1) | (!A2&!B2)"
+        }
+    },
+    "sky130_fd_sc_hd__a2bb2o_1": {
+        "input": "A1_N A2_N B1 B2 ",
+        "output": {
+            "X": "(B1&B2) | (!A1_N&!A2_N)"
+        }
+    },
+    "sky130_fd_sc_hd__a2bb2oi_1": {
+        "input": "A1_N A2_N B1 B2 ",
+        "output": {
+            "Y": "(A1_N&!B1) | (A1_N&!B2) | (A2_N&!B1) | (A2_N&!B2)"
+        }
+    },
+    "sky130_fd_sc_hd__a311o_1": {
+        "input": "A1 A2 A3 B1 C1 ",
+        "output": {
+            "X": "(A1&A2&A3) | (B1) | (C1)"
+        }
+    },
+    "sky130_fd_sc_hd__a311oi_1": {
+        "input": "A1 A2 A3 B1 C1 ",
+        "output": {
+            "Y": "(!A1&!B1&!C1) | (!A2&!B1&!C1) | (!A3&!B1&!C1)"
+        }
+    },
+    "sky130_fd_sc_hd__a31o_1": {
+        "input": "A1 A2 A3 B1 ",
+        "output": {
+            "X": "(A1&A2&A3) | (B1)"
+        }
+    },
+    "sky130_fd_sc_hd__a31oi_1": {
+        "input": "A1 A2 A3 B1 ",
+        "output": {
+            "Y": "(!A1&!B1) | (!A2&!B1) | (!A3&!B1)"
+        }
+    },
+    "sky130_fd_sc_hd__a32o_1": {
+        "input": "A1 A2 A3 B1 B2 ",
+        "output": {
+            "X": "(A1&A2&A3) | (B1&B2)"
+        }
+    },
+    "sky130_fd_sc_hd__a32oi_1": {
+        "input": "A1 A2 A3 B1 B2 ",
+        "output": {
+            "Y": "(!A1&!B1) | (!A1&!B2) | (!A2&!B1) | (!A3&!B1) | (!A2&!B2) | (!A3&!B2)"
+        }
+    },
+    "sky130_fd_sc_hd__a41o_1": {
+        "input": "A1 A2 A3 A4 B1 ",
+        "output": {
+            "X": "(A1&A2&A3&A4) | (B1)"
+        }
+    },
+    "sky130_fd_sc_hd__a41oi_1": {
+        "input": "A1 A2 A3 A4 B1 ",
+        "output": {
+            "Y": "(!A1&!B1) | (!A2&!B1) | (!A3&!B1) | (!A4&!B1)"
+        }
+    },
+    "sky130_fd_sc_hd__and2_0": {
+        "input": "A B ",
+        "output": {
+            "X": "(A&B)"
+        }
+    },
+    "sky130_fd_sc_hd__and2b_1": {
+        "input": "A_N B ",
+        "output": {
+            "X": "(!A_N&B)"
+        }
+    },
+    "sky130_fd_sc_hd__and3_1": {
+        "input": "A B C ",
+        "output": {
+            "X": "(A&B&C)"
+        }
+    },
+    "sky130_fd_sc_hd__and3b_1": {
+        "input": "A_N B C ",
+        "output": {
+            "X": "(!A_N&B&C)"
+        }
+    },
+    "sky130_fd_sc_hd__and4_1": {
+        "input": "A B C D ",
+        "output": {
+            "X": "(A&B&C&D)"
+        }
+    },
+    "sky130_fd_sc_hd__and4b_1": {
+        "input": "A_N B C D ",
+        "output": {
+            "X": "(!A_N&B&C&D)"
+        }
+    },
+    "sky130_fd_sc_hd__and4bb_1": {
+        "input": "A_N B_N C D ",
+        "output": {
+            "X": "(!A_N&!B_N&C&D)"
+        }
+    },
+    "sky130_fd_sc_hd__buf_1": {
+        "input": "A ",
+        "output": {
+            "X": "(A)"
+        }
+    },
+    "sky130_fd_sc_hd__bufinv_16": {
+        "input": "A ",
+        "output": {
+            "Y": "(!A)"
+        }
+    },
+    "sky130_fd_sc_hd__clkbuf_1": {
+        "input": "A ",
+        "output": {
+            "X": "(A)"
+        }
+    },
+    "sky130_fd_sc_hd__clkinv_1": {
+        "input": "A ",
+        "output": {
+            "Y": "(!A)"
+        }
+    },
+    "sky130_fd_sc_hd__conb_1": {
+        "input": "",
+        "output": {
+            "HI": "1",
+            "LO": "0"
+        }
+    },
+    "sky130_fd_sc_hd__dlygate4sd1_1": {
+        "input": "A ",
+        "output": {
+            "X": "(A)"
+        }
+    },
+    "sky130_fd_sc_hd__ebufn_1": {
+        "input": "A TE_B ",
+        "output": {
+            "Z": "(A)"
+        }
+    },
+    "sky130_fd_sc_hd__einvn_0": {
+        "input": "A TE_B ",
+        "output": {
+            "Z": "(!A)"
+        }
+    },
+    "sky130_fd_sc_hd__fa_1": {
+        "input": "A B CIN ",
+        "output": {
+            "COUT": "(A&B) | (A&CIN) | (B&CIN)",
+            "SUM": "(A&!B&!CIN) | (!A&B&!CIN) | (!A&!B&CIN) | (A&B&CIN)"
+        }
+    },
+    "sky130_fd_sc_hd__fah_1": {
+        "input": "A B CI ",
+        "output": {
+            "COUT": "(A&B) | (A&CI) | (B&CI)",
+            "SUM": "(A&!B&!CI) | (!A&B&!CI) | (!A&!B&CI) | (A&B&CI)"
+        }
+    },
+    "sky130_fd_sc_hd__fahcin_1": {
+        "input": "A B CIN ",
+        "output": {
+            "COUT": "(A&!CIN) | (A&B) | (B&!CIN)",
+            "SUM": "(!A&!B&!CIN) | (A&B&!CIN) | (A&!B&CIN) | (!A&B&CIN)"
+        }
+    },
+    "sky130_fd_sc_hd__fahcon_1": {
+        "input": "A B CI ",
+        "output": {
+            "COUT_N": "(!A&!CI) | (!A&!B) | (!B&!CI)",
+            "SUM": "(A&!B&!CI) | (!A&B&!CI) | (!A&!B&CI) | (A&B&CI)"
+        }
+    },
+    "sky130_fd_sc_hd__ha_1": {
+        "input": "A B ",
+        "output": {
+            "COUT": "(A&B)",
+            "SUM": "(A&!B) | (!A&B)"
+        }
+    },
+    "sky130_fd_sc_hd__inv_1": {
+        "input": "A ",
+        "output": {
+            "Y": "(!A)"
+        }
+    },
+    "sky130_fd_sc_hd__lpflow_clkbufkapwr_1": {
+        "input": "A ",
+        "output": {
+            "X": "(A)"
+        }
+    },
+    "sky130_fd_sc_hd__lpflow_clkinvkapwr_1": {
+        "input": "A ",
+        "output": {
+            "Y": "(!A)"
+        }
+    },
+    "sky130_fd_sc_hd__lpflow_inputiso0n_1": {
+        "input": "A SLEEP_B ",
+        "output": {
+            "X": "(SLEEP_B&A)"
+        }
+    },
+    "sky130_fd_sc_hd__lpflow_inputiso0p_1": {
+        "input": "A SLEEP ",
+        "output": {
+            "X": "(!SLEEP&A)"
+        }
+    },
+    "sky130_fd_sc_hd__lpflow_inputiso1n_1": {
+        "input": "A SLEEP_B ",
+        "output": {
+            "X": "(A) | (!SLEEP_B)"
+        }
+    },
+    "sky130_fd_sc_hd__lpflow_inputiso1p_1": {
+        "input": "A SLEEP ",
+        "output": {
+            "X": "(A) | (SLEEP)"
+        }
+    },
+    "sky130_fd_sc_hd__lpflow_isobufsrc_1": {
+        "input": "A SLEEP ",
+        "output": {
+            "X": "(A&!SLEEP)"
+        }
+    },
+    "sky130_fd_sc_hd__lpflow_lsbuf_lh_hl_isowell_tap_1": {
+        "input": "A ",
+        "output": {
+            "X": "(A)"
+        }
+    },
+    "sky130_fd_sc_hd__macro_sparecell": {
+        "input": "",
+        "output": {
+            "LO": "0"
+        }
+    },
+    "sky130_fd_sc_hd__maj3_1": {
+        "input": "A B C ",
+        "output": {
+            "X": "(A&B) | (A&C) | (B&C)"
+        }
+    },
+    "sky130_fd_sc_hd__mux2_1": {
+        "input": "A0 A1 S ",
+        "output": {
+            "X": "(A0&!S) | (A1&S)"
+        }
+    },
+    "sky130_fd_sc_hd__mux2i_1": {
+        "input": "A0 A1 S ",
+        "output": {
+            "Y": "(!A0&!S) | (!A1&S)"
+        }
+    },
+    "sky130_fd_sc_hd__mux4_1": {
+        "input": "A0 A1 A2 A3 S0 S1 ",
+        "output": {
+            "X": "(A0&!S0&!S1) | (A1&S0&!S1) | (A2&!S0&S1) | (A3&S0&S1)"
+        }
+    },
+    "sky130_fd_sc_hd__nand2_1": {
+        "input": "A B ",
+        "output": {
+            "Y": "(!A) | (!B)"
+        }
+    },
+    "sky130_fd_sc_hd__nand2b_1": {
+        "input": "A_N B ",
+        "output": {
+            "Y": "(A_N) | (!B)"
+        }
+    },
+    "sky130_fd_sc_hd__nand3_1": {
+        "input": "A B C ",
+        "output": {
+            "Y": "(!A) | (!B) | (!C)"
+        }
+    },
+    "sky130_fd_sc_hd__nand3b_1": {
+        "input": "A_N B C ",
+        "output": {
+            "Y": "(A_N) | (!B) | (!C)"
+        }
+    },
+    "sky130_fd_sc_hd__nand4_1": {
+        "input": "A B C D ",
+        "output": {
+            "Y": "(!A) | (!B) | (!C) | (!D)"
+        }
+    },
+    "sky130_fd_sc_hd__nand4b_1": {
+        "input": "A_N B C D ",
+        "output": {
+            "Y": "(A_N) | (!B) | (!C) | (!D)"
+        }
+    },
+    "sky130_fd_sc_hd__nand4bb_1": {
+        "input": "A_N B_N C D ",
+        "output": {
+            "Y": "(A_N) | (B_N) | (!C) | (!D)"
+        }
+    },
+    "sky130_fd_sc_hd__nor2_1": {
+        "input": "A B ",
+        "output": {
+            "Y": "(!A&!B)"
+        }
+    },
+    "sky130_fd_sc_hd__nor2b_1": {
+        "input": "A B_N ",
+        "output": {
+            "Y": "(!A&B_N)"
+        }
+    },
+    "sky130_fd_sc_hd__nor3_1": {
+        "input": "A B C ",
+        "output": {
+            "Y": "(!A&!B&!C)"
+        }
+    },
+    "sky130_fd_sc_hd__nor3b_1": {
+        "input": "A B C_N ",
+        "output": {
+            "Y": "(!A&!B&C_N)"
+        }
+    },
+    "sky130_fd_sc_hd__nor4_1": {
+        "input": "A B C D ",
+        "output": {
+            "Y": "(!A&!B&!C&!D)"
+        }
+    },
+    "sky130_fd_sc_hd__nor4b_1": {
+        "input": "A B C D_N ",
+        "output": {
+            "Y": "(!A&!B&!C&D_N)"
+        }
+    },
+    "sky130_fd_sc_hd__nor4bb_1": {
+        "input": "A B C_N D_N ",
+        "output": {
+            "Y": "(!A&!B&C_N&D_N)"
+        }
+    },
+    "sky130_fd_sc_hd__o2111a_1": {
+        "input": "A1 A2 B1 C1 D1 ",
+        "output": {
+            "X": "(A1&B1&C1&D1) | (A2&B1&C1&D1)"
+        }
+    },
+    "sky130_fd_sc_hd__o2111ai_1": {
+        "input": "A1 A2 B1 C1 D1 ",
+        "output": {
+            "Y": "(!A1&!A2) | (!B1) | (!C1) | (!D1)"
+        }
+    },
+    "sky130_fd_sc_hd__o211a_1": {
+        "input": "A1 A2 B1 C1 ",
+        "output": {
+            "X": "(A1&B1&C1) | (A2&B1&C1)"
+        }
+    },
+    "sky130_fd_sc_hd__o211ai_1": {
+        "input": "A1 A2 B1 C1 ",
+        "output": {
+            "Y": "(!A1&!A2) | (!B1) | (!C1)"
+        }
+    },
+    "sky130_fd_sc_hd__o21a_1": {
+        "input": "A1 A2 B1 ",
+        "output": {
+            "X": "(A1&B1) | (A2&B1)"
+        }
+    },
+    "sky130_fd_sc_hd__o21ai_0": {
+        "input": "A1 A2 B1 ",
+        "output": {
+            "Y": "(!A1&!A2) | (!B1)"
+        }
+    },
+    "sky130_fd_sc_hd__o21ba_1": {
+        "input": "A1 A2 B1_N ",
+        "output": {
+            "X": "(A1&!B1_N) | (A2&!B1_N)"
+        }
+    },
+    "sky130_fd_sc_hd__o21bai_1": {
+        "input": "A1 A2 B1_N ",
+        "output": {
+            "Y": "(!A1&!A2) | (B1_N)"
+        }
+    },
+    "sky130_fd_sc_hd__o221a_1": {
+        "input": "A1 A2 B1 B2 C1 ",
+        "output": {
+            "X": "(A1&B1&C1) | (A2&B1&C1) | (A1&B2&C1) | (A2&B2&C1)"
+        }
+    },
+    "sky130_fd_sc_hd__o221ai_1": {
+        "input": "A1 A2 B1 B2 C1 ",
+        "output": {
+            "Y": "(!B1&!B2) | (!A1&!A2) | (!C1)"
+        }
+    },
+    "sky130_fd_sc_hd__o22a_1": {
+        "input": "A1 A2 B1 B2 ",
+        "output": {
+            "X": "(A1&B1) | (A2&B1) | (A1&B2) | (A2&B2)"
+        }
+    },
+    "sky130_fd_sc_hd__o22ai_1": {
+        "input": "A1 A2 B1 B2 ",
+        "output": {
+            "Y": "(!B1&!B2) | (!A1&!A2)"
+        }
+    },
+    "sky130_fd_sc_hd__o2bb2a_1": {
+        "input": "A1_N A2_N B1 B2 ",
+        "output": {
+            "X": "(!A1_N&B1) | (!A2_N&B1) | (!A1_N&B2) | (!A2_N&B2)"
+        }
+    },
+    "sky130_fd_sc_hd__o2bb2ai_1": {
+        "input": "A1_N A2_N B1 B2 ",
+        "output": {
+            "Y": "(!B1&!B2) | (A1_N&A2_N)"
+        }
+    },
+    "sky130_fd_sc_hd__o311a_1": {
+        "input": "A1 A2 A3 B1 C1 ",
+        "output": {
+            "X": "(A1&B1&C1) | (A2&B1&C1) | (A3&B1&C1)"
+        }
+    },
+    "sky130_fd_sc_hd__o311ai_0": {
+        "input": "A1 A2 A3 B1 C1 ",
+        "output": {
+            "Y": "(!A1&!A2&!A3) | (!B1) | (!C1)"
+        }
+    },
+    "sky130_fd_sc_hd__o31a_1": {
+        "input": "A1 A2 A3 B1 ",
+        "output": {
+            "X": "(A1&B1) | (A2&B1) | (A3&B1)"
+        }
+    },
+    "sky130_fd_sc_hd__o31ai_1": {
+        "input": "A1 A2 A3 B1 ",
+        "output": {
+            "Y": "(!A1&!A2&!A3) | (!B1)"
+        }
+    },
+    "sky130_fd_sc_hd__o32a_1": {
+        "input": "A1 A2 A3 B1 B2 ",
+        "output": {
+            "X": "(A1&B1) | (A1&B2) | (A2&B1) | (A3&B1) | (A2&B2) | (A3&B2)"
+        }
+    },
+    "sky130_fd_sc_hd__o32ai_1": {
+        "input": "A1 A2 A3 B1 B2 ",
+        "output": {
+            "Y": "(!A1&!A2&!A3) | (!B1&!B2)"
+        }
+    },
+    "sky130_fd_sc_hd__o41a_1": {
+        "input": "A1 A2 A3 A4 B1 ",
+        "output": {
+            "X": "(A1&B1) | (A2&B1) | (A3&B1) | (A4&B1)"
+        }
+    },
+    "sky130_fd_sc_hd__o41ai_1": {
+        "input": "A1 A2 A3 A4 B1 ",
+        "output": {
+            "Y": "(!A1&!A2&!A3&!A4) | (!B1)"
+        }
+    },
+    "sky130_fd_sc_hd__or2_0": {
+        "input": "A B ",
+        "output": {
+            "X": "(A) | (B)"
+        }
+    },
+    "sky130_fd_sc_hd__or2b_1": {
+        "input": "A B_N ",
+        "output": {
+            "X": "(A) | (!B_N)"
+        }
+    },
+    "sky130_fd_sc_hd__or3_1": {
+        "input": "A B C ",
+        "output": {
+            "X": "(A) | (B) | (C)"
+        }
+    },
+    "sky130_fd_sc_hd__or3b_1": {
+        "input": "A B C_N ",
+        "output": {
+            "X": "(A) | (B) | (!C_N)"
+        }
+    },
+    "sky130_fd_sc_hd__or4_1": {
+        "input": "A B C D ",
+        "output": {
+            "X": "(A) | (B) | (C) | (D)"
+        }
+    },
+    "sky130_fd_sc_hd__or4b_1": {
+        "input": "A B C D_N ",
+        "output": {
+            "X": "(A) | (B) | (C) | (!D_N)"
+        }
+    },
+    "sky130_fd_sc_hd__or4bb_1": {
+        "input": "A B C_N D_N ",
+        "output": {
+            "X": "(A) | (B) | (!C_N) | (!D_N)"
+        }
+    },
+    "sky130_fd_sc_hd__probe_p_8": {
+        "input": "A ",
+        "output": {
+            "X": "(A)"
+        }
+    },
+    "sky130_fd_sc_hd__xnor2_1": {
+        "input": "A B ",
+        "output": {
+            "Y": "(!A&!B) | (A&B)"
+        }
+    },
+    "sky130_fd_sc_hd__xnor3_1": {
+        "input": "A B C ",
+        "output": {
+            "X": "(!A&!B&!C) | (A&B&!C) | (A&!B&C) | (!A&B&C)"
+        }
+    },
+    "sky130_fd_sc_hd__xor2_1": {
+        "input": "A B ",
+        "output": {
+            "X": "(A&!B) | (!A&B)"
+        }
+    },
+    "sky130_fd_sc_hd__xor3_1": {
+        "input": "A B C ",
+        "output": {
+            "X": "(A&!B&!C) | (!A&B&!C) | (!A&!B&C) | (A&B&C)"
+        }
+    }
+}
