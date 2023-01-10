@@ -3,6 +3,7 @@
 #include "kernel/yosys.h"
 #include "kernel/register.h"
 #include <vector>
+#include <cstring>
 
 YOSYS_NAMESPACE_BEGIN
 
