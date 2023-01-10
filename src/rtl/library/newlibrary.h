@@ -29,7 +29,7 @@ public:
   Out synth(size_t outSize, const Value &value, GNet &net) override;
 
   Out synth(size_t outSize, FuncSymbol func, const In &in, GNet &net) override;
- 
+
   Out synth(const Out &out, const In &in, const SignalList &control, GNet &net) override;
 
   Out alloc(size_t outSize, GNet &net) override;

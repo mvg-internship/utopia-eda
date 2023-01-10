@@ -1,4 +1,4 @@
-#include "rtl/library/newlibrary.h"
+iiiii#include "rtl/library/newlibrary.h"
 
 #include <cassert>
 #include <cmath>
@@ -44,14 +44,14 @@ FLibrary::Out NewFLibrary::alloc(size_t outSize, GNet &net) {
     for (size_t i = 0; i < out.size(); i++) {
       out[i] = net.newGate();
     }
- 
+
    return out;
 }
 
 FLibrary::Out NewFLibrary::synthAdd(size_t outSize, const In &in, GNet &net) {
   return synthAdder(outSize, in, false, false, net);
 }
- 
+
 FLibrary::Out NewFLibrary::synthSub(size_t outSize, const In &in, GNet &net) {
   const auto &x = in[0];
   const auto &y = in[1];
@@ -87,7 +87,7 @@ FLibrary::Out NewFLibrary::synthAdder(size_t outSize, const In &in, bool plusOne
     xWire.push_back(Signal::always(x[i]));
     yWire.push_back(Signal::always(y[i]));
   }
-  
+ 
   if(outSize == 1 && !needsCarryOut) {
     auto temp = Signal::always(net.addGate(GateSymbol::XOR, {xWire[0], yWire[0]}));
     out.push_back(net.addGate(GateSymbol::XOR, {temp, Gin}));
@@ -101,7 +101,7 @@ FLibrary::Out NewFLibrary::synthAdder(size_t outSize, const In &in, bool plusOne
       P.push_back(Signal::always(net.addGate(GateSymbol::OR, {xWire[i], yWire[i]})));
       G.push_back(Signal::always(net.addGate(GateSymbol::AND, {xWire[i], yWire[i]})));
     } 
-  
+ 
     //Prefix Tree
     const size_t treeDepth = ceil(log2(outSize+1));
     int lastReg;
