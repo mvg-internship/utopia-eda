@@ -596,10 +596,10 @@ void parse_blif(RTLIL::Design* design, std::istream& f, IdString dff_name, bool 
 
     return;
 
-    //error:
-    //	log_error("Syntax error in line %d!\n", line_count);
-    //error_with_reason:
-    //	log_error("Syntax error in line %d: %s\n", line_count, err_reason.c_str());
+    error:
+        printf("Syntax error in line %d!\n", line_count);
+    error_with_reason:
+        printf("Syntax error in line %d: %s\n", line_count, err_reason.c_str());
 }
 
 YOSYS_NAMESPACE_END
@@ -624,7 +624,7 @@ void parse(std::string filename, std::vector<std::string> args) {
         }
         break;
     }
-    parse_blif(design, *f, "", true, sop_mode, wideports);
+    Yosys::parse_blif(design, f, "", true, sop_mode, wideports);
     std::cout << "hashidx_  " << des.hashidx_ << std::endl;
     std::cout << "refcount_modules_  " << des.refcount_modules_ << std::endl;
     std::cout << "selected_active_module " << des.selected_active_module << std::endl;
