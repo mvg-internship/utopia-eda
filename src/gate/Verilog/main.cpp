@@ -7,6 +7,7 @@
 #include <stdarg.h>
 #include <iostream>
 #include <istream>
+#include <cstring>
 
 YOSYS_NAMESPACE_BEGIN
 using namespace VERILOG_FRONTEND;
@@ -57,13 +58,8 @@ YOSYS_NAMESPACE_END
 //	exit(1);
 //}
 
-void parse(std::string filename, std::vector<std::string> args){
-    std::ifstream f(filename); // open file for reading
-    if (f.is_open()){
-        std::cout<<"Opened file..."<<std::endl<<std::endl;
-    }
-    Yosys::RTLIL::Design des;
-    Yosys::RTLIL::Design *design=&des;
+void parse(std::ifstream &f, std::string filename, Yosys::RTLIL::Design *design, std::vector<std::string> args){
+
     bool flag_dump_ast1 = false;
     bool flag_dump_ast2 = false;
     bool flag_no_dump_ptr = false;
@@ -285,7 +281,8 @@ void parse(std::string filename, std::vector<std::string> args){
     if (Yosys::VERILOG_FRONTEND::formal_mode || !flag_nosynthesis)
         defines_map.add(Yosys::VERILOG_FRONTEND::formal_mode ? "FORMAL" : "SYNTHESIS", "1");
 
-    //Yosys::Pass::extra_args(f, filename, args, argidx);
+    //Yosys::Pass check;
+    //check.extra_args(args, argidx, design, 1);
 
 
     Yosys::AST::current_filename = filename;
@@ -329,8 +326,6 @@ void parse(std::string filename, std::vector<std::string> args){
                     child->attributes[attr] = Yosys::AST::AstNode::mkconst_int(1, false);
     }
 
-    //if (flag_nodpi)
-        //error_on_dpi_function(current_ast);
 
     Yosys::AST::process(design, Yosys::VERILOG_FRONTEND::current_ast, flag_dump_ast1, flag_dump_ast2, flag_no_dump_ptr, flag_dump_vlog1, flag_dump_vlog2, flag_dump_rtlil, flag_nolatches,
             flag_nomeminit, flag_nomem2reg, flag_mem2reg, flag_noblackbox, Yosys::VERILOG_FRONTEND::lib_mode, flag_nowb, flag_noopt, flag_icells, flag_pwires, flag_nooverwrite, flag_overwrite, flag_defer, Yosys::VERILOG_FRONTEND::default_nettype_wire);
@@ -346,6 +341,9 @@ void parse(std::string filename, std::vector<std::string> args){
     Yosys::VERILOG_FRONTEND::current_ast = NULL;
 
 
+
+}
+void print_parsed(Yosys::RTLIL::Design &des){
     std::cout<<"hashidx_  "<<des.hashidx_<<std::endl;
     std::cout<<"refcount_modules_  "<<des.refcount_modules_<<std::endl;
     std::cout<<"selected_active_module "<<des.selected_active_module<<std::endl;
@@ -396,20 +394,24 @@ void parse(std::string filename, std::vector<std::string> args){
     std::cout << "selection stack:" << std::endl;
     for (auto i: des.selection_stack){
         std::cout << i.full_selection << '\n';
-        std::cout <<"selected_modules & selected_members\n";
+//        std::cout <<"selected_modules & selected_members\n";
 //        for (auto j: i.selected_modules){ }
-        std::cout << "Look up at the field IdString\n";
     }
 }
-
 int main(int argc, char *argv[]){
-
-    std::string filename = argv[1];
-    //std::cout<<filename<<std::endl;
-    //std::cin>>filename;
+    for (size_t a = 1; a<argc; a++){
+    std::string filename = argv[a];
+    std::ifstream f(filename); // open file for reading
+    if (f.is_open()){
+        std::cout<<std::endl<<"Opened "<<a<<" file..."<<std::endl<<std::endl;
+    }
+    Yosys::RTLIL::Design des;
+    Yosys::RTLIL::Design *design=&des;
     std::vector<std::string> args;
-    parse(filename, args);
-
+    parse(f, filename, design, args);
+    print_parsed(*design);
+    f.close();
+    }
     return 0;
 }
 
