@@ -4,6 +4,7 @@
 #include<iostream>
 #include <vector>
 #include <typeinfo>
+#include <cstring>
 struct token_t {
     char type;
     Yosys::RTLIL::SigSpec sig;
