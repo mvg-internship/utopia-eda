@@ -588,169 +588,60 @@ skip_cell:;
 
     }
 }
+
 void output(Yosys::RTLIL::Design &des){
-    // std::cout<<"hashidx_  "<<des.hashidx_<<"\n";
-    //    std::cout<<"refcount_modules_  "<<des.refcount_modules_<<"\n";
-    //    std::cout<<"selected_active_module "<<des.selected_active_module<<"\n";
-    //    std::cout<<"scratchpad:\n";
-    //    for(auto it = des.scratchpad.begin(); it != des.scratchpad.end(); ++it)
-    //    {
-    //        std::cout << it->first << " " << it->second<< "\n";
-    //    }
-    //    std::cout<<"Monitors:\n";
-
-    //    for (auto i: des.monitors)
-    //        std::cout << i->hashidx_<< ' ';
-    //    std::cout<<"Modules:\n";
-
-    std::vector<int> id_cell;
-    //std::vector<int> id_wire;
-    //std::vector<int> id_func;
-    for(auto it = des.modules_.begin(); it != des.modules_.end(); ++it)
-    {
-        id_cell.push_back(it->first.index_);
-
-        //        //std::cout<<"global_id_storage_: "<<std::endl;
-        //        //            for (char* i: it->first.global_id_storage_)
-        //        //                std::cout << i << ' ';
-
-        //        std::map<char*,int> map_id_index;
-        //        for(auto it1 = it->first.global_id_index_.begin(); it1 != it->first.global_id_index_.end(); ++it1)
-        //        {
-        //           // std::cout << it1->first << " " << it1->second<< "\n";
-        //            char* z=it1->first;
-        //            int k=it1->second;
-        //            map_id_index.emplace(z,k);
-
-        //        }
-        //        std::cout << "Cells and Pins: ";
-        //        std::cout<<"global_id_index_ "<<std::endl;
-        //        auto it2=it->second->wires_.begin();
-        //        for(auto it1 = it->first.global_id_index_.begin(); it1 != it->first.global_id_index_.end(); ++it1)
-        //        {
-        //            if (it1->second==1) {std::cout<< "Name Liberty library: "<< it1->first<<std::endl;continue;}
-        //            if (std::strlen(it1->first)>3&&*it1->first==92) {  std::cout <<"Cell: "<< it1->first << " with index " << it1->second<< "\n";}
-        //                    else if(std::strlen(it1->first)<4&&*it1->first==92){
-        //                    std::cout << "Pin or Bus: "<<  it1->first << "  with index  " << it1->second<< "\n";
-        //                    std::cout <<"The properties of the pin or bus: ";
-        //                    if (it2->second->port_id!=0){
-        //                    it2->second->width>1?std::cout << "The type is bus with width: "<<it2->second->width<<"\n":std::cout << "Just Wire \n";
-        //                    std::cout<<"start_offset: "<<it2->second->start_offset<<"\n";
-        //                    std::cout<<"port_id: "<<it2->second->port_id<<"\n";
-        //                    std::cout<<"port_input: "<<it2->second->port_input<<"\n";
-        //                    std::cout<<"port_output: "<<it2->second->port_output<<"\n";
-        //                    std::cout<<"upto: "<<it2->second->upto<<"\n\n";
-        //                    if (it2!=it->second->wires_.end()){++it2;}}
-        //        }
-        //            else if(*it1->first==36){
-        //                std::cout << "call function: "<<  it1->first << "  with index " << it1->second<< "\n";
-        //            }
-
-        //        }
-        //        std::cout <<"\n";
-        //       // std::cout<<"refcount_wires_: "<<it->second->refcount_wires_<<"\n";
-        //       // std::cout<<"refcount_cells_: "<<it->second->refcount_cells_<<"\n";
-
-
-        ////        std::cout <<"memories: \n";
-        ////        for (auto it2 = it->second->memories.begin(); it2 != it->second->memories.end(); ++it2){
-        ////            std::cout<<"width: "<<it2->second->width<<"\n";
-        ////            std::cout<<"start_offset: "<<it2->second->start_offset<<"\n";
-        ////            std::cout<<"size: "<<it2->second->size<<"\n";
-        ////        }
-        //        //        std::cout <<"processes: syncs: \n";
-        //        //        for (auto it2 = it->second->processes.begin(); it2 != it->second->processes.end(); ++it2){
-        //        //            for (char* i: it2->second->syncs)
-        //        //                std::cout << i.type << '\n ';
-        //        //        }
-
-        //    }
-        ////    std::cout << "selection stack: \n";
-        ////    for (auto i: des.selection_stack){
-        ////        std::cout << i.full_selection << '\n';
-        ////        std::cout <<"selected_modules & selected_members\n";
-        ////        //        for (auto j: i.selected_modules){
-
-        ////        //        } уже выведены
-        ////        std::cout << "Look up at the field IdString\n";
-        ////    }
-        //    std::cout <<"RRRRRRRRRRRRR"<<p<<std::endl;
-    }
-    //    auto it = des.modules_.end();
-    //    for (auto it1=it->second->wires_.begin();it1!=it->second->wires_.end();++it1){
-    //        id_wire.push_back(it1->first.index_);
-    //        std::cout<<it1->first.index_<<"\n";
-    //    }
-
-    std::reverse(id_cell.begin(),id_cell.end());
-    //td::reverse(id_wire.begin(),id_wire.end());
-    int j=0;
-
-    for (int i=0;i<id_cell.size();i++){
-        // std::cout <<Yosys::RTLIL::IdString::global_id_index_.size()<<"\n";
-        //auto it=Yosys::RTLIL::IdString::global_id_index_.find(i);
-        for(auto &it : Yosys::RTLIL::IdString::global_id_index_) {
-            if(it.second == id_cell[i]) {
-                std::cout <<it.first<<" CELL with INDEX "<<it.second<<"\n";
-                if (i!=id_cell.size()){
-                    j=id_cell[i]+1;
-                    while (j!=id_cell[i+1]){
-                        for(auto &it1 : Yosys::RTLIL::IdString::global_id_index_) {
-                            if(it1.second == j) {
-                                //int temp;
-                                if (*it1.first==92){std::cout <<it1.first<<" wire with index "<<it1.second<<" consider to cell with index "<<id_cell[i]<<"\n";
-                                    //                                    if (it2->second->port_id!=0){
-                                    //                                                        it2->second->width>1?std::cout << "The type is bus with width: "<<it2->second->width<<"\n":std::cout << "Just Wire \n";
-                                    //                                                        std::cout<<"start_offset: "<<it2->second->start_offset<<"\n";
-                                    //                                                        std::cout<<"port_id: "<<it2->second->port_id<<"\n";
-                                    //                                                        std::cout<<"port_input: "<<it2->second->port_input<<"\n";
-                                    //                                                        std::cout<<"port_output: "<<it2->second->port_output<<"\n";
-                                    //                                                        std::cout<<"upto: "<<it2->second->upto<<"\n\n";
-                                    //                                                        if (it2!=it->second->wires_.rend()){++it2;}}
-                                    for(auto it_ = des.modules_.begin(); it_ != des.modules_.end(); ++it_){
-                                        for (auto it_1=it_->second->wires_.begin();it_1!=it_->second->wires_.end();++it_1){
-                                            if (it_1->first.index_==it1.second){
-                                                if (it_1->second->port_id!=0){
-                                                    it_1->second->width>1?std::cout << " The type is bus with width: "<<it_1->second->width<<"\n":std::cout << "Just Wire \n";
-                                                    std::cout<<" start_offset: "<<it_1->second->start_offset<<"\n";
-                                                    std::cout<<" port_id: "<<it_1->second->port_id<<"\n";
-                                                    std::cout<<" port_input: "<<it_1->second->port_input<<"\n";
-                                                    std::cout<<" port_output: "<<it_1->second->port_output<<"\n";
-                                                    std::cout<<" upto: "<<it_1->second->upto<<"\n";
-
-                                                }
-                                            }
-                                        }
-                                        //                                }
-                                        //temp=it1.second;
-                                    }}
-                                else{
-                                    std::cout <<it1.first<<" function with index "<<it1.second<<" consider to pin or bus with index "<<"\n";
-                                }
-
-                            }
-
-                        }
-                        j++;}}
-                else{
-                    j=id_cell[i]+1;
-                    while(j!=Yosys::RTLIL::IdString::global_id_index_.size()){
-                        for(auto &it1 : Yosys::RTLIL::IdString::global_id_index_) {
-                            if(it1.second == j) {
-                                std::cout <<it1.first<<" wire with index "<<it1.second<<" consider to cell with index "<<id_cell[i]<<"\n";
-                            }
-
-                        }
-                        j++;
-                    }
-
-                }
-
+    for (auto it=des.modules_.begin();it!=des.modules_.end();++it){
+        for(auto &it1 : Yosys::RTLIL::IdString::global_id_index_) {
+            if (it1.second == it->first.index_){
+                std::cout <<it1.first<<" MODULE(cell in point of liberty) with INDEX "<<it1.second<<"\n";
             }
+        }
+        for (auto it1=it->second->wires_.begin();it1!=it->second->wires_.end();++it1){
+            for(auto &it2 : Yosys::RTLIL::IdString::global_id_index_) {
+                if (it2.second == it1->first.index_){
+                    std::cout << " "<<it2.first<<" WIRE(pin in point of liberty)"<<" name " << it1->second->name.index_<<"\n";
+                }
+            }
+            it1->second->width>1?std::cout << "  The type is bus with width: "<<it1->second->width<<"\n":std::cout << "  Just Wire \n";
+            std::cout<<"  start_offset: "<<it1->second->start_offset<<"\n";
+            std::cout<<"  port_id: "<<it1->second->port_id<<"\n";
+            std::cout<<"  port_input: "<<it1->second->port_input<<"\n";
+            std::cout<<"  port_output: "<<it1->second->port_output<<"\n";
+            std::cout<<"  upto: "<<it1->second->upto<<"\n";
+        }
+        for (auto &it10: it->second->ports){
+            std::cout<<"\\* port with name "<<it10.index_<<" (pin into Liberty files) "<<"\n";
+        }
+        for (auto it1=it->second->cells_.begin();it1!=it->second->cells_.end();++it1){
+            for(auto &it2 : Yosys::RTLIL::IdString::global_id_index_) {
+                if (it2.second == it1->first.index_){
+                    std::cout << " ___ "<<it2.first<<" CELL(functions in point of liberty)"<<" name " << it1->second->name.index_<<" type " <<it1->second->type.index_ <<"\n";
+                }
+            }
+           for (auto it111=it1->second->connections_.begin();it111!=it1->second->connections_.end();++it111){
+                std::cout<<"Connect with id"<<it111->first.index_<<" " <<"\n";
+                auto temp=it111->second.as_wire();
+//                std::cout<<"  start_offset: "<<temp->start_offset<<"\n";
+//                std::cout<<"  port_id: "<<temp->port_id<<"\n";
+//                std::cout<<"  port_input: "<<temp->port_input<<"\n";
+//                std::cout<<"  port_output: "<<temp->port_output<<"\n";
+//                std::cout<<"  upto: "<<temp->upto<<"\n";
+                std::cout<<"  name:"<< temp->name.index_<<" the wire with this name is connect\n";
+           }
 
         }
-    }
 
+        for (auto itt=it->second->connections_.begin();itt!=it->second->connections_.end();++itt){
+               std::cout<<"Wire with name :::"<<itt->first.as_wire()->name.index_<< "::: connects with Wire with name :::"<< itt->second.as_wire()->name.index_<<":::\n";
+        }
+        std::cout<<"*\\MEMORY"<<it->second->memories.size()<<"number of connections between modules - void\n";
+        std::cout<<"*\\PROCCESS"<<it->second->processes.size()<<"number of connections between modules - void\n";
+        std::cout<<"*\\refcount_wires_ "<<it->second->refcount_wires_<<"\n";
+        std::cout<<"*\\refcount_cells_"<<it->second->refcount_cells_<<"\n";
+        std::cout<<"*\\monitors"<<it->second->monitors.size()<<"\n";
+        std::cout<<"*\\avail_parametrs"<<it->second->avail_parameters.size()<<"\n";
+
+    }
 }
 int main(int argc, char* argv[]){
     for (size_t o=1;o<argc;++o){
@@ -761,12 +652,6 @@ int main(int argc, char* argv[]){
         output(*design);
         return 0;
     }
-//    std::ifstream in("semicolmissing.lib");
-//    Yosys::RTLIL::Design des;
-//    Yosys::RTLIL::Design *design=&des;
-//    createRTLIL(design, in);
-//    output(*design);
-//    return 0;
 }
 
 
