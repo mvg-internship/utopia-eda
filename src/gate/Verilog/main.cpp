@@ -339,69 +339,97 @@ void parse(std::ifstream &f, std::string filename, Yosys::RTLIL::Design *design,
 
     delete Yosys::VERILOG_FRONTEND::current_ast;
     Yosys::VERILOG_FRONTEND::current_ast = NULL;
-
-
-
 }
+
 void print_parsed(Yosys::RTLIL::Design &des){
-    std::cout<<"hashidx_  "<<des.hashidx_<<std::endl;
-    std::cout<<"refcount_modules_  "<<des.refcount_modules_<<std::endl;
-    std::cout<<"selected_active_module "<<des.selected_active_module<<std::endl;
-    std::cout<<"scratchpad:"<<std::endl;
-    for(auto it = des.scratchpad.begin(); it != des.scratchpad.end(); ++it)
-    {
-        std::cout << it->first << " " << it->second<< std::endl;
-    }
-    std::cout<<"Monitors:"<<std::endl;
+    for (auto it=des.modules_.begin(); it != des.modules_.end(); ++it){
+        for (auto &it1 : Yosys::RTLIL::IdString::global_id_index_){
+            if (it1.second == it->first.index_){
+                std::cout << it1.first << " - module of index: " << it1.second << std::endl;
+            }
+        }
 
-    for (auto i: des.monitors)
-        std::cout << i->hashidx_<< ' ';
-    std::cout<<"Modules:"<<std::endl;
-
-    for(auto it = des.modules_.begin(); it != des.modules_.end(); ++it)
-    {
-        std::cout<<std::endl<<"global_id_storage_: "<<std::endl;
-        for (char* i: it->first.global_id_storage_)
-            std::cout << i << std::endl;
-        std::cout<<std::endl<<"global_id_index_: "<<std::endl;
-                for(auto it1 = it->first.global_id_index_.begin(); it1 != it->first.global_id_index_.end(); ++it1)
-                {
-                    std::cout << it1->first << " " << it1->second<< std::endl;
+        std::cout<<std::endl;
+        std::cout << "Wires:" << std::endl;
+        for (auto it1=it->second->wires_.begin(); it1 != it->second->wires_.end(); ++it1){
+            for(auto &it2 : Yosys::RTLIL::IdString::global_id_index_){
+                if (it2.second == it1->first.index_){
+                    std::cout << "  " << it2.first << " - wire of index: " << it2.second << std::endl;
                 }
-        std::cout<<"refcount_wires_: "<<it->second->refcount_wires_<<std::endl;
-        std::cout<<"refcount_cells_: "<<it->second->refcount_cells_<<std::endl;
-        for (auto it2 = it->second->wires_.begin(); it2 != it->second->wires_.end(); ++it2){
-            std::cout<<"width: "<<it2->second->width<<std::endl;
-            std::cout<<"start_offset: "<<it2->second->start_offset<<std::endl;
-            std::cout<<"port_id: "<<it2->second->port_id<<std::endl;
-            std::cout<<"port_input: "<<it2->second->port_input<<std::endl;
-            std::cout<<"port_output: "<<it2->second->port_output<<std::endl;
-            std::cout<<"upto: "<<it2->second->upto<<std::endl;
+            }
+            if (it1->second->width>1){
+                std::cout<< "    type: bus with width " << it1->second->width << std::endl;
+            }
+            else{
+                std::cout << "    type: wire" << std::endl;
+            }
+            std::cout << "    start_offset: " << it1->second->start_offset << std::endl;
+            std::cout << "    port_id: " << it1->second->port_id << std::endl;
+            std::cout << "    port_input: " << it1->second->port_input << std::endl;
+            std::cout << "    port_output: " << it1->second->port_output << std::endl;
+            std::cout << "    upto: " << it1->second->upto << std::endl;
+            std::cout << std::endl;
         }
-        std::cout <<"memories:"<<std::endl;
-        for (auto it2 = it->second->memories.begin(); it2 != it->second->memories.end(); ++it2){
-            std::cout<<"width: "<<it2->second->width<<std::endl;
-            std::cout<<"start_offset: "<<it2->second->start_offset<<std::endl;
-            std::cout<<"size: "<<it2->second->size<<std::endl;
-        }
-//        std::cout <<"processes: syncs:"<<std::endl;
-//        for (auto it2 = it->second->processes.begin(); it2 != it->second->processes.end(); ++it2){
-//            for (char* i: it2->second->syncs)
-//                std::cout << i.type << std::endl;
-//        }
 
-    }
-    std::cout << "selection stack:" << std::endl;
-    for (auto i: des.selection_stack){
-        std::cout << i.full_selection << '\n';
-//        std::cout <<"selected_modules & selected_members\n";
-//        for (auto j: i.selected_modules){ }
+        std::cout<<std::endl;
+        std::cout << "Cells:" << std::endl;
+        for (auto it1=it->second->cells_.begin(); it1 != it->second->cells_.end(); ++it1){
+            for (auto &it2 : Yosys::RTLIL::IdString::global_id_index_){
+                if (it2.second == it1->first.index_){
+                    std::cout << "  " << it2.first << " cell of index " << it2.second << " type " << it1->second->type.index_ << std::endl;
+                }
+            }
+            for (auto it3 = it1->second->connections_.begin(); it3 != it1->second->connections_.end(); ++it3){
+                std::cout << "    Connections: " << it3->first.index_ << std::endl;
+                auto tmp = it3->second.as_wire();
+                std::cout << "      name: " << tmp->name.index_ << std::endl;
+            }
+        }
+
+        std::cout<<std::endl;
+        std::cout << "Connections count: " << it->second->connections_.size() << std::endl;
+        for (auto it1 = it->second->connections_.begin(); it1 != it->second->connections_.end(); ++it1){
+            std::cout<<"  Wire " << it1->first.as_wire()->name.index_ << " connects with " << it1->second.as_wire()->name.index_ <<std::endl;
+        }
+
+        std::cout<<std::endl;
+        std::cout << "Memory count: " << it->second->memories.size() << std::endl;
+        for (auto it1 = it->second->memories.begin(); it1 != it->second->memories.end(); ++it1){
+            std::cout << "  memory " << it1->second << std::endl;
+            std::cout << "  name: " << it1->second->name.index_ << std::endl;
+            std::cout << "  width: " << it1->second->width << std::endl;
+            std::cout << "  start_offset: " << it1->second->start_offset << std::endl;
+            std::cout << "  size: " << it1->second->size << std::endl;
+        }
+
+        std::cout<<std::endl;
+        std::cout << "Processes count: " << it->second->processes.size() << std::endl;
+        for (auto it1 = it->second->processes.begin(); it1 != it->second->processes.end(); ++it1){
+            std::cout<<"  name " << it1->second->name.index_ << std::endl;
+            //std::cout<<"  root_case " << it1->first->root_case.index_ <<std::endl;
+//            for (auto it2=it1->root_case.begin(); it2 != it1->root_case.end(); ++it2){
+//                           std::cout<<"Root_case with name :::"<<it2->first.as_wire()->name.index_<< "::: connects with Wire with name :::"<< it2->second.as_wire()->name.index_<<":::\n";
+//                    }
+        }
+
+        std::cout<<std::endl;
+        std::cout << "Ports count: " << it->second->ports.size() << std::endl;
+        for (auto &it1 : it->second->ports){
+            std::cout << "  port " << it1.index_ << std::endl;
+        }
+
+        std::cout<<std::endl;
+        std::cout << "Refcount wires count: " << it->second->refcount_wires_ << std::endl;
+        std::cout << "Refcount cells count: " << it->second->refcount_cells_ << std::endl;
+        std::cout << "Monitors count: " << it->second->monitors.size() << std::endl;
+        std::cout << "Avail_parameters count: " << it->second->avail_parameters.size() << std::endl;
     }
 }
+
 int main(int argc, char *argv[]){
     for (size_t a = 1; a<argc; a++){
     std::string filename = argv[a];
-    std::ifstream f(filename); // open file for reading
+    std::ifstream f(filename);
     if (f.is_open()){
         std::cout<<std::endl<<"Opened "<<a<<" file..."<<std::endl<<std::endl;
     }
