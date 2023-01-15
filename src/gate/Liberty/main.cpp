@@ -5,6 +5,7 @@
 #include <vector>
 #include <typeinfo>
 #include <cstring>
+#include <kernel/yosys.h>
 struct token_t {
     char type;
     Yosys::RTLIL::SigSpec sig;
@@ -13,21 +14,13 @@ struct token_t {
 };
 static Yosys::RTLIL::SigSpec parse_func_identifier(Yosys::RTLIL::Module *module, const char *&expr)
 {
-    // log_assert(*expr != 0);
-
     int id_len = 0;
     while (('a' <= expr[id_len] && expr[id_len] <= 'z') || ('A' <= expr[id_len] && expr[id_len] <= 'Z') ||
            ('0' <= expr[id_len] && expr[id_len] <= '9') || expr[id_len] == '.' ||
            expr[id_len] == '_' || expr[id_len] == '[' || expr[id_len] == ']') id_len++;
-
-
-
     if (id_len == 1 && (*expr == '0' || *expr == '1'))
         return *(expr++) == '0' ? Yosys::RTLIL::State::S0 : Yosys::RTLIL::State::S1;
-
     std::string id = Yosys::RTLIL::escape_id(std::string(expr, id_len));
-
-
     expr += id_len;
     return module->wires_.at(id);
 }
@@ -38,7 +31,6 @@ static Yosys::RTLIL::SigSpec create_inv_cell(Yosys::RTLIL::Module *module, Yosys
     cell->setPort(Yosys::ID::Y, module->addWire(NEW_ID));
     return cell->getPort(Yosys::ID::Y);
 }
-
 static Yosys::RTLIL::SigSpec create_xor_cell(Yosys::RTLIL::Module *module, Yosys::RTLIL::SigSpec A, Yosys::RTLIL::SigSpec B)
 {
     Yosys::RTLIL::Cell *cell = module->addCell(NEW_ID, ID($_XOR_));
@@ -47,7 +39,6 @@ static Yosys::RTLIL::SigSpec create_xor_cell(Yosys::RTLIL::Module *module, Yosys
     cell->setPort(Yosys::ID::Y, module->addWire(NEW_ID));
     return cell->getPort(Yosys::ID::Y);
 }
-
 static Yosys::RTLIL::SigSpec create_and_cell(Yosys::RTLIL::Module *module, Yosys::RTLIL::SigSpec A, Yosys::RTLIL::SigSpec B)
 {
     Yosys::RTLIL::Cell *cell = module->addCell(NEW_ID, ID($_AND_));
@@ -56,7 +47,6 @@ static Yosys::RTLIL::SigSpec create_and_cell(Yosys::RTLIL::Module *module, Yosys
     cell->setPort(Yosys::ID::Y, module->addWire(NEW_ID));
     return cell->getPort(Yosys::ID::Y);
 }
-
 static Yosys::RTLIL::SigSpec create_or_cell(Yosys::RTLIL::Module *module, Yosys::RTLIL::SigSpec A, Yosys::RTLIL::SigSpec B)
 {
     Yosys::RTLIL::Cell *cell = module->addCell(NEW_ID, ID($_OR_));
@@ -68,7 +58,6 @@ static Yosys::RTLIL::SigSpec create_or_cell(Yosys::RTLIL::Module *module, Yosys:
 static bool parse_func_reduce(Yosys::RTLIL::Module *module, std::vector<token_t> &stack, token_t next_token)
 {
     int top = int(stack.size())-1;
-
     if (0 <= top-1 && stack[top].type == 0 && stack[top-1].type == '!') {
         token_t t = token_t(0, create_inv_cell(module, stack[top].sig));
         stack.pop_back();
@@ -76,7 +65,6 @@ static bool parse_func_reduce(Yosys::RTLIL::Module *module, std::vector<token_t>
         stack.push_back(t);
         return true;
     }
-
     if (0 <= top-1 && stack[top].type == '\'' && stack[top-1].type == 0) {
         token_t t = token_t(0, create_inv_cell(module, stack[top-1].sig));
         stack.pop_back();
@@ -84,14 +72,12 @@ static bool parse_func_reduce(Yosys::RTLIL::Module *module, std::vector<token_t>
         stack.push_back(t);
         return true;
     }
-
     if (0 <= top && stack[top].type == 0) {
         if (next_token.type == '\'')
             return false;
         stack[top].type = 1;
         return true;
     }
-
     if (0 <= top-2 && stack[top-2].type == 1 && stack[top-1].type == '^' && stack[top].type == 1) {
         token_t t = token_t(1, create_xor_cell(module, stack[top-2].sig, stack[top].sig));
         stack.pop_back();
@@ -100,14 +86,12 @@ static bool parse_func_reduce(Yosys::RTLIL::Module *module, std::vector<token_t>
         stack.push_back(t);
         return true;
     }
-
     if (0 <= top && stack[top].type == 1) {
         if (next_token.type == '^')
             return false;
         stack[top].type = 2;
         return true;
     }
-
     if (0 <= top-1 && stack[top-1].type == 2 && stack[top].type == 2) {
         token_t t = token_t(2, create_and_cell(module, stack[top-1].sig, stack[top].sig));
         stack.pop_back();
@@ -115,7 +99,6 @@ static bool parse_func_reduce(Yosys::RTLIL::Module *module, std::vector<token_t>
         stack.push_back(t);
         return true;
     }
-
     if (0 <= top-2 && stack[top-2].type == 2 && (stack[top-1].type == '*' || stack[top-1].type == '&') && stack[top].type == 2) {
         token_t t = token_t(2, create_and_cell(module, stack[top-2].sig, stack[top].sig));
         stack.pop_back();
@@ -124,14 +107,12 @@ static bool parse_func_reduce(Yosys::RTLIL::Module *module, std::vector<token_t>
         stack.push_back(t);
         return true;
     }
-
     if (0 <= top && stack[top].type == 2) {
         if (next_token.type == '*' || next_token.type == '&' || next_token.type == 0 || next_token.type == '(' || next_token.type == '!')
             return false;
         stack[top].type = 3;
         return true;
     }
-
     if (0 <= top-2 && stack[top-2].type == 3 && (stack[top-1].type == '+' || stack[top-1].type == '|') && stack[top].type == 3) {
         token_t t = token_t(3, create_or_cell(module, stack[top-2].sig, stack[top].sig));
         stack.pop_back();
@@ -140,7 +121,6 @@ static bool parse_func_reduce(Yosys::RTLIL::Module *module, std::vector<token_t>
         stack.push_back(t);
         return true;
     }
-
     if (0 <= top-2 && stack[top-2].type == '(' && stack[top-1].type == 3 && stack[top].type == ')') {
         token_t t = token_t(0, stack[top-1].sig);
         stack.pop_back();
@@ -149,7 +129,6 @@ static bool parse_func_reduce(Yosys::RTLIL::Module *module, std::vector<token_t>
         stack.push_back(t);
         return true;
     }
-
     return false;
 }
 
@@ -157,14 +136,12 @@ static Yosys::RTLIL::SigSpec parse_func_expr(Yosys::RTLIL::Module *module, const
 {
     const char *orig_expr = expr;
     std::vector<token_t> stack;
-
     while (*expr)
     {
         if (*expr == ' ' || *expr == '\t' || *expr == '\r' || *expr == '\n' || *expr == '"') {
             expr++;
             continue;
         }
-
         token_t next_token(0);
         if (*expr == '(' || *expr == ')' || *expr == '\'' || *expr == '!' || *expr == '^' || *expr == '*' || *expr == '+' || *expr == '|' || *expr == '&')
             next_token = token_t(*(expr++));
@@ -174,17 +151,9 @@ static Yosys::RTLIL::SigSpec parse_func_expr(Yosys::RTLIL::Module *module, const
         while (parse_func_reduce(module, stack, next_token)) {}
         stack.push_back(next_token);
     }
-
     while (parse_func_reduce(module, stack, token_t('.'))) {}
-
-#if 0
-
-#endif
-
-
     return stack.back().sig;
 }
-
 static void create_ff(Yosys::RTLIL::Module *module, Yosys::LibertyAst *node)
 {
     Yosys::RTLIL::SigSpec iq_sig(module->addWire(Yosys::RTLIL::escape_id(node->args.at(0))));
@@ -203,7 +172,6 @@ static void create_ff(Yosys::RTLIL::Module *module, Yosys::LibertyAst *node)
         if (child->id == "preset")
             preset_sig = parse_func_expr(module, child->value.c_str());
     }
-
 
     for (bool rerun_invert_rollback = true; rerun_invert_rollback;)
     {
@@ -256,8 +224,6 @@ static void create_ff(Yosys::RTLIL::Module *module, Yosys::LibertyAst *node)
         cell->setPort(Yosys::ID::S, preset_sig);
         cell->setPort(Yosys::ID::R, clear_sig);
     }
-
-    //log_assert(!cell->type.empty());
 }
 
 static bool create_latch(Yosys::RTLIL::Module *module, Yosys::LibertyAst *node, bool flag_ignore_miss_data_latch)
@@ -407,12 +373,10 @@ void parse_type_map(std::map<std::string, std::tuple<int, int, bool>> &type_map,
                 if (child->id == "downto" && (child->value == "0" || child->value == "false" || child->value == "FALSE"))
                     upto = true;
             }
-
-
-
             type_map[type_name] = std::tuple<int, int, bool>(bit_width, std::min(bit_from, bit_to), upto);
-next_type:;
-        }}
+            next_type:;
+        }
+    }
 }
 
 
@@ -449,7 +413,7 @@ void createRTLIL(Yosys::RTLIL::Design *design, std::ifstream &in){
                     design->remove(existing_mod);
                 }
             }
-            // log("Processing cell type %s.\n", Yosys::RTLIL::unescape_id(cell_name).c_str());
+
             std::map<std::string, std::tuple<int, int, bool>> type_map = global_type_map;
             parse_type_map(type_map, cell);
 
@@ -486,9 +450,6 @@ void createRTLIL(Yosys::RTLIL::Design *design, std::ifstream &in){
 
                 if (node->id == "bus" && node->args.size() == 1)
                 {
-
-                    //   log_error("Error in cell %s: bus interfaces are only supported in -lib mode.\n", log_id(cell_name));
-
                     Yosys::LibertyAst *dir = node->find("direction");
 
                     if (dir == nullptr) {
@@ -497,12 +458,10 @@ void createRTLIL(Yosys::RTLIL::Design *design, std::ifstream &in){
                             dir = pin->find("direction");
                     }
 
-
                     if (dir->value == "internal")
                         continue;
 
                     Yosys::LibertyAst *bus_type_node = node->find("bus_type");
-
 
                     int bus_type_width = std::get<0>(type_map.at(bus_type_node->value));
                     int bus_type_offset = std::get<1>(type_map.at(bus_type_node->value));
@@ -579,7 +538,6 @@ void createRTLIL(Yosys::RTLIL::Design *design, std::ifstream &in){
                     module->connect(Yosys::RTLIL::SigSig(wire, out_sig));
                 }
             }
-
             module->fixup_ports();
             design->add(module);
             cell_count++;
@@ -596,6 +554,7 @@ void output(Yosys::RTLIL::Design &des){
                 std::cout <<it1.first<<" MODULE(cell in point of liberty) with INDEX "<<it1.second<<"\n";
             }
         }
+
         for (auto it1=it->second->wires_.begin();it1!=it->second->wires_.end();++it1){
             for(auto &it2 : Yosys::RTLIL::IdString::global_id_index_) {
                 if (it2.second == it1->first.index_){
@@ -609,48 +568,35 @@ void output(Yosys::RTLIL::Design &des){
             std::cout<<"  port_output: "<<it1->second->port_output<<"\n";
             std::cout<<"  upto: "<<it1->second->upto<<"\n";
         }
-        for (auto &it10: it->second->ports){
-            std::cout<<"\\* port with name "<<it10.index_<<" (pin into Liberty files) "<<"\n";
+
+        for (auto &it2: it->second->ports){
+            std::cout<<"\\* port with name "<<it2.index_<<" (pin into Liberty files) "<<"\n";
         }
+
         for (auto it1=it->second->cells_.begin();it1!=it->second->cells_.end();++it1){
             for(auto &it2 : Yosys::RTLIL::IdString::global_id_index_) {
                 if (it2.second == it1->first.index_){
                     std::cout << " ___ "<<it2.first<<" CELL(functions in point of liberty)"<<" name " << it1->second->name.index_<<" type " <<it1->second->type.index_ <<"\n";
                 }
             }
-           for (auto it111=it1->second->connections_.begin();it111!=it1->second->connections_.end();++it111){
-                std::cout<<"Connect with id"<<it111->first.index_<<" " <<"\n";
-                auto temp=it111->second.as_wire();
-//                std::cout<<"  start_offset: "<<temp->start_offset<<"\n";
-//                std::cout<<"  port_id: "<<temp->port_id<<"\n";
-//                std::cout<<"  port_input: "<<temp->port_input<<"\n";
-//                std::cout<<"  port_output: "<<temp->port_output<<"\n";
-//                std::cout<<"  upto: "<<temp->upto<<"\n";
+
+            for (auto it2=it1->second->connections_.begin();it2!=it1->second->connections_.end();++it2){
+                std::cout<<"Connect with id"<<it2->first.index_<<" " <<"\n";
+                auto temp=it2->second.as_wire();
                 std::cout<<"  name:"<< temp->name.index_<<" the wire with this name is connect\n";
-           }
-
+            }
         }
-
-        for (auto itt=it->second->connections_.begin();itt!=it->second->connections_.end();++itt){
-               std::cout<<"Wire with name :::"<<itt->first.as_wire()->name.index_<< "::: connects with Wire with name :::"<< itt->second.as_wire()->name.index_<<":::\n";
+        for (auto it1=it->second->connections_.begin();it1!=it->second->connections_.end();++it1){
+               std::cout<<"Wire with name :::"<<it1->first.as_wire()->name.index_<< "::: connects with Wire with name :::"<< it1->second.as_wire()->name.index_<<":::\n";
         }
-        std::cout<<"*\\MEMORY"<<it->second->memories.size()<<"number of connections between modules - void\n";
-        std::cout<<"*\\PROCCESS"<<it->second->processes.size()<<"number of connections between modules - void\n";
-        std::cout<<"*\\refcount_wires_ "<<it->second->refcount_wires_<<"\n";
-        std::cout<<"*\\refcount_cells_"<<it->second->refcount_cells_<<"\n";
-        std::cout<<"*\\monitors"<<it->second->monitors.size()<<"\n";
-        std::cout<<"*\\avail_parametrs"<<it->second->avail_parameters.size()<<"\n";
-
     }
 }
 int main(int argc, char* argv[]){
     for (size_t o=1;o<argc;++o){
         std::ifstream in(argv[o]);
-        Yosys::RTLIL::Design des;
-        Yosys::RTLIL::Design *design=&des;
-        createRTLIL(design, in);
-        output(*design);
-        return 0;
+        Yosys::RTLIL::Design design;
+        createRTLIL(&design, in);
+        output(design);
     }
 }
 
