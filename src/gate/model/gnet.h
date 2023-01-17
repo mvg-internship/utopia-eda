@@ -362,6 +362,14 @@ public:
   /// Sorts the gates in topological order.
   void sortTopologically();
 
+  //===--------------------------------------------------------------------===//
+  // Cloning 
+  //===--------------------------------------------------------------------===//
+
+  /// Clones the net
+
+  GNet* clone(std::unordered_map<Gate::Id, Gate::Id> oldToNewId = {});
+
 private:
   //===--------------------------------------------------------------------===//
   // Internal Methods
