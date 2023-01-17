@@ -51,6 +51,8 @@ Gate::Id AigMapper::mapGate(const Gate &oldGate,
   auto newInputs = getNewInputs(oldGate, oldToNewGates, n0, n1);
 
   switch (oldGate.func()) {
+  case GateSymbol::IN   : return mapIn (                          newNet);
+  case GateSymbol::OUT  : return mapOut(newInputs, n0, n1,        newNet);
   case GateSymbol::ZERO : return mapVal(                   false, newNet);
   case GateSymbol::ONE  : return mapVal(                   true,  newNet);
   case GateSymbol::NOP  : return mapNop(newInputs, n0, n1, true,  newNet);
@@ -65,6 +67,27 @@ Gate::Id AigMapper::mapGate(const Gate &oldGate,
   }
 
   return Gate::INVALID;
+}
+
+//===----------------------------------------------------------------------===//
+// IN/OUT
+//===----------------------------------------------------------------------===//
+
+Gate::Id AigMapper::mapIn(GNet &newNet) const {
+  return newNet.addGate(GateSymbol::IN, {});
+}
+
+Gate::Id AigMapper::mapOut(const Gate::SignalList &newInputs,
+                           size_t n0, size_t n1, GNet &newNet) const {
+  assert(newInputs.size() + n0 + n1 == 1);
+
+  // Constant output.
+  if (n0 > 0 || n1 > 0) {
+    auto valId = mapVal(n1 > 0, newNet);
+    return newNet.addGate(GateSymbol::OUT, {Gate::Signal::always(valId)});
+  }
+
+  return newNet.addGate(GateSymbol::OUT, newInputs);
 }
 
 //===----------------------------------------------------------------------===//

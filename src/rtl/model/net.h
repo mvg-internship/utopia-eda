@@ -51,33 +51,41 @@ public:
   /// Returns the number of connections (w/o control signals).
   size_t nConnects() const { return _nConnects; }
 
+  VNodeIdSet getSourceIds() const { return _sources; }
+  VNodeIdSet getTargetIds() const { return _targets; }
+
   /// Creates and adds a S-node (S = source).
   VNodeId addSrc(const Variable &var) {
     return addVNode(VNode::SRC, var, {}, FuncSymbol::NOP, {}, {});
   }
 
   /// Creates and adds a C-node (C = constant).
-  VNodeId addVal(const Variable &var, const std::vector<bool> value) {
+  VNodeId addVal(const Variable &var,
+                 const std::vector<bool> value) {
     return addVNode(VNode::VAL, var, {}, FuncSymbol::NOP, {}, value);
   }
 
   /// Creates and adds an F-node (S = function).
-  VNodeId addFun(const Variable &var, FuncSymbol func, const SignalList &inputs) {
+  VNodeId addFun(const Variable &var,
+                 FuncSymbol func,
+                 const SignalList &inputs) {
     return addVNode(VNode::FUN, var, {}, func, inputs, {});
   }
 
   /// Creates and adds a Phi-node (unspecified multiplexor).
   VNodeId addPhi(const Variable &var) {
-    return addVNode(VNode::MUX, var, {}, FuncSymbol::NOP,  {}, {});
+    return addVNode(VNode::MUX, var, {}, FuncSymbol::NOP, {}, {});
   }
 
   /// Creates and adds an M-node (M = multiplexor).
-  VNodeId addMux(const Variable &var, const SignalList &inputs) {
+  VNodeId addMux(const Variable &var,
+                 const SignalList &inputs) {
     return addVNode(VNode::MUX, var, {}, FuncSymbol::NOP, inputs, {});
   }
 
   /// Creates and adds an R-node (R = register).
-  VNodeId addReg(const Variable &var, const Signal &input) {
+  VNodeId addReg(const Variable &var,
+                 const Signal &input) {
     return addVNode(VNode::REG, var, {}, FuncSymbol::NOP, { input }, {});
   }
 
@@ -159,6 +167,10 @@ public:
   }
 
 private:
+  //===--------------------------------------------------------------------===//
+  // Internal Methods
+  //===--------------------------------------------------------------------===//
+
   void muxWireDefines(VNode *phi, const VNode::List &defines);
 
   void muxRegDefines(VNode *phi, const VNode::List &defines);
@@ -193,13 +205,36 @@ private:
     return pnode;
   }
 
+  /// Adds the given node to the final v-net.
+  void addVNodeFinal(VNode *vnode) {
+    _nConnects += vnode->arity();
+
+    if (vnode->kind() == VNode::SRC) {
+      _sources.insert(vnode->id());
+    }
+    if (vnode->isOutput()) {
+      _targets.insert(vnode->id());
+    }
+
+    _vnodes.push_back(vnode);
+  }
+
   void sortTopologically();
+
+  //===--------------------------------------------------------------------===//
+  // Internal Fields
+  //===--------------------------------------------------------------------===//
 
   /// V-nodes.
   VNode::List _vnodes;
   /// P-nodes.
   PNode::List _pnodes;
- 
+
+  /// Sources.
+  VNodeIdSet _sources;
+  /// Targets.
+  VNodeIdSet _targets;
+
   /// Maps a variable x to the <phi(x), {def(x), ..., def(x)}> structure.
   std::unordered_map<std::string, std::pair<VNode*, VNode::List>> _vnodesTemp;
 

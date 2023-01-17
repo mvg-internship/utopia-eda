@@ -39,12 +39,14 @@ public:
 private:
   void synthSrc(const VNode *vnode, GNet &net);
   void synthVal(const VNode *vnode, GNet &net);
+  void synthOut(const VNode *vnode, GNet &net);
   void synthFun(const VNode *vnode, GNet &net);
   void synthMux(const VNode *vnode, GNet &net);
   void allocReg(const VNode *vnode, GNet &net);
   void synthReg(const VNode *vnode, GNet &net);
 
   GNet::In in(const VNode *vnode) const;
+  const GNet::Out &out(const VNode *vnode) const;
   const GNet::Out &out(VNode::Id vnodeId) const;
 
   // Maps vnodes to the identifiers of their lower bits' gates.

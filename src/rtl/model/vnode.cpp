@@ -38,7 +38,7 @@ std::ostream &operator <<(std::ostream &out, const VNode &vnode) {
     return out << "S{" << vnode.var() << "}";
   case VNode::VAL:
     return out << "C{" << vnode.var() << " = "
-                       << vnode.value()<< "}";
+                       << vnode.value() << "}";
   case VNode::FUN:
     return out << "F{" << vnode.var() << " = "
                        << vnode.func() << "(" << vnode.inputs() << ")}";
@@ -60,6 +60,8 @@ std::ostream &operator <<(std::ostream &out, const VNode &vnode) {
     return out << "}";
   }
 
+
+  out << "[" << vnode.isOutput() << "]";
   return out;
 }
 

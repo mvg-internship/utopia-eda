@@ -132,6 +132,10 @@ public:
   // Statistics 
   //===--------------------------------------------------------------------===//
 
+  unsigned id() const {
+    return _id;
+  }
+
   /// Returns the net level.
   unsigned getLevel() const {
     return _level;
@@ -150,6 +154,11 @@ public:
   /// Returns the number of output links.
   size_t nTargetLinks() const {
     return _targetLinks.size();
+  }
+
+  /// Returns the number of constants.
+  size_t nConstants() const {
+    return _constants.size();
   }
 
   /// Returns the number of triggers.
@@ -186,6 +195,11 @@ public:
     return _targetLinks;
   }
 
+  /// Returns the collection of constants.
+  const GateIdSet &constants() const {
+    return _constants;
+  }
+
   /// Returns the collection of triggers.
   const GateIdSet &triggers() const {
     return _triggers;
@@ -209,6 +223,11 @@ public:
   /// Checks whether the net has the target link.
   bool hasTargetLink(const Link &link) const {
     return _targetLinks.find(link) != _targetLinks.end();
+  }
+
+  /// Checks whether the net has the constant.
+  bool hasConstant(GateId gid) const {
+    return _constants.find(gid) != _constants.end();
   }
 
   /// Checks whether the net has the trigger.
@@ -316,6 +335,9 @@ public:
     for (auto link : _sourceLinks) {
       sources.insert(link.source);
     }
+    for (auto constant : _constants) {
+      sources.insert(constant);
+    }
     for (auto trigger : _triggers) {
       sources.insert(trigger);
     }
@@ -377,7 +399,7 @@ private:
 
   /// Checks whether the link is a target link.
   bool checkTargetLink(const Link &link) const {
-    return !contains(link.target);
+    return link.isPort() || !contains(link.target);
   }
 
   /// Updates the net state when adding a gate.
@@ -389,6 +411,8 @@ private:
   // Internal Fields
   //===--------------------------------------------------------------------===//
 
+  /// Identifier.
+  const unsigned _id;
   /// Level (0 = top level).
   const unsigned _level;
 
@@ -403,6 +427,8 @@ private:
   /// Output links: {(internal gate, external gate, external input)}.
   LinkSet _targetLinks;
 
+  // Constants.
+  GateIdSet _constants;
   // Triggers.
   GateIdSet _triggers;
 
@@ -419,6 +445,9 @@ private:
 
   /// Flag indicating that the net is topologically sorted.
   bool _isSorted;
+
+  /// Counter for identifier initialization.
+  static unsigned _counter;
 };
 
 /// Outputs the net.
