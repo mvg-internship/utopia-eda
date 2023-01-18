@@ -124,6 +124,7 @@ private:
       GateSymbol func, size_t outSize, const In &in, GNet &net);
   static Out synthBinaryBitwiseOp(
       GateSymbol func, size_t outSize, const In &in, GNet &net);
+  static Out synthMyAdder(size_t size, const In &in, GNet, &net);
 };
 
 } // namespace eda::rtl::library
