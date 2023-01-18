@@ -209,7 +209,7 @@ FLibrary::Out FLibraryDefault::synthMyAdder(size_t outSize, const In &in, GNet &
   auto clause2 = Signal::always(net.addGate(GateSymbol::ZERO,{}));
   auto clause3 = Signal::always(net.addGate(GateSymbol::ZERO,{}));
 
-  for (int i = 0; i < term1.size(); i++){
+  for (unsigned int i = 0; i < term1.size(); i++){
     auto termWire1 = Signal::always(term1[i]);
     auto termWire2 = Signal::always(term2[i]);
 
