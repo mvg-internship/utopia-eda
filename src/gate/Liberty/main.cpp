@@ -547,14 +547,17 @@ skip_cell:;
     }
 }
 
-void output(Yosys::RTLIL::Design &des){
+void outputModule(Yosys::RTLIL::Design &des){
     for (auto it=des.modules_.begin();it!=des.modules_.end();++it){
         for(auto &it1 : Yosys::RTLIL::IdString::global_id_index_) {
             if (it1.second == it->first.index_){
                 std::cout <<it1.first<<" MODULE(cell in point of liberty) with INDEX "<<it1.second<<"\n";
             }
         }
-
+    }
+}
+void outputWires(Yosys::RTLIL::Design &des){
+    for (auto it=des.modules_.begin();it!=des.modules_.end();++it){
         for (auto it1=it->second->wires_.begin();it1!=it->second->wires_.end();++it1){
             for(auto &it2 : Yosys::RTLIL::IdString::global_id_index_) {
                 if (it2.second == it1->first.index_){
@@ -568,29 +571,53 @@ void output(Yosys::RTLIL::Design &des){
             std::cout<<"  port_output: "<<it1->second->port_output<<"\n";
             std::cout<<"  upto: "<<it1->second->upto<<"\n";
         }
-
+    }
+}
+void outputWiresConnect(Yosys::RTLIL::Design &des){
+    for (auto it=des.modules_.begin();it!=des.modules_.end();++it){
+        for (auto it1=it->second->connections_.begin();it1!=it->second->connections_.end();++it1){
+            std::cout<<"Wire with name :::"<<it1->first.as_wire()->name.index_<< "::: connects with Wire with name :::"<< it1->second.as_wire()->name.index_<<":::\n";
+        }
+    }
+}
+void outputPorts(Yosys::RTLIL::Design &des){
+    for (auto it=des.modules_.begin();it!=des.modules_.end();++it){
         for (auto &it2: it->second->ports){
             std::cout<<"\\* port with name "<<it2.index_<<" (pin into Liberty files) "<<"\n";
         }
-
+    }
+}
+void outputCell(Yosys::RTLIL::Design &des){
+    for (auto it=des.modules_.begin();it!=des.modules_.end();++it){
         for (auto it1=it->second->cells_.begin();it1!=it->second->cells_.end();++it1){
             for(auto &it2 : Yosys::RTLIL::IdString::global_id_index_) {
                 if (it2.second == it1->first.index_){
                     std::cout << " ___ "<<it2.first<<" CELL(functions in point of liberty)"<<" name " << it1->second->name.index_<<" type " <<it1->second->type.index_ <<"\n";
                 }
             }
-
+        }
+    }
+}
+void outputCellConnect(Yosys::RTLIL::Design &des){
+    for (auto it=des.modules_.begin();it!=des.modules_.end();++it){
+        for (auto it1=it->second->cells_.begin();it1!=it->second->cells_.end();++it1){
             for (auto it2=it1->second->connections_.begin();it2!=it1->second->connections_.end();++it2){
                 std::cout<<"Connect with id"<<it2->first.index_<<" " <<"\n";
                 auto temp=it2->second.as_wire();
                 std::cout<<"  name:"<< temp->name.index_<<" the wire with this name is connect\n";
             }
         }
-        for (auto it1=it->second->connections_.begin();it1!=it->second->connections_.end();++it1){
-               std::cout<<"Wire with name :::"<<it1->first.as_wire()->name.index_<< "::: connects with Wire with name :::"<< it1->second.as_wire()->name.index_<<":::\n";
-        }
     }
 }
+void output(Yosys::RTLIL::Design &des){
+    outputModule(des);
+    outputWires(des);
+    outputWiresConnect(des);
+    outputPorts(des);
+    outputCell(des);
+    outputCellConnect(des);
+}
+
 int main(int argc, char* argv[]){
     for (size_t o=1;o<argc;++o){
         std::ifstream in(argv[o]);
