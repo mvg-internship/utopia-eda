@@ -12,25 +12,12 @@
 YOSYS_NAMESPACE_BEGIN
 using namespace VERILOG_FRONTEND;
 
-// use the Verilog bison/flex parser to generate an AST and use AST::process() to convert it to RTLIL
 
 static std::vector<std::string> verilog_defaults;
 static std::list<std::vector<std::string>> verilog_defaults_stack;
 
-//static void error_on_dpi_function(Yosys::AST::AstNode *node)
-//{
-//    if (node->type == Yosys::AST::AST_DPI_FUNCTION)
-//        Yosys::log_file_error(node->filename, node->location.first_line, "Found DPI function %s.\n", node->str.c_str());
-//	for (auto child : node->children)
-//		error_on_dpi_function(child);
-//}
-
-static void add_package_types1(dict<std::string, AST::AstNode *> &user_types, std::vector<AST::AstNode *> &package_list)
-{
-	// prime the parser's user type lookup table with the package qualified names
-	// of typedefed names in the packages seen so far.
+static void add_package_types1(dict<std::string, AST::AstNode *> &user_types, std::vector<AST::AstNode *> &package_list){
 	for (const auto &pkg : package_list) {
-        //log_assert(pkg->type==AST::AST_PACKAGE);
 		for (const auto &node: pkg->children) {
             if (node->type == Yosys::AST::AST_TYPEDEF) {
 				std::string s = pkg->str + "::" + node->str.substr(1);
@@ -41,22 +28,6 @@ static void add_package_types1(dict<std::string, AST::AstNode *> &user_types, st
 }
 
 YOSYS_NAMESPACE_END
-
-// the yyerror function used by bison to report parser errors
-
-//void frontend_verilog_yyerror(char const *fmt, ...)
-//{
-//	va_list ap;
-//	char buffer[1024];
-//	char *p = buffer;
-//	va_start(ap, fmt);
-//	p += vsnprintf(p, buffer + sizeof(buffer) - p, fmt, ap);
-//	va_end(ap);
-//	p += snprintf(p, buffer + sizeof(buffer) - p, "\n");
-//	YOSYS_NAMESPACE_PREFIX log_file_error(YOSYS_NAMESPACE_PREFIX AST::current_filename, frontend_verilog_yyget_lineno(),
-//					      "%s", buffer);
-//	exit(1);
-//}
 
 void parse(std::ifstream &f, std::string filename, Yosys::RTLIL::Design *design, std::vector<std::string> args){
 
@@ -299,7 +270,6 @@ void parse(std::ifstream &f, std::string filename, Yosys::RTLIL::Design *design,
         Yosys::VERILOG_FRONTEND::lexin = new std::istringstream(code_after_preproc);
     }
 
-    // make package typedefs available to parser
     Yosys::add_package_types1(Yosys::VERILOG_FRONTEND::pkg_user_types, design->verilog_packages);
 
     Yosys::VERILOG_FRONTEND::UserTypeMap global_types_map;
@@ -309,9 +279,7 @@ void parse(std::ifstream &f, std::string filename, Yosys::RTLIL::Design *design,
         }
     }
 
-    // use previous global typedefs as bottom level of user type stack
     Yosys::VERILOG_FRONTEND::user_type_stack.push_back(std::move(global_types_map));
-    // add a new empty type map to allow overriding existing global definitions
     Yosys::VERILOG_FRONTEND::user_type_stack.push_back(Yosys::VERILOG_FRONTEND::UserTypeMap());
 
     frontend_verilog_yyset_lineno(1);
