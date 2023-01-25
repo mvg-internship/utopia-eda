@@ -619,17 +619,20 @@ void GNet::sortTopologically() {
 //===--------------------------------------------------------------------===//
 
 /// Clones the net
-GNet *GNet::clone(std::unordered_map<Gate::Id, Gate::Id> oldToNewId) {
+GNet *GNet::clone() {
   if (_gates.empty()) {
     return new GNet(_level);
   }
+  std::unordered_map<Gate::Id, Gate::Id> oldToNewId = {};
+  return clone(oldToNewId);
+}
+GNet *GNet::clone(std::unordered_map<Gate::Id, Gate::Id> &oldToNewId) {
   GNet *resultNet = new GNet(_level);
   if (oldToNewId.empty()) {
     for (Gate *gate : _gates) {
       SignalList newSignals;
       Gate *newGate = new Gate(gate->func(), newSignals);
       oldToNewId[gate->id()] = newGate->id();
-      delete(newGate);
     }
   
     for (Gate *gate : _gates) {
@@ -656,6 +659,8 @@ GNet *GNet::clone(std::unordered_map<Gate::Id, Gate::Id> oldToNewId) {
    
   return resultNet; 
 }
+
+
 
 //===----------------------------------------------------------------------===//
 // Output 
