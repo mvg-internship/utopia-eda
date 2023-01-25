@@ -3,7 +3,7 @@ add_subdirectory(parser/ril)
 add_library(RTL OBJECT
   compiler/compiler.cpp
   library/flibrary.cpp
-  library/newlibrary.cpp
+  library/arithmetic.cpp
   model/fsymbol.cpp
   model/net.cpp
   model/pnode.cpp
