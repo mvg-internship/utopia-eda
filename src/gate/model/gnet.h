@@ -367,8 +367,8 @@ public:
   //===--------------------------------------------------------------------===//
 
   /// Clones the net
-
-  GNet* clone(std::unordered_map<Gate::Id, Gate::Id> oldToNewId = {});
+  GNet* clone();
+  GNet* clone(std::unordered_map<Gate::Id, Gate::Id> &oldToNewId);
 
 private:
   //===--------------------------------------------------------------------===//
