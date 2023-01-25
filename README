@@ -31,6 +31,19 @@ make # ninja, etc.
 
 [^yosys]: https://github.com/YosysHQ/yosys
 
+### Running from Command Line
+
+To list all options for the Utopia EDA do the following:
+```
+<build-dir>/src/umain -h
+```
+
+To run Utopia EDA as a logic synthesis tool for the specified RIL description,
+do the following:
+```
+<build-dir>/src/umain rtl <path-to-input-RIL-file>
+```
+
 ### Running Tests
 
 Running applications and tests based on `libueda` requires environment variable
