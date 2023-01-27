@@ -626,6 +626,7 @@ GNet *GNet::clone() {
   std::unordered_map<Gate::Id, Gate::Id> oldToNewId = {};
   return clone(oldToNewId);
 }
+
 GNet *GNet::clone(std::unordered_map<Gate::Id, Gate::Id> &oldToNewId) {
   GNet *resultNet = new GNet(_level);
   if (oldToNewId.empty()) {
@@ -645,8 +646,7 @@ GNet *GNet::clone(std::unordered_map<Gate::Id, Gate::Id> &oldToNewId) {
       Gate::get(newGateId)->setInputs(newSignals);
       resultNet->addGate(Gate::get(newGateId));
     }
-  }
-  else {
+  } else {
     for (Gate *gate : _gates) {
       resultNet->addGate(Gate::get(oldToNewId[gate->id()]));
     }
@@ -659,8 +659,6 @@ GNet *GNet::clone(std::unordered_map<Gate::Id, Gate::Id> &oldToNewId) {
    
   return resultNet; 
 }
-
-
 
 //===----------------------------------------------------------------------===//
 // Output 
