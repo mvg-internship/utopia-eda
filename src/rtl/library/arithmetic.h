@@ -1,10 +1,18 @@
+//===----------------------------------------------------------------------===//
+//
+// Part of the Utopia EDA Project, under the Apache License v2.0
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2021 ISP RAS (http://www.ispras.ru)
+//
+//===----------------------------------------------------------------------===//
+
 #pragma once
 
 #include "gate/model/gnet.h"
 #include "rtl/library/flibrary.h"
 #include "rtl/model/fsymbol.h"
 
-#include <cassert>
+#include <cstddef>
 #include <map>
 #include <memory>
 #include <utility>
@@ -14,9 +22,10 @@ using namespace eda::gate::model;
 using namespace eda::rtl::model;
 
 namespace eda::rtl::library {
-class ArithmeticLibrary final: public FLibrary {
+
+class ArithmeticLibrary final : public FLibrary {
 public:
-  using Key = std::pair<int, int>;
+  using Key = std::pair<size_t, int>;
   using SignalTree = std::map<Key, Signal>;
 
   static FLibrary &get() {
@@ -42,7 +51,9 @@ private:
 
   static Out synthSub(size_t outSize, const In &in, GNet &net);
 
-  static Out synthAdder(size_t outSize, const In &in, bool plusOne, bool needsCarryOut, GNet &net);
+  static Out synthAdder(size_t outSize, const In &in, bool plusOne, GNet &net);
+
+  static inline Signal signalNewGate(GateSymbol func, const SignalList &in, GNet &net);
 
   // Complements in with zeros to the transmitted size, if necessary 
   static inline void filling(size_t size, GateIdList &in, GNet &net);
@@ -51,6 +62,11 @@ private:
   static inline SignalList formInputSignals(size_t size, GateIdList in);
   
   static inline SignalList formCarrySignals(size_t size, GateSymbol func, SignalList &xWire, SignalList &yWire, GNet &net);
+
+  static inline void addCell(size_t lastReg, size_t middleReg, int firstReg, SignalTree &p, SignalTree &g, GNet &net);
+
+  static inline void addCell(size_t lastReg, int firstReg, SignalTree &p, SignalTree &g, SignalList &preP, SignalList &preG, Signal &inG, GNet &net);
+ 
   FLibrary &supportLibrary;
 };
 
