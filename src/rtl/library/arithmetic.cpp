@@ -70,40 +70,40 @@ FLibrary::Out ArithmeticLibrary::synthSub(size_t outSize, const In &in, GNet &ne
                                                           carry    of P[i] and G[i]
   | 6 |   | 5 |   | 4 |   | 3 |   | 2 |   | 1 |   | 0 |   | -1| _____________________________
     |  _____|       |  _____|       |  _____|       |  _____|
-	| /     |       | /     |       | /     |       | /     |
-	|/      |       |/      |       |/      |       |/      |    Calculation of all
-	X[6,5]  |       X[4,3]  |       X[2,1]  |       O[0,-1] |    carries in prefix tree
-	|       |       |       |       |       |       |       |    (there are groups of cells
-	|  _____________|       |       |  _____________|       |    at each level. For example,
-	| /     |       |       |       | /     |       |       |    at the level 1 there are
+    | /     |       | /     |       | /     |       | /     |
+    |/      |       |/      |       |/      |       |/      |    Calculation of all
+    X[6,5]  |       X[4,3]  |       X[2,1]  |       O[0,-1] |    carries in prefix tree
+    |       |       |       |       |       |       |       |    (there are groups of cells
+    |  _____________|       |       |  _____________|       |    at each level. For example,
+    | /     |       |       |       | /     |       |       |    at the level 1 there are
     |/      |       |       |       |/      |       |       |    2 groups consisting of 1 cell,
-	X[6,3]  |       |       |       O[2,-1] |       |       |    and at the level 2
-	|       |       |       |       |       |       |       |    there is 1 groups
-	|  _____________________________|       |       |       |    consisting 2 cells. Levels of
-	| /     |       | /     |       |       |       |       |    prefix tree has numbers
-	|/      |       |/      |       |       |       |       |    0, 1, 2, 3, 4, etc. The
-	O[6,-1] |       O[4,-1] |       |       |       |       |    numbers of cells at each 
-	|       |       |       |       |       |       |       |    level is 0, 1, 2, 3, etc.
-	|       |  _____|       |  _____|       |  _____|       |
-	|       | /     |       | /     |       | /     |       |
-	|       |/      |       |/      |       |/      |       |
-	|       O[5,-1] |       O[3,-1] |       O[1,-1] |       |
+    X[6,3]  |       |       |       O[2,-1] |       |       |    and at the level 2
+    |       |       |       |       |       |       |       |    there is 1 groups
+    |  _____________________________|       |       |       |    consisting 2 cells. Levels of
+    | /     |       | /     |       |       |       |       |    prefix tree has numbers
+    |/      |       |/      |       |       |       |       |    0, 1, 2, 3, 4, etc. The
+    O[6,-1] |       O[4,-1] |       |       |       |       |    numbers of cells at each 
+    |       |       |       |       |       |       |       |    level is 0, 1, 2, 3, etc.
+    |       |  _____|       |  _____|       |  _____|       |
+    |       | /     |       | /     |       | /     |       |
+    |       |/      |       |/      |       |/      |       |
+    |       O[5,-1] |       O[3,-1] |       O[1,-1] |       |
     |       |       |       |       |       |       |       |   _____________________________
   / 7 \   / 6 \   / 5 \   / 4 \   / 3 \   / 2 \   / 1 \   / 0 \
   Output                                                            Generating the sum
   carry
 
-	  cell | i |:                                     cell / i \:
-	    P[i] = A[i] xor B[i]                            S[i] =  G[i,-1] xor ( A[i] xor B[i] )
-		G[i] = A[i] and B[i]
+  cell | i |:                                      cell / i \:
+    P[i] = A[i] xor B[i]                             S[i] =  G[i,-1] xor ( A[i] xor B[i] )
+    G[i] = A[i] and B[i]
 
-	  cell X:                                         cell O:
-      level 0:                                        level 0:
-        P[i,j] = P[i] and P[j]                          G[i,j] = G[i] or ( G[-1] and P[i] )
-        G[i,j] = G[i] or ( G[j] and P[i] )            levels before the last level:
-      levels before the last level:                     G[i,j] = G[i,k] or ( G[k-1,j] and P[i, k] )
-		P[i,j] = P[i,k] and P[k-1,j]                  the last level:
-		G[i,j] = G[i,k] or ( G[k-1,j] and P[i, k] )     G[i,-1] = G[i] or ( G[i-1,-1] and P[i] )
+  cell X:                                          cell O:
+  level 0:                                         level 0:
+     P[i,j] = P[i] and P[j]                          G[i,j] = G[i] or ( G[-1] and P[i] )
+     G[i,j] = G[i] or ( G[j] and P[i] )            levels before the last level:
+  levels before the last level:                      G[i,j] = G[i,k] or ( G[k-1,j] and P[i, k] )
+    P[i,j] = P[i,k] and P[k-1,j]                   the last level:
+    G[i,j] = G[i,k] or ( G[k-1,j] and P[i, k] )      G[i,-1] = G[i] or ( G[i-1,-1] and P[i] )
 */
 
 FLibrary::Out ArithmeticLibrary::synthAdder(size_t outSize, const In &in, bool plusOne, GNet &net) {
@@ -167,9 +167,9 @@ FLibrary::Out ArithmeticLibrary::synthAdder(size_t outSize, const In &in, bool p
     // Levels of prefix tree before the last level
     // Cell indexes start with lastReg = (2^level) and firstReg = -1.  
     // a) Transition to cell in the same group:
-	//      step is 2 only for lastReg
+    //      step is 2 only for lastReg
     // b) Transition to cell in a new group:
-	//      step is (2+2^level) for lastReg and (2^(level+1))
+    //      step is (2+2^level) for lastReg and (2^(level+1))
     // c) middelGeg is needed to find index k:
     //      k = middleReg-1
     //      For each group middleReg is constant.
