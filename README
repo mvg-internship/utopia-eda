@@ -10,6 +10,10 @@ The list of tools required to build the project:
 * C++17-compatible compiler (e.g, `gcc` or `clang`)
 * CMake-supported "build" system (e.g., `make` or `ninja`)
 
+### Coding Style
+
+We use [LLVM Coding Conventions](https://llvm.org/docs/CodingStandards.html) with some project-specific refinements.
+
 ### Compiling from Command Line
 
 ```
