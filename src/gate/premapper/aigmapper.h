@@ -26,6 +26,10 @@ protected:
                    GNet &newNet) const override;
 
 private:
+  Gate::Id mapIn (GNet &newNet) const;
+  Gate::Id mapOut(const Gate::SignalList &newInputs,
+                  size_t n0, size_t n1, GNet &newNet) const;
+
   Gate::Id mapVal(bool value, GNet &newNet) const;
 
   Gate::Id mapNop(const Gate::SignalList &newInputs,
