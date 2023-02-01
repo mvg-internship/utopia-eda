@@ -1,14 +1,15 @@
+#include <iostream>
 #include "passes/techmap/libparse.h"
 #include <kernel/yosys.h>
-void print_modules(const int ind, Yosys::hashlib::dict<char*, int, Yosys::hashlib::hash_cstr_ops> global_id_index_, std::ostream &out){
-    for (auto &it1 : global_id_index_){
+void print_modules(const int ind, std::ostream &out){
+    for (const auto &it1 : Yosys::RTLIL::IdString::global_id_index_){
         if (it1.second == ind){
             out << it1.first << " - module of index: " << it1.second << "\n";
         }
     }
 }
 
-void print_wires(Yosys::hashlib::dict<Yosys::RTLIL::IdString, Yosys::RTLIL::Wire*> wires, std::ostream &out){
+void print_wires(const Yosys::hashlib::dict<Yosys::RTLIL::IdString, Yosys::RTLIL::Wire*> &wires, std::ostream &out){
     out << "Wires:" << "\n";
     for (auto it1=wires.begin(); it1 != wires.end(); ++it1){
         for(auto &it2 : Yosys::RTLIL::IdString::global_id_index_){
@@ -31,10 +32,10 @@ void print_wires(Yosys::hashlib::dict<Yosys::RTLIL::IdString, Yosys::RTLIL::Wire
     }
 }
 
-void print_cells(Yosys::hashlib::dict<Yosys::RTLIL::IdString, Yosys::RTLIL::Cell*> cells, std::ostream &out){
+void print_cells(const Yosys::hashlib::dict<Yosys::RTLIL::IdString, Yosys::RTLIL::Cell*> &cells, std::ostream &out){
     out << "Cells:" << "\n";
     for (auto it1=cells.begin(); it1 != cells.end(); ++it1){
-        for (auto &it2 : Yosys::RTLIL::IdString::global_id_index_){
+        for (const auto &it2 : Yosys::RTLIL::IdString::global_id_index_){
             if (it2.second == it1->first.index_){
                 out << "  " << it2.first << " cell of index " << it2.second << " type " << it1->second->type.index_ << "\n";
             }
@@ -46,14 +47,14 @@ void print_cells(Yosys::hashlib::dict<Yosys::RTLIL::IdString, Yosys::RTLIL::Cell
     }
 }
 
-void print_connections(std::vector<std::pair<Yosys::RTLIL::SigSpec, Yosys::RTLIL::SigSpec> > connections, std::ostream &out){
+void print_connections(const std::vector<std::pair<Yosys::RTLIL::SigSpec, Yosys::RTLIL::SigSpec> > &connections, std::ostream &out){
     out << "Connections count: " << connections.size() << "\n";
     for (auto it1 = connections.begin(); it1 != connections.end(); ++it1){
         out<<"    Wire " << it1->first.as_wire()->name.index_ << " connects with " << it1->second.as_wire()->name.index_ << "\n";
     }
 }
 
-void print_memory(Yosys::hashlib::dict<Yosys::RTLIL::IdString, Yosys::RTLIL::Memory*> memories, std::ostream &out){
+void print_memory(const Yosys::hashlib::dict<Yosys::RTLIL::IdString, Yosys::RTLIL::Memory*> &memories, std::ostream &out){
     out << "Memory count: " << memories.size() << "\n";
     for (auto it1 = memories.begin(); it1 != memories.end(); ++it1){
         out << "  memory " << it1->second << "\n";
@@ -64,35 +65,34 @@ void print_memory(Yosys::hashlib::dict<Yosys::RTLIL::IdString, Yosys::RTLIL::Mem
         out << "\n";
     }
 }
-
-void print_syncs(Yosys::hashlib::dict<Yosys::RTLIL::IdString, Yosys::RTLIL::Process*>::iterator it, std::ostream &out){
+void print_actions(const std::vector< Yosys::RTLIL::SigSig > &actions, std::ostream &out){
+    for (auto &it : actions){
+        out << "    " << (*it.first.as_chunk().wire).name.index_ << "\n";
+    }
+}
+void print_syncs(const std::vector<Yosys::RTLIL::SyncRule *> &syncs, std::ostream &out){
     out << "  syncs\n";
-    for (auto it1=it->second->syncs.begin(); it1 != it->second->syncs.end(); ++it1){
+    for (auto it1=syncs.begin(); it1 != syncs.end(); ++it1){
         out << "    type " << (*it1)->type << "\n";
         out << "  signal\n";
         out << "    size " << (*it1)->signal.size() << "\n";
         out << "    as_wire index " << (*it1)->signal.as_wire()->name.index_ << "\n";
         out << "  actions\n";
-        for (auto &it2 : (*it1)->actions){
-            out << "    " << (*it2.first.as_chunk().wire).name.index_ << "\n";
-        }
+        print_actions((*it1)->actions,out);
     }
 }
 
-void print_processes(Yosys::hashlib::dict<Yosys::RTLIL::IdString, Yosys::RTLIL::Process*> processes, std::ostream &out){
+
+void print_processes(const Yosys::hashlib::dict<Yosys::RTLIL::IdString, Yosys::RTLIL::Process*> &processes, std::ostream &out){
     out << "Processes count: " << processes.size() << "\n";
     for (auto it1 = processes.begin(); it1 != processes.end(); ++it1){
         out << "  name " << it1->second->name.index_ << "\n";
-        out << "  root_case\n"; //Does not print (ToDo)
-        //for (auto &it3 : it1->second->root_case.actions){
-        //    out << "    " << (it3.first.as_wire())->name.index_ << "\n";
-        //}
-        print_syncs(it1, out);
+        print_syncs(it1->second->syncs, out);
         out << "\n";
     }
 }
 
-void print_ports(std::vector<Yosys::RTLIL::IdString> ports, std::ostream &out){
+void print_ports(const std::vector<Yosys::RTLIL::IdString> &ports, std::ostream &out){
     out << "Ports count: " << ports.size() << "\n";
     for (auto &it1 : ports){
         out << "  port " << it1.index_ << "\n";
@@ -100,7 +100,7 @@ void print_ports(std::vector<Yosys::RTLIL::IdString> ports, std::ostream &out){
 }
 
 void print_params(const std::pair<Yosys::RTLIL::IdString, Yosys::RTLIL::Module*> &m, std::ostream &out){
-    print_modules(m.first.index_, Yosys::RTLIL::IdString::global_id_index_, out);
+    print_modules(m.first.index_, out);
     out << "\n";
     print_wires(m.second->wires_, out);
     out << "\n";
@@ -122,22 +122,20 @@ void print_params(const std::pair<Yosys::RTLIL::IdString, Yosys::RTLIL::Module*>
     out << "\n";
 }
 
-void print_parsed(Yosys::RTLIL::Design &des, std::ostream &out){
-    for (const auto &m: des.modules_){
+void print_parsed(const Yosys::RTLIL::Design &des, std::ostream &out){
+    for (auto &m: des.modules_){
         print_params(m, out);
     }
 }
 int main(int argc, char* argv[]){
-    Yosys::log_streams.push_back(&std::cout);
-        Yosys::log_error_stderr = true;
-        std::ostream& out = std::cout;
-        Yosys::yosys_setup();
-        for (size_t o=1;o<argc;++o){
-            Yosys::RTLIL::Design design;
-            Yosys::run_frontend(argv[o], "liberty", &design, nullptr);
-            print_parsed(design, out);
-        }
-        Yosys::yosys_shutdown();
+    std::ostream& out = std::cout;
+    Yosys::yosys_setup();
+    for (size_t o=1;o<argc;++o){
+        Yosys::RTLIL::Design design;
+        Yosys::run_frontend(argv[o], "liberty", &design, nullptr);
+        print_parsed(design, out);
+    }
+    Yosys::yosys_shutdown();
 }
 
 
