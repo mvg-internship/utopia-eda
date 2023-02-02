@@ -6,9 +6,9 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "hMetis_formatter.h"
+#include "hmetis.h"
 
-FormatterHMetis::FormatterHMetis(const eda::gate::model::GNet &net) {
+HMetisPrinter::HMetisPrinter(const eda::gate::model::GNet &net) {
 
   weights = std::vector<int>(net.nGates(), 1);
   std::vector<bool> involved;
@@ -34,9 +34,9 @@ FormatterHMetis::FormatterHMetis(const eda::gate::model::GNet &net) {
   eptr.push_back(0);
   for (eda::gate::model::Gate* gate : net.gates()) {
     for (const eda::gate::model::Gate::Link& link : gate->links()) {
-        eind.push_back(map[link.source]);
-        eind.push_back(map[link.target]);
-        eptr.push_back(eind.size());
-      }
+      eind.push_back(map[link.source]);
+      eind.push_back(map[link.target]);
+      eptr.push_back(eind.size());
+    }
   }
 }

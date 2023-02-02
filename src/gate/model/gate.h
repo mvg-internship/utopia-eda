@@ -84,6 +84,14 @@ private:
 
   /// Creates a source gate.
   Gate(): Gate(GateSymbol::IN, {}) {}
+
+  /// Invariant.
+  bool invariant() const {
+    return // Source <=> no inputs.
+           (isSource() == (arity() == 0))
+           // Target ==> no outputs.
+        && (!isTarget() || (fanout() == 0));
+  }
 };
 
 //===----------------------------------------------------------------------===//
