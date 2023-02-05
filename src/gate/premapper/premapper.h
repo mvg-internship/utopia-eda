@@ -13,8 +13,6 @@
 #include <memory>
 #include <unordered_map>
 
-using namespace eda::gate::model;
-
 namespace eda::gate::premapper {
 
 /**
@@ -22,6 +20,10 @@ namespace eda::gate::premapper {
  * \author <a href="mailto:kamkin@ispras.ru">Alexander Kamkin</a>
  */
 class PreMapper {
+protected:
+  using Gate = eda::gate::model::Gate;
+  using GNet = eda::gate::model::GNet;
+
 public:
   using GateIdMap = std::unordered_map<Gate::Id, Gate::Id>;
 

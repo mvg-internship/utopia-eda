@@ -15,8 +15,6 @@
 #include <cstdint>
 #include <unordered_map>
 
-using namespace eda::gate::model;
-
 namespace eda::gate::debugger {
 
 /**
@@ -24,6 +22,8 @@ namespace eda::gate::debugger {
  * \author <a href="mailto:kamkin@ispras.ru">Alexander Kamkin</a>
  */
 class Context final {
+  using Gate = eda::gate::model::Gate;
+
 public:
   // MiniSAT-related types.
   using Var = Minisat::Var;

@@ -11,8 +11,6 @@
 #include "gate/debugger/context.h"
 #include "gate/model/gnet.h"
 
-using namespace eda::gate::model;
-
 namespace eda::gate::debugger {
 
 /**
@@ -20,6 +18,8 @@ namespace eda::gate::debugger {
  * \author <a href="mailto:kamkin@ispras.ru">Alexander Kamkin</a>
  */
 class SymbolicExecutor final {
+  using GNet = eda::gate::model::GNet;
+
 public:
   SymbolicExecutor(): _cycle(1 /* should be positive */) {}
 
