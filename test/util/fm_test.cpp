@@ -7,7 +7,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "gate/model/gnet_test.h"
-#include "gate/model/hMetis_formatter.h"
+#include "gate/transformer/hmetis.h"
 #include "util/fm.h"
 #include "util/partition_hgraph.h"
 
@@ -122,7 +122,7 @@ void testGate(const eda::gate::model::GNet &net, int passes, double r,
   std::ofstream fout(outPath);
   fout.close();
 
-  FormatterHMetis formatter(net);
+  HMetisPrinter formatter(net);
   HyperGraph hgraph(formatter.getWeights(), formatter.getEptr(),
                     formatter.getEind());
 

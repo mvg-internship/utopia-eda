@@ -35,6 +35,19 @@ FLibrary::Out FLibraryDefault::synth(size_t outSize,
 }
 
 FLibrary::Out FLibraryDefault::synth(size_t outSize,
+                                     const Out &out,
+                                     GNet &net) {
+  assert(outSize == out.size());
+
+  Out targets(outSize);
+  for (size_t i = 0; i < out.size(); i++) {
+    targets[i] = net.addGate(GateSymbol::OUT, {Signal::always(out[i])});
+  }
+
+  return targets;
+} 
+
+FLibrary::Out FLibraryDefault::synth(size_t outSize,
                                      FuncSymbol func,
                                      const In &in,
                                      GNet &net) {

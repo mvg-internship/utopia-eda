@@ -70,6 +70,8 @@ public:
   const Type &type() const { return _var.type(); }
   size_t width() const { return type().width(); }
 
+  bool isOutput() const { return _var.bind() == Variable::OUTPUT; }
+
   size_t nSignals() const { return _signals.size(); }
   const SignalList &signals() const { return _signals; }
   const Signal &signal(size_t i) const { return _signals[i]; }

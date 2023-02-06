@@ -22,94 +22,155 @@
 
 #include <fstream>
 #include <iostream>
+#include <map>
+#include <memory>
 #include <sstream>
 #include <string>
 
 INITIALIZE_EASYLOGGINGPP
 
-int rtlMain(const std::string &file, const RtlOptions &options) {
-  LOG(INFO) << "Starting rtlMain " << file;
+//===-----------------------------------------------------------------------===/
+// Logic Synthesis
+//===-----------------------------------------------------------------------===/
 
-  auto model = eda::rtl::parser::ril::parse(file);
-  if (model == nullptr) {
-    std::cout << "Could not parse " << file << std::endl;
-    std::cout << "Synthesis terminated." << std::endl;
-    return -1;
-  }
+struct RtlContext {
+  using VNet = eda::rtl::model::Net;
+  using GNet = eda::gate::model::GNet;
+  using Gate = eda::gate::model::Gate;
+  using Link = Gate::Link;
 
-  std::cout << "------ p/v-nets ------" << std::endl;
-  std::cout << *model << std::endl;
-
-  //===---------------------------------------------------------------------===/
-  // Netlist compilation
-  //===---------------------------------------------------------------------===/
+  using Library = eda::rtl::library::FLibraryDefault;
   using Compiler = eda::rtl::compiler::Compiler;
-  using FLibraryDefault = eda::rtl::library::FLibraryDefault;
-
-  Compiler compiler(FLibraryDefault::get());
-  auto net = compiler.compile(*model);
-
-  net->sortTopologically();
-
-  std::cout << "------ netlist (original) ------" << std::endl;
-  std::cout << *net;
-
-  std::cout << "Net: nGates=" << net->nGates() << std::endl;
-
-  //===---------------------------------------------------------------------===/
-  // Pre-mapping
-  //===---------------------------------------------------------------------===/
+  using PreMapper = eda::gate::premapper::PreMapper;
   using AigMapper = eda::gate::premapper::AigMapper;
-  using GateIdMap = AigMapper::GateIdMap;
-
-  GateIdMap oldToNewGates;
-  auto &premapper = AigMapper::get();
-  auto premapped = premapper.map(*net, oldToNewGates);
-
-  std::cout << "------ netlist (premapped) ------" << std::endl;
-  std::cout << *premapped;
-
-  std::cout << "Net: nGates=" << premapped->nGates() << std::endl;
-
-  //===---------------------------------------------------------------------===/
-  // Equivalence checking
-  //===---------------------------------------------------------------------===/
-  using Link = eda::gate::model::Gate::Link;
   using Checker = eda::gate::debugger::Checker;
-  using GateBinding = Checker::GateBinding;
-  using Hints = Checker::Hints;
 
-  Checker checker;
-  GateBinding imap, omap, tmap;
+  RtlContext(const std::string &file, const RtlOptions &options):
+    file(file), options(options) {}
 
-  for (auto oldSourceLink : net->sourceLinks()) {
-    auto newSourceId = oldToNewGates[oldSourceLink.target];
-    imap.insert({oldSourceLink, Link(newSourceId)});
+  const std::string file;
+  const RtlOptions &options;
+
+  std::shared_ptr<VNet> vnet;
+  std::shared_ptr<GNet> gnet0;
+  std::shared_ptr<GNet> gnet1;
+
+  PreMapper::GateIdMap gmap;
+
+  bool equal;
+};
+
+void dump(const GNet &net) {
+  std::cout << net << std::endl;
+
+  for (auto source : net.sourceLinks()) {
+    const auto *gate = RtlContext::Gate::get(source.target);
+    std::cout << *gate << std::endl;
+  }
+  for (auto target : net.targetLinks()) {
+    const auto *gate = RtlContext::Gate::get(target.source);
+    std::cout << *gate << std::endl;
   }
 
-  for (auto oldTriggerId : net->triggers()) {
-    auto newTriggerId = oldToNewGates[oldTriggerId];
-    tmap.insert({Link(oldTriggerId), Link(newTriggerId)});
+  std::cout << std::endl;
+  std::cout << "N=" << net.nGates() << std::endl;
+  std::cout << "I=" << net.nSourceLinks() << std::endl;
+  std::cout << "O=" << net.nTargetLinks() << std::endl;
+}
+
+bool parse(RtlContext &context) {
+  LOG(INFO) << "RTL parse: " << context.file;
+
+  context.vnet = eda::rtl::parser::ril::parse(context.file);
+
+  if (context.vnet == nullptr) {
+    LOG(ERROR) << "Could not parse the file";;
+    return false;
   }
 
-  // TODO: Here are only triggers.
-  for (auto oldTriggerId : net->triggers()) {
-    auto newTriggerId = oldToNewGates[oldTriggerId];
-    auto *oldTrigger = Gate::get(oldTriggerId);
-    auto *newTrigger = Gate::get(newTriggerId);
+  std::cout << "------ P/V-nets ------" << std::endl;
+  std::cout << *context.vnet << std::endl;
 
-    auto oldDataId = oldTrigger->input(0).node();
-    auto newDataId = newTrigger->input(0).node();
+  return true;
+}
 
-    omap.insert({Link(oldDataId), Link(newDataId)});
+bool compile(RtlContext &context) {
+  LOG(INFO) << "RTL compile";
+
+  RtlContext::Compiler compiler(RtlContext::Library::get());
+  context.gnet0 = compiler.compile(*context.vnet);
+
+  if (context.gnet0 == nullptr) {
+    LOG(ERROR) << "Could not compile the model";
+    return false;
   }
 
-  Hints hints;
-  hints.sourceBinding = std::make_shared<GateBinding>(std::move(imap));
-  hints.targetBinding = std::make_shared<GateBinding>(std::move(omap));
-  hints.triggerBinding = std::make_shared<GateBinding>(std::move(tmap));
+  context.gnet0->sortTopologically();
 
-  std::cout << "Equivalent: " << checker.areEqual(*net, *premapped, hints); 
+  std::cout << "------ G-net #0 ------" << std::endl;
+  dump(*context.gnet0);
+
+  return true;
+}
+
+bool premap(RtlContext &context) {
+  LOG(INFO) << "RTL premap";
+
+  auto &premapper = RtlContext::AigMapper::get();
+  context.gnet1 = premapper.map(*context.gnet0, context.gmap);
+
+  std::cout << "------ G-net #1 ------" << std::endl;
+  dump(*context.gnet1);
+
+  return true;
+}
+
+bool check(RtlContext &context) {
+  using Link = RtlContext::Link;
+  using GateBinding = RtlContext::Checker::GateBinding;
+
+  LOG(INFO) << "RTL check";
+
+  RtlContext::Checker checker;
+  GateBinding ibind, obind, tbind;
+
+  assert(context.gnet0->nSourceLinks() == context.gnet1->nSourceLinks());
+  assert(context.gnet0->nTargetLinks() == context.gnet1->nTargetLinks());
+
+  // Input-to-input correspondence.
+  for (auto oldSourceLink : context.gnet0->sourceLinks()) {
+    auto newSourceId = context.gmap[oldSourceLink.target];
+    ibind.insert({oldSourceLink, Link(newSourceId)});
+  }
+
+  // Output-to-output correspondence.
+  for (auto oldTargetLink : context.gnet0->targetLinks()) {
+    auto newTargetId = context.gmap[oldTargetLink.source];
+    obind.insert({oldTargetLink, Link(newTargetId)});
+  }
+
+  // Trigger-to-trigger correspondence.
+  for (auto oldTriggerId : context.gnet0->triggers()) {
+    auto newTriggerId = context.gmap[oldTriggerId];
+    tbind.insert({Link(oldTriggerId), Link(newTriggerId)});
+  }
+
+  RtlContext::Checker::Hints hints;
+  hints.sourceBinding  = std::make_shared<GateBinding>(std::move(ibind));
+  hints.targetBinding  = std::make_shared<GateBinding>(std::move(obind));
+  hints.triggerBinding = std::make_shared<GateBinding>(std::move(tbind));
+
+  context.equal = checker.areEqual(*context.gnet0, *context.gnet1, hints);
+  std::cout << "equivalent=" << context.equal << std::endl;
+
+  return true;
+}
+
+int rtlMain(RtlContext &context) {
+  if (!parse(context))   { return -1; }
+  if (!compile(context)) { return -1; }
+  if (!premap(context))  { return -1; }
+  if (!check(context))   { return -1; }
 
   return 0;
 }
@@ -136,7 +197,8 @@ int main(int argc, char **argv) {
   int result = 0;
 
   for (auto file : options.rtl.files()) {
-    result |= rtlMain(file, options.rtl);
+    RtlContext context(file, options.rtl);
+    result |= rtlMain(context);
   }
 
   return result;
