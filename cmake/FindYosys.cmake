@@ -22,6 +22,7 @@ if(Yosys_FOUND)
         add_library(Yosys::Yosys UNKNOWN IMPORTED)
         set_target_properties(Yosys::Yosys PROPERTIES
             INTERFACE_INCLUDE_DIRECTORIES "${Yosys_INCLUDE_DIRS}"
+            INTERFACE_COMPILE_DEFINITIONS "_YOSYS_"
             IMPORTED_LOCATION "${Yosys_LIBRARY}"
         )
     endif()

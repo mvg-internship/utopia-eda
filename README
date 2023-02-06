@@ -6,8 +6,13 @@ The list of tools required to build the project:
 * `flex`
 * `bison`
 * `clang-tidy`
+* `zlib1g-dev`
 * C++17-compatible compiler (e.g, `gcc` or `clang`)
 * CMake-supported "build" system (e.g., `make` or `ninja`)
+
+### Coding Style
+
+We use [LLVM Coding Conventions](https://llvm.org/docs/CodingStandards.html) with some project-specific refinements.
 
 ### Compiling from Command Line
 
@@ -29,6 +34,19 @@ make # ninja, etc.
     - e.g. `cmake -S <utopia-source-dir> -B <utopia-build-dir> -DYosys_ROOT=<yosys-dir>`
 
 [^yosys]: https://github.com/YosysHQ/yosys
+
+### Running from Command Line
+
+To list all options for the Utopia EDA do the following:
+```
+<build-dir>/src/umain -h
+```
+
+To run Utopia EDA as a logic synthesis tool for the specified RIL description,
+do the following:
+```
+<build-dir>/src/umain rtl <path-to-input-RIL-file>
+```
 
 ### Running Tests
 

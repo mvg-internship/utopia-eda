@@ -13,6 +13,8 @@
 namespace eda::gate::model {
 
 GateSymbol::GateDescriptor GateSymbol::_desc[XXX] = {
+  /* IN    */ { "in",     0, 0, 0, 0, 0, XXX, XXX  },
+  /* OUT   */ { "out",    0, 0, 0, 0, 0, XXX, XXX  },
   /* ZERO  */ { "0",      1, 0, 0, 0, 0, XXX, XXX  },
   /* ONE   */ { "1",      1, 0, 0, 0, 0, XXX, XXX  },
   /* NOP   */ { "buf",    0, 1, 0, 0, 0, XXX, XXX  },
