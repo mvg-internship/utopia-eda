@@ -6,13 +6,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "gate/transformer/bdd.h"
 #include "gate/model/gate.h"
 #include "gate/model/gnet.h"
+#include "gate/transformer/bdd.h"
 
 #include "cuddObj.hh"
 
-#include <iostream>
 #include <map>
 #include <memory>
 #include <vector>
@@ -21,10 +20,9 @@ using namespace eda::gate::model;
 
 namespace eda::gate::transformer {
 
-// Apply gate operation to BDD list. Returns result BDD.
-BDD GNetBDDConverter::gateOperationBDD(const GateSymbol::Value func, 
-                                       const BDDList &inputList,
-                                       const Cudd &manager) {
+BDD GNetBDDConverter::applyGateFunc(const GateSymbol::Value func, 
+                                    const BDDList &inputList,
+                                    const Cudd &manager) {
   BDD result;
   switch (func) {
   case GateSymbol::ZERO:
@@ -43,29 +41,41 @@ BDD GNetBDDConverter::gateOperationBDD(const GateSymbol::Value func,
     break;
   case GateSymbol::AND:
     result = inputList[0];
-    for (int i = 1; i < inputList.size(); i++) result = result & inputList[i];
+    for (int i = 1; i < inputList.size(); i++) { 
+      result = result & inputList[i];
+    }
     break;
   case GateSymbol::OR:
     result = inputList[0];
-    for (int i = 1; i < inputList.size(); i++) result = result | inputList[i];
+    for (int i = 1; i < inputList.size(); i++) { 
+      result = result | inputList[i];
+    }
     break;
   case GateSymbol::XOR:
     result = inputList[0];
-    for (int i = 1; i < inputList.size(); i++) result = result ^ inputList[i];
+    for (int i = 1; i < inputList.size(); i++) { 
+      result = result ^ inputList[i];
+    }
     break;
   case GateSymbol::NAND:
     result = inputList[0];
-    for (int i = 1; i < inputList.size(); i++) result = result & inputList[i];
+    for (int i = 1; i < inputList.size(); i++) { 
+      result = result & inputList[i];
+    }
     result = !result;
     break;
   case GateSymbol::NOR:
     result = inputList[0];
-    for (int i = 1; i < inputList.size(); i++) result = result | inputList[i];
+    for (int i = 1; i < inputList.size(); i++) { 
+      result = result | inputList[i];
+    }
     result = !result;
     break;
   case GateSymbol::XNOR:
     result = inputList[0];
-    for (int i = 1; i < inputList.size(); i++) result = result ^ inputList[i];
+    for (int i = 1; i < inputList.size(); i++) { 
+      result = result ^ inputList[i];
+    }
     result = !result;
     break;
   default:
@@ -75,22 +85,21 @@ BDD GNetBDDConverter::gateOperationBDD(const GateSymbol::Value func,
   return result;
 }
 
-// Recursively converts GNet to BDD. 
 BDD GNetBDDConverter::recursiveConversion(const GNet &net,
-                                          const Gate::Id outputId,
+                                          const Gate::Id gateId,
                                           GateBDDMap &varMap,
                                           GateBDDMap &gateMap, 
                                           const Cudd &manager) {
-  if (gateMap.find(outputId) != gateMap.end()) {
-    return gateMap[outputId];
+  if (gateMap.find(gateId) != gateMap.end()) {
+    return gateMap[gateId];
   }
 
-  Gate *gate = Gate::get(outputId);
+  Gate *gate = Gate::get(gateId);
 
   if (gate->isSource()) {
-    assert(varMap.find(outputId) != varMap.end());
-    gateMap[outputId] = varMap[outputId];
-    return varMap[outputId];
+    assert(varMap.find(gateId) != varMap.end());
+    gateMap[gateId] = varMap[gateId];
+    return varMap[gateId];
   }
 
   BDDList inputList;
@@ -100,25 +109,23 @@ BDD GNetBDDConverter::recursiveConversion(const GNet &net,
     inputList.push_back(inputBDD);
   }
   BDD result = gateOperationBDD(gate->func(), inputList, manager);
-  gateMap[outputId] = result;
+  gateMap[gateId] = result;
   return result;
 }
 
-// Converts only one output of the net
-BDD GNetBDDConverter::convertSingleOutput(const GNet &net, 
-                                          const Gate::Id outputId, 
-                                          GateBDDMap &varMap, 
-                                          const Cudd &manager) {
+BDD GNetBDDConverter::convert(const GNet &net, 
+                              const Gate::Id gateId, 
+                              GateBDDMap &varMap, 
+                              const Cudd &manager) {
   GateBDDMap gateMap;
-  return recursiveConversion(net, outputId, varMap, gateMap, manager);
+  return recursiveConversion(net, gateId, varMap, gateMap, manager);
 }
 
-// Converts list of outputs of the net
-void GNetBDDConverter::convertMultipleOutputs(const GNet &net,
-                                              const GateList &outputList, 
-                                              BDDList &outputBDDList, 
-                                              GateBDDMap &varMap, 
-                                              const Cudd &manager) {
+void GNetBDDConverter::convertMany(const GNet &net,
+                                   const GateList &outputList, 
+                                   BDDList &outputBDDList, 
+                                   GateBDDMap &varMap, 
+                                   const Cudd &manager) {
   BDDList result = BDDList(outputList.size());
   assert(net.isSorted());
 

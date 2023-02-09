@@ -10,8 +10,6 @@
 
 #include "gtest/gtest.h"
 
-#include <iostream>
-
 using namespace eda::gate::model;
 using namespace eda::gate::transformer;
 
@@ -27,13 +25,13 @@ static std::unique_ptr<GNet> makeAnd2(Gate::SignalList
                                   GateList &varList) {
   auto net = std::make_unique<GNet>();
 
-  Gate::Id x0_id = net->newGate(), x1_id = net->newGate();
-  Gate::SignalList and0_inputs = {Gate::Signal::always(x0_id),
-                                  Gate::Signal::always(x1_id)};
+  Gate::Id x0Id = net->newGate(), x1Id = net->newGate();
+  Gate::SignalList and0Inputs = {Gate::Signal::always(x0Id),
+                                  Gate::Signal::always(x1Id)};
 
-  inputs = and0_inputs;
-  outputId = net->addGate(GateSymbol::AND, and0_inputs);
-  varList = {x0_id, x1_id};
+  inputs = and0Inputs;
+  outputId = net->addGate(GateSymbol::AND, and0Inputs);
+  varList = {x0Id, x1Id};
 
   return net;
 }
@@ -44,13 +42,13 @@ static std::unique_ptr<GNet> makeOr2(Gate::SignalList &inputs,
                                 GateList &varList) {
   auto net = std::make_unique<GNet>();
 
-  Gate::Id x0_id = net->newGate(), x1_id = net->newGate();
-  Gate::SignalList or0_inputs = {Gate::Signal::always(x0_id), 
-                                  Gate::Signal::always(x1_id)};
+  Gate::Id x0Id = net->newGate(), x1Id = net->newGate();
+  Gate::SignalList or0Inputs = {Gate::Signal::always(x0Id), 
+                                  Gate::Signal::always(x1Id)};
 
-  inputs = or0_inputs;
-  outputId = net->addGate(GateSymbol::OR, or0_inputs);
-  varList = {x0_id, x1_id};
+  inputs = or0Inputs;
+  outputId = net->addGate(GateSymbol::OR, or0Inputs);
+  varList = {x0Id, x1Id};
 
   return net;
 }
@@ -61,13 +59,13 @@ static std::unique_ptr<GNet> makeXor2(Gate::SignalList &inputs,
                                   GateList &varList) {
   auto net = std::make_unique<GNet>();
 
-  Gate::Id x0_id = net->newGate(), x1_id = net->newGate();
-  Gate::SignalList xor0_inputs = {Gate::Signal::always(x0_id),
-                                  Gate::Signal::always(x1_id)};
+  Gate::Id x0Id = net->newGate(), x1Id = net->newGate();
+  Gate::SignalList xor0Inputs = {Gate::Signal::always(x0Id),
+                                  Gate::Signal::always(x1Id)};
 
-  inputs = xor0_inputs;
-  outputId = net->addGate(GateSymbol::XOR, xor0_inputs);
-  varList = {x0_id, x1_id};
+  inputs = xor0Inputs;
+  outputId = net->addGate(GateSymbol::XOR, xor0Inputs);
+  varList = {x0Id, x1Id};
 
   return net;
 }

@@ -9,10 +9,8 @@
 #include "gate/model/gate.h"
 #include "gate/model/gnet.h"
 
-// #include "cudd.h"
 #include "cuddObj.hh"
 
-#include <iostream>
 #include <map>
 #include <memory>
 #include <vector>
@@ -22,7 +20,7 @@ using namespace eda::gate::model;
 namespace eda::gate::transformer {
 
 /**
-* \brief Convert GNet to BDD
+* \brief Converts GNet to BDD (Binary Decision Diagram) form.
 * \author <a href="mailto:mrpepelulka@gmail.com">Rustamkhan Ramaldanov</a>
 */
 class GNetBDDConverter {
@@ -32,28 +30,28 @@ public:
   using GateBDDMap = std::map<Gate::Id, BDD>;
   using GateUintMap = std::map<Gate::Id, unsigned>;
 
-  // Converts only one output of the net.
-  static BDD convertSingleOutput(const GNet &net, 
-                                const Gate::Id outputId, 
-                                GateBDDMap &varMap, 
-                                const Cudd &manager);
+  // Converts only one gate of the net.
+  static BDD convert(const GNet &net, 
+                     const Gate::Id gateId, 
+                     GateBDDMap &varMap, 
+                     const Cudd &manager);
   
-  // Converts list of outputs of the net.
-  static void convertMultipleOutputs(const GNet &net, 
-                                    const GateList &outputList, 
-                                    BDDList &outputBDDList, 
-                                    GateBDDMap &varMap, 
-                                    const Cudd &manager);
+  // Converts list of gates of the net.
+  static void convertMany(const GNet &net, 
+                          const GateList &outputList, 
+                          BDDList &outputBDDList, 
+                          GateBDDMap &varMap, 
+                          const Cudd &manager);
 
 private:
-  // Apply gate operation to BDD list. Returns result BDD.
-  static BDD gateOperationBDD(const GateSymbol::Value func, 
+  // Apply gate function to BDD list. Returns result BDD.
+  static BDD applyGateFunc(const GateSymbol::Value func, 
                               const BDDList &inputList, 
                               const Cudd &manager);
 
   // Recursively converts GNet to BDD. 
   static BDD recursiveConversion(const GNet &net, 
-                                const Gate::Id outputId, 
+                                const Gate::Id gateId, 
                                 GateBDDMap &varMap, 
                                 GateBDDMap &gateMap, 
                                 const Cudd &manager);

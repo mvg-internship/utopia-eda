@@ -9,10 +9,20 @@ The list of tools required to build the project:
 * `zlib1g-dev`
 * C++17-compatible compiler (e.g, `gcc` or `clang`)
 * CMake-supported "build" system (e.g., `make` or `ninja`)
+* `CUDD` library
 
-### Coding Style
+CUDD installation
 
-We use [LLVM Coding Conventions](https://llvm.org/docs/CodingStandards.html) with some project-specific refinements.
+1. Get `CUDD` source code from [CUDD]
+2. Configure and build `CUDD` as described in the `<CUDD-source-dir>/README`
+
+If you built `CUDD` not in the default directory (/usr/local) then, before building the utopia, you must set the environment variable `CUDD_DIR` to the path to the directory containing the `CUDD` library
+
+```
+export CUDD_DIR=<cudd-dir>
+```
+
+[CUDD]: https://github.com/ivmai/cudd
 
 ### Compiling from Command Line
 

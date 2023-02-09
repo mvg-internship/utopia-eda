@@ -17,7 +17,7 @@ target_include_directories(Gate PUBLIC ${PROJECT_SOURCE_DIR}/src)
 target_link_libraries(Gate
   PUBLIC
     minisat-lib-static
-    Cudd::CuddObj
+    Cudd::Cudd
 
   PRIVATE
     Utopia::Util
