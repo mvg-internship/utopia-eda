@@ -24,6 +24,10 @@ export CUDD_DIR=<cudd-dir>
 
 [CUDD]: https://github.com/ivmai/cudd
 
+### Coding Style
+
+We use [LLVM Coding Conventions](https://llvm.org/docs/CodingStandards.html) with some project-specific refinements.
+
 ### Compiling from Command Line
 
 ```
