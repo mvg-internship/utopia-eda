@@ -51,8 +51,13 @@ public:
   static Node<Func, StructHash> *get(Id id) { return _storage[id]; }
   /// Returns the next node identifier.
   static Id nextId() { return _storage.size(); }
+
   /// Returns the node w/ the given function/inputs from the storage.
-  static Node<Func, StructHash> *get(Func func, const SignalList &inputs);
+  static Node<Func, StructHash> *get(
+      uint32_t netId, Func func, const SignalList &inputs);
+  /// Saves the node w/ the given function/inputs to the hash table.
+  static void add(
+      uint32_t netId, Node<Func, StructHash> *node);
 
   //===--------------------------------------------------------------------===//
   // Properties
@@ -166,9 +171,15 @@ protected:
 };
 
 template <typename Func, bool StructHash>
-Node<Func, StructHash> *Node<Func, StructHash>::get(Func func, const SignalList &inputs) {
+Node<Func, StructHash> *Node<Func, StructHash>::get(
+    uint32_t netId, Func func, const SignalList &inputs) {
   // Structural hashing is disabled.
   if constexpr(!StructHash) {
+    return nullptr;
+  }
+
+  // Source nodes look identical, but they are not.
+  if (!func.isConstant() && inputs.empty()) {
     return nullptr;
   }
 
@@ -179,7 +190,7 @@ Node<Func, StructHash> *Node<Func, StructHash>::get(Func func, const SignalList 
   }
 
   // Search for the same node.
-  StructHashKey key(func, inputs);
+  StructHashKey key(netId, func, inputs);
   auto i = _hashing.find(key);
 
   // If the same node exists, return it.
@@ -191,6 +202,17 @@ Node<Func, StructHash> *Node<Func, StructHash>::get(Func func, const SignalList 
   }
 
   return nullptr;
+}
+
+template <typename Func, bool StructHash>
+void Node<Func, StructHash>::add(uint32_t netId, Node<Func, StructHash> *node) {
+  // Structural hashing is disabled.
+  if constexpr(!StructHash) {
+    return;
+  }
+
+  StructHashKey key(netId, node->func(), node->inputs());
+  _hashing.insert({key, node->id()});
 }
 
 template <typename Func, bool StructHash>
@@ -208,5 +230,3 @@ typename Node<Func, StructHash>::StructHashMap Node<Func, StructHash>::_hashing 
 }();
 
 } // namespace eda::base::model
-
-

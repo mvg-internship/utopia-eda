@@ -12,7 +12,6 @@
 
 #include <algorithm>
 #include <cassert>
-#include <iostream>
 #include <random>
 
 using namespace eda::gate::model;
@@ -25,14 +24,14 @@ static std::unique_ptr<GNet> makeNet(GateSymbol gate,
   auto net = std::make_unique<GNet>();
 
   for (unsigned i = 0; i < N; i++) {
-    const Gate::Id inputId = net->newGate();
-    const Gate::Signal input = Gate::Signal::always(inputId);
-    inputs.push_back(input);
+    const Gate::Id inputId = net->addIn();
+    inputs.push_back(Gate::Signal::always(inputId));
   }
 
-  outputId = net->addGate(gate, inputs);
-  net->sortTopologically();
+  auto gateId = net->addGate(gate, inputs);
+  outputId = net->addOut(gateId);
 
+  net->sortTopologically();
   return net;
 }
 
@@ -45,18 +44,17 @@ static std::unique_ptr<GNet> makeNetn(GateSymbol gate,
 
   Gate::SignalList andInputs;
   for (unsigned i = 0; i < N; i++) {
-    const Gate::Id inputId = net->newGate();
-    const Gate::Signal input = Gate::Signal::always(inputId);
-    inputs.push_back(input);
+    const Gate::Id inputId = net->addIn();
+    inputs.push_back(Gate::Signal::always(inputId));
 
-    const Gate::Id notGateId = net->addGate(GateSymbol::NOT, { input });
-    const Gate::Signal andInput = Gate::Signal::always(notGateId);
-    andInputs.push_back(andInput);
+    const Gate::Id notGateId = net->addNot(inputId);
+    andInputs.push_back(Gate::Signal::always(notGateId));
   }
 
-  outputId = net->addGate(gate, andInputs);
-  net->sortTopologically();
+  auto gateId = net->addGate(gate, inputs);
+  outputId = net->addOut(gateId);
 
+  net->sortTopologically();
   return net;
 }
 
@@ -122,7 +120,6 @@ std::unique_ptr<GNet> makeRand(std::size_t nGates,
   }
   const auto maxGateId = net->newGate();
 
-
   std::mt19937 gen(0);
   std::uniform_int_distribution<Gate::Id> snetDist(0, nSubnets - 1);
   std::uniform_int_distribution<Gate::Id> gateDist(minGateId, maxGateId);
@@ -135,7 +132,7 @@ std::unique_ptr<GNet> makeRand(std::size_t nGates,
     // Create subnets.
     for (std::size_t i = 0; i < nSubnets; i++) {
       net->newSubnet();
-    }
+    } // for: create subnets.
 
     // Randomly distributes the gates among the subnets.
     for (std::size_t i = 0; i < nGates; i++) {
@@ -145,37 +142,67 @@ std::unique_ptr<GNet> makeRand(std::size_t nGates,
       if (net->contains(gid)) {
         net->moveGate(gid, dst);
       }
-    } // for: moveGate.
+    } // for: move gates.
 
     // Randomly modify/connect the gates.
     for (std::size_t i = 0; i < nGates; i++) {
       const auto gid = gateDist(gen);
+      if (!net->contains(gid)) {
+        continue;
+      }
 
-      if (net->contains(gid)) {
-        Gate::SignalList inputs;
+      Gate::SignalList inputs;
 
-        const std::size_t arity = arityDist(gen);
-        for (std::size_t j = 0; j < arity; j++) {
-          const auto inputId = gateDist(gen);
+      const std::size_t arity = arityDist(gen);
+      for (std::size_t j = 0; j < arity; j++) {
+        const auto inputId = gateDist(gen);
+
+        if (net->contains(inputId)) {
           const auto input = Gate::Signal::always(inputId);
           inputs.push_back(input);
         }
+      } // for: arity
 
-        // Beware of combinational cycles.
-        if (!net->hasCombFlow(gid, inputs)) {
-          net->setGate(gid, GateSymbol::AND, inputs);
-        }
+      // Beware of combinational cycles.
+      if (!net->hasCombFlow(gid, inputs)) {
+        const auto func = (inputs.empty() ? GateSymbol::IN : GateSymbol::AND);
+        net->setGate(gid, func, inputs);
       }
-    } // for: setGate.
+    } // for: set gates.
 
     // Randomly remove some gates.
     for (std::size_t i = 0; i < nGates / 16; i++) {
       const auto gid = gateDist(gen);
-
-      if (net->contains(gid)) {
-        net->removeGate(gid);
+      if (!net->contains(gid)) {
+        continue;
       }
-    } // for: removeGate.
+
+      auto *source = Gate::get(gid);
+
+      // Check the dependent gates.
+      for (const auto link : source->links()) {
+        auto *target = Gate::get(link.target);
+        if (!net->contains(target->id())) {
+          continue;
+        }
+
+        bool allFromSource = true;
+        for (const auto input : target->inputs()) {
+          if (input.node() != source->id()) {
+            allFromSource = false;
+            break;
+          }
+        }
+
+        // If a gate depends solely on the gate being removed,
+        // it will have no inputs (became an input).
+        if (allFromSource) {
+          net->setIn(target->id());
+        }
+      } // for: source links.
+
+      net->removeGate(gid);
+    } // for: remove gate.
 
     net->groupOrphans();
     net->removeEmptySubnets();
@@ -183,7 +210,7 @@ std::unique_ptr<GNet> makeRand(std::size_t nGates,
     net->sortTopologically();
 
     net->flatten();
-  } // top-level for.
+  } // for: top-level.
 
   return net;
 }
@@ -239,3 +266,4 @@ TEST(GNetTest, GNetRandTestIssue11877) {
   auto net = makeRand(7, 5);
   EXPECT_TRUE(net != nullptr);
 }
+

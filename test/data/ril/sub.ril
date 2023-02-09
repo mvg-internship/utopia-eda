@@ -1,0 +1,9 @@
+input  u:1 clock;
+input  u:1 reset;
+input  u:16 _dfc_wire_4930;
+input  u:16 _dfc_wire_4934;
+output  u:16 _dfc_wire_4942;
+
+@(*) {
+_dfc_wire_4942 = _dfc_wire_4930 - _dfc_wire_4934;
+}

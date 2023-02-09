@@ -15,8 +15,6 @@
 #include <memory>
 #include <unordered_map>
 
-using namespace eda::gate::model;
-
 namespace eda::gate::debugger {
 
 /**
@@ -24,6 +22,9 @@ namespace eda::gate::debugger {
  * \author <a href="mailto:kamkin@ispras.ru">Alexander Kamkin</a>
  */
 class Checker final {
+  using Gate = eda::gate::model::Gate;
+  using GNet = eda::gate::model::GNet;
+
 public:
   using GateBinding = std::unordered_map<Gate::Link, Gate::Link>;
   using SubnetBinding = std::unordered_map<GNet::SubnetId, GNet::SubnetId>;

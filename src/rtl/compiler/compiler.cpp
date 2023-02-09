@@ -56,6 +56,11 @@ std::unique_ptr<GNet> Compiler::compile(const Net &net) {
       registers.push_back(vnode);
       break;
     }
+
+    if (vnode->isOutput()) {
+      // Allocate output pseudo gates.
+      synthOut(vnode, *gnet);
+    }
   }
 
   // Synthesize gates for the postponed registers.
@@ -74,6 +79,10 @@ void Compiler::synthSrc(const VNode *vnode, GNet &net) {
 void Compiler::synthVal(const VNode *vnode, GNet &net) {
   auto out = _library.synth(vnode->width(), vnode->value(), net);
   _outputs.insert({vnode->id(), out});
+}
+
+void Compiler::synthOut(const VNode *vnode, GNet &net) {
+  _library.synth(vnode->width(), out(vnode), net);
 }
 
 void Compiler::synthFun(const VNode *vnode, GNet &net) {
@@ -104,7 +113,7 @@ void Compiler::synthReg(const VNode *vnode, GNet &net) {
     control.push_back(GNet::Signal(signal.event(), signalOut[0]));
   }
 
-  _library.synth(out(vnode->id()), in(vnode), control, net);
+  _library.synth(out(vnode), in(vnode), control, net);
 }
 
 GNet::In Compiler::in(const VNode *vnode) const {
@@ -114,6 +123,10 @@ GNet::In Compiler::in(const VNode *vnode) const {
   }
 
   return in;
+}
+
+const GNet::Out &Compiler::out(const VNode *vnode) const {
+  return out(vnode->id());
 }
 
 const GNet::Out &Compiler::out(VNode::Id vnodeId) const {
