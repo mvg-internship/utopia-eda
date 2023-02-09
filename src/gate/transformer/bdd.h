@@ -49,12 +49,6 @@ private:
                               const BDDList &inputList, 
                               const Cudd &manager);
 
-  // Recursively converts GNet to BDD. 
-  static BDD recursiveConversion(const GNet &net, 
-                                const Gate::Id gateId, 
-                                GateBDDMap &varMap, 
-                                GateBDDMap &gateMap, 
-                                const Cudd &manager);
 };
 
 } // namespace eda::gate::transformer

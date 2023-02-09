@@ -81,7 +81,7 @@ bool transformerAndTest() {
     varMap[inputs[i].node()] = x[i];
   }
   
-  BDD netBDD = GNetBDDConverter::convertSingleOutput(*net, outputId, varMap, 
+  BDD netBDD = GNetBDDConverter::convert(*net, outputId, varMap, 
                                                      manager);
   BDD andBDD = x[0] & x[1];
 
@@ -99,7 +99,7 @@ bool transformerOrTest() {
     varMap[inputs[i].node()] = x[i];
   }
   
-  BDD netBDD = GNetBDDConverter::convertSingleOutput(*net, outputId, varMap, 
+  BDD netBDD = GNetBDDConverter::convert(*net, outputId, varMap, 
                                                      manager);
   BDD xorBDD = x[0] ^ x[1];
 
@@ -123,7 +123,7 @@ bool transformerNorTest() {
   BDDList result;
 
   net->sortTopologically();
-  GNetBDDConverter::convertMultipleOutputs(*net, {outputId1, outputId2}, 
+  GNetBDDConverter::convertMany(*net, {outputId1, outputId2}, 
                                            result, varMap, manager);
   BDD orBDD = x[0] | x[1];
   BDD norBDD = !(orBDD);

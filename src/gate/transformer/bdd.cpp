@@ -85,53 +85,17 @@ BDD GNetBDDConverter::applyGateFunc(const GateSymbol::Value func,
   return result;
 }
 
-BDD GNetBDDConverter::recursiveConversion(const GNet &net,
-                                          const Gate::Id gateId,
-                                          GateBDDMap &varMap,
-                                          GateBDDMap &gateMap, 
-                                          const Cudd &manager) {
-  if (gateMap.find(gateId) != gateMap.end()) {
-    return gateMap[gateId];
-  }
-
-  Gate *gate = Gate::get(gateId);
-
-  if (gate->isSource()) {
-    assert(varMap.find(gateId) != varMap.end());
-    gateMap[gateId] = varMap[gateId];
-    return varMap[gateId];
-  }
-
-  BDDList inputList;
-  for (auto signal : gate->inputs()) {
-    Gate::Id inputId = signal.node();
-    BDD inputBDD = recursiveConversion(net, inputId, varMap, gateMap, manager);
-    inputList.push_back(inputBDD);
-  }
-  BDD result = gateOperationBDD(gate->func(), inputList, manager);
-  gateMap[gateId] = result;
-  return result;
-}
-
-BDD GNetBDDConverter::convert(const GNet &net, 
-                              const Gate::Id gateId, 
-                              GateBDDMap &varMap, 
-                              const Cudd &manager) {
-  GateBDDMap gateMap;
-  return recursiveConversion(net, gateId, varMap, gateMap, manager);
-}
-
 void GNetBDDConverter::convertMany(const GNet &net,
-                                   const GateList &outputList, 
+                                   const GateList &gateList, 
                                    BDDList &outputBDDList, 
                                    GateBDDMap &varMap, 
                                    const Cudd &manager) {
-  BDDList result = BDDList(outputList.size());
+  BDDList result = BDDList(gateList.size());
   assert(net.isSorted());
 
   GateUintMap gateIndexMap;
-  for (int i = 0; i < outputList.size(); i++) {
-    gateIndexMap[outputList[i]] = i;
+  for (int i = 0; i < gateList.size(); i++) {
+    gateIndexMap[gateList[i]] = i;
   }
 
   GateBDDMap gateMap;
@@ -160,6 +124,15 @@ void GNetBDDConverter::convertMany(const GNet &net,
   }
 
   outputBDDList = result;
+}
+
+BDD GNetBDDConverter::convert(const GNet &net, 
+                   const Gate::Id gateId, 
+                   GateBDDMap &varMap, 
+                   const Cudd &manager) {
+  BDDList resultList;
+  convertMany(net, {gateId}, resultList, varMap, manager);
+  return resultList[0];
 }
 
 } // namespace eda::gate::transformer
