@@ -12,7 +12,7 @@ void print_modules(const int ind, std::ostream &out){
 void print_wires(const Yosys::hashlib::dict<Yosys::RTLIL::IdString, Yosys::RTLIL::Wire*> &wires, std::ostream &out){
     out << "Wires:" << "\n";
     for (auto it1=wires.begin(); it1 != wires.end(); ++it1){
-        for(auto &it2 : Yosys::RTLIL::IdString::global_id_index_){
+        for(const auto &it2 : Yosys::RTLIL::IdString::global_id_index_){
             if (it2.second == it1->first.index_){
                 out << "  " << it2.first << " - wire of index: " << it2.second << "\n";
             }
