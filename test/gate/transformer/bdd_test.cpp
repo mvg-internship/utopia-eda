@@ -20,14 +20,14 @@ using GateUintMap = GNetBDDConverter::GateUintMap;
 
 // x0 & x1
 static std::unique_ptr<GNet> makeAnd2(Gate::SignalList 
-                                  &inputs, 
-                                  Gate::Id &outputId, 
-                                  GateList &varList) {
+                                      &inputs, 
+                                      Gate::Id &outputId, 
+                                      GateList &varList) {
   auto net = std::make_unique<GNet>();
 
   Gate::Id x0Id = net->newGate(), x1Id = net->newGate();
   Gate::SignalList and0Inputs = {Gate::Signal::always(x0Id),
-                                  Gate::Signal::always(x1Id)};
+                                 Gate::Signal::always(x1Id)};
 
   inputs = and0Inputs;
   outputId = net->addGate(GateSymbol::AND, and0Inputs);
@@ -38,13 +38,13 @@ static std::unique_ptr<GNet> makeAnd2(Gate::SignalList
 
 // x0 | x1
 static std::unique_ptr<GNet> makeOr2(Gate::SignalList &inputs, 
-                                Gate::Id &outputId, 
-                                GateList &varList) {
+                                     Gate::Id &outputId, 
+                                     GateList &varList) {
   auto net = std::make_unique<GNet>();
 
   Gate::Id x0Id = net->newGate(), x1Id = net->newGate();
   Gate::SignalList or0Inputs = {Gate::Signal::always(x0Id), 
-                                  Gate::Signal::always(x1Id)};
+                                Gate::Signal::always(x1Id)};
 
   inputs = or0Inputs;
   outputId = net->addGate(GateSymbol::OR, or0Inputs);
@@ -55,13 +55,13 @@ static std::unique_ptr<GNet> makeOr2(Gate::SignalList &inputs,
 
 // x0 ^ x1
 static std::unique_ptr<GNet> makeXor2(Gate::SignalList &inputs, 
-                                  Gate::Id &outputId, 
-                                  GateList &varList) {
+                                      Gate::Id &outputId, 
+                                      GateList &varList) {
   auto net = std::make_unique<GNet>();
 
   Gate::Id x0Id = net->newGate(), x1Id = net->newGate();
   Gate::SignalList xor0Inputs = {Gate::Signal::always(x0Id),
-                                  Gate::Signal::always(x1Id)};
+                                 Gate::Signal::always(x1Id)};
 
   inputs = xor0Inputs;
   outputId = net->addGate(GateSymbol::XOR, xor0Inputs);
@@ -81,8 +81,7 @@ bool transformerAndTest() {
     varMap[inputs[i].node()] = x[i];
   }
   
-  BDD netBDD = GNetBDDConverter::convert(*net, outputId, varMap, 
-                                                     manager);
+  BDD netBDD = GNetBDDConverter::convert(*net, outputId, varMap, manager);
   BDD andBDD = x[0] & x[1];
 
   return netBDD == andBDD;
@@ -99,8 +98,7 @@ bool transformerOrTest() {
     varMap[inputs[i].node()] = x[i];
   }
   
-  BDD netBDD = GNetBDDConverter::convert(*net, outputId, varMap, 
-                                                     manager);
+  BDD netBDD = GNetBDDConverter::convert(*net, outputId, varMap, manager);
   BDD xorBDD = x[0] ^ x[1];
 
   return netBDD == xorBDD;
@@ -124,7 +122,7 @@ bool transformerNorTest() {
 
   net->sortTopologically();
   GNetBDDConverter::convertMany(*net, {outputId1, outputId2}, 
-                                           result, varMap, manager);
+                                result, varMap, manager);
   BDD orBDD = x[0] | x[1];
   BDD norBDD = !(orBDD);
 

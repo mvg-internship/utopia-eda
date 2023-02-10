@@ -85,7 +85,7 @@ BDD GNetBDDConverter::applyGateFunc(const GateSymbol::Value func,
   return result;
 }
 
-void GNetBDDConverter::convertMany(const GNet &net,
+void GNetBDDConverter::convertList(const GNet &net,
                                    const GateList &gateList, 
                                    BDDList &outputBDDList, 
                                    GateBDDMap &varMap, 
@@ -106,8 +106,7 @@ void GNetBDDConverter::convertMany(const GNet &net,
     if (gate->isSource()) {
       assert(varMap.find(gateId) != varMap.end());
       resultBDD = varMap[gateId];
-    }
-    else {
+    } else {
       BDDList inputBDDList;
       for (auto signal : gate->inputs()) {
         Gate::Id inputId = signal.node();
@@ -127,9 +126,9 @@ void GNetBDDConverter::convertMany(const GNet &net,
 }
 
 BDD GNetBDDConverter::convert(const GNet &net, 
-                   const Gate::Id gateId, 
-                   GateBDDMap &varMap, 
-                   const Cudd &manager) {
+                              const Gate::Id gateId, 
+                              GateBDDMap &varMap, 
+                              const Cudd &manager) {
   BDDList resultList;
   convertMany(net, {gateId}, resultList, varMap, manager);
   return resultList[0];

@@ -37,7 +37,7 @@ public:
                      const Cudd &manager);
   
   // Converts list of gates of the net.
-  static void convertMany(const GNet &net, 
+  static void convertList(const GNet &net, 
                           const GateList &outputList, 
                           BDDList &outputBDDList, 
                           GateBDDMap &varMap, 
@@ -46,8 +46,8 @@ public:
 private:
   // Apply gate function to BDD list. Returns result BDD.
   static BDD applyGateFunc(const GateSymbol::Value func, 
-                              const BDDList &inputList, 
-                              const Cudd &manager);
+                           const BDDList &inputList, 
+                           const Cudd &manager);
 
 };
 

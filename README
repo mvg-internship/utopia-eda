@@ -13,10 +13,12 @@ The list of tools required to build the project:
 
 CUDD installation
 
-1. Get `CUDD` source code from [CUDD]
+1. Get `CUDD` from here: https://github.com/ivmai/cudd
 2. Configure and build `CUDD` as described in the `<CUDD-source-dir>/README`
 
-If you built `CUDD` not in the default directory (/usr/local) then, before building the utopia, you must set the environment variable `CUDD_DIR` to the path to the directory containing the `CUDD` library
+If you built `CUDD` not in the default directory (/usr/local) then, 
+before building the utopia IDE, you must set the environment variable 
+`CUDD_DIR` to the path to the directory containing the `CUDD` library:
 
 ```
 export CUDD_DIR=<cudd-dir>
