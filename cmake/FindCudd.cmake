@@ -1,7 +1,10 @@
 find_path(Cudd_INCLUDE_DIR "cudd.h" PATH_SUFFIXES include)
 
 if (NOT Cudd_LIBRARY)
-  find_library(Cudd_LIBRARY cudd PATH_SUFFIXES lib)
+  set(ORIG_CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES})
+  set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
+  find_library(Cudd_LIBRARY cudd PATH_SUFFIXES lib) 
+  set(CMAKE_FIND_LIBRARY_SUFFIXES ${ORIG_CMAKE_FIND_LIBRARY_SUFFIXES})
 endif()
 
 include(FindPackageHandleStandardArgs)

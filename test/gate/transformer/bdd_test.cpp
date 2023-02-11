@@ -10,8 +10,11 @@
 
 #include "gtest/gtest.h"
 
-using namespace eda::gate::model;
-using namespace eda::gate::transformer;
+using Gate = eda::gate::model::Gate;
+using GNet = eda::gate::model::GNet;
+using GateSymbol = eda::gate::model::GateSymbol;
+
+using GNetBDDConverter = eda::gate::transformer::GNetBDDConverter;
 
 using GateList = GNetBDDConverter::GateList;
 using BDDList = GNetBDDConverter::BDDList;
@@ -121,7 +124,7 @@ bool transformerNorTest() {
   BDDList result;
 
   net->sortTopologically();
-  GNetBDDConverter::convertMany(*net, {outputId1, outputId2}, 
+  GNetBDDConverter::convertList(*net, {outputId1, outputId2}, 
                                 result, varMap, manager);
   BDD orBDD = x[0] | x[1];
   BDD norBDD = !(orBDD);

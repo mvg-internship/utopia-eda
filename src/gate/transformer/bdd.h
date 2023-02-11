@@ -15,8 +15,6 @@
 #include <memory>
 #include <vector>
 
-using namespace eda::gate::model;
-
 namespace eda::gate::transformer {
 
 /**
@@ -24,6 +22,10 @@ namespace eda::gate::transformer {
 * \author <a href="mailto:mrpepelulka@gmail.com">Rustamkhan Ramaldanov</a>
 */
 class GNetBDDConverter {
+  using Gate = eda::gate::model::Gate;
+  using GNet = eda::gate::model::GNet;
+  using GateSymbol = eda::gate::model::GateSymbol;
+
 public:
   using GateList = std::vector<Gate::Id>;
   using BDDList = std::vector<BDD>;

@@ -9,7 +9,7 @@ The list of tools required to build the project:
 * `zlib1g-dev`
 * C++17-compatible compiler (e.g, `gcc` or `clang`)
 * CMake-supported "build" system (e.g., `make` or `ninja`)
-* `CUDD` library
+* `CUDD` library (see installation guide below)
 
 CUDD installation
 
@@ -17,7 +17,7 @@ CUDD installation
 2. Configure and build `CUDD` as described in the `<CUDD-source-dir>/README`
 
 If you built `CUDD` not in the default directory (/usr/local) then, 
-before building the utopia IDE, you must set the environment variable 
+before building the Utopia IDE, you must set the environment variable 
 `CUDD_DIR` to the path to the directory containing the `CUDD` library:
 
 ```

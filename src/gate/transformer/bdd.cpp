@@ -16,8 +16,6 @@
 #include <memory>
 #include <vector>
 
-using namespace eda::gate::model;
-
 namespace eda::gate::transformer {
 
 BDD GNetBDDConverter::applyGateFunc(const GateSymbol::Value func, 
@@ -113,7 +111,7 @@ void GNetBDDConverter::convertList(const GNet &net,
         BDD inputBDD = gateMap[inputId];
         inputBDDList.push_back(inputBDD);
       }
-      resultBDD = gateOperationBDD(gate->func(), inputBDDList, manager);
+      resultBDD = applyGateFunc(gate->func(), inputBDDList, manager);
     }
 
     gateMap[gateId] = resultBDD;
@@ -130,7 +128,7 @@ BDD GNetBDDConverter::convert(const GNet &net,
                               GateBDDMap &varMap, 
                               const Cudd &manager) {
   BDDList resultList;
-  convertMany(net, {gateId}, resultList, varMap, manager);
+  convertList(net, {gateId}, resultList, varMap, manager);
   return resultList[0];
 }
 
