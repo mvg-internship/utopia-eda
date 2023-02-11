@@ -8,6 +8,7 @@ add_library(Gate OBJECT
   model/hMetis_formatter.cpp
   premapper/aigmapper.cpp
   premapper/premapper.cpp
+  premapper/migmapper.cpp
   simulator/simulator.cpp
 )
 add_library(Utopia::Gate ALIAS Gate)

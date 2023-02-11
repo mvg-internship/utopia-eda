@@ -138,7 +138,7 @@ Gate::Id MigMapper::mapAnd(const Gate::SignalList &newInputs,
       gateId = mapVal(!sign, newNet);
     } else {
       // AND(x,y).
-      gateId = newNet.addGate(GateSymbol::MAJ, {x, y, valId});
+      gateId = newNet.addGate(GateSymbol::MAJ, {x, y, Gate::Signal::always(valId)});
     }
 
     inputs.push_back(Gate::Signal::always(gateId));
@@ -184,7 +184,7 @@ Gate::Id MigMapper::mapOr(const Gate::SignalList &newInputs,
         gateId = mapVal(sign, newNet);
       } else {
         // OR(x,y).
-        gateId = newNet.addGate(GateSymbol::MAJ, {x, y, valId});
+        gateId = newNet.addGate(GateSymbol::MAJ, {x, y, Gate::Signal::always(valId)});
       }
 
       inputs.push_back(Gate::Signal::always(gateId));
@@ -255,35 +255,50 @@ Gate::Id MigMapper::mapXor(const Gate::SignalList &newInputs,
 // MAJ
 //===----------------------------------------------------------------------===//
 
-size_t factorial(size_t a) {
-  if (a == 0 || a == 1) {
-    return 1;
-  }
-  size_t result = 1;
-  for (size_t i = 2; i <= a; ++i) {
-    result *= i;
-  }
-  return result;
+Gate::Id majorityOfFive(const Gate::SignalList &newInputs, GNet &newNet) {
+  // <xyztu> = <<xyz>t<<xyu>uz>>
+  const auto xyzId = newNet.addGate(GateSymbol::MAJ, {newInputs[0], newInputs[1], newInputs[2]});
+  const auto xyuId = newNet.addGate(GateSymbol::MAJ, {newInputs[0], newInputs[1], newInputs[4]});
+  // <<xyu>uz>
+  const auto muzId = newNet.addGate(GateSymbol::MAJ, {Gate::Signal::always(xyuId), newInputs[4], newInputs[2]});
+  return newNet.addGate(GateSymbol::MAJ, {Gate::Signal::always(xyzId), newInputs[3], Gate::Signal::always(muzId)});
+}
+
+Gate::Id majorityOfSeven(const Gate::SignalList &newInputs, GNet &newNet) {
+  // <xyztufr> = <y<u<xzt><NOT(u)fr>><t<ufr><xzNOT(t)>>>
+  const auto xztId = newNet.addGate(GateSymbol::MAJ, {newInputs[0], newInputs[2], newInputs[3]});
+  const auto notUId = mapNop({newInputs[4]}, false, newNet);
+  const auto notUfrId = newNet.addGate(GateSymbol::MAJ, {Gate::Signal::always(notUId), newInputs[5], newInputs[6]});
+  const auto ufrId = newNet.addGate(GateSymbol::MAJ, {newInputs[4], newInputs[5], newInputs[6]});
+  const auto notTId = mapNop({newInputs[3]}, false, newNet);
+  const auto xzNotTId = newNet.addGate(GateSymbol::MAJ, {newInputs[0], newInputs[2], Gate::Signal::always(notTId)});
+  // <u<xzt><NOT(u)fr>>
+  const auto uxztufrId = newNet.addGate(GateSymbol::MAJ, {newInputs[4], Gate::Signal::always(xztId), Gate::Signal::always(notUfrId)});
+  // <t<ufr><xzNOT(t)>>
+  const auto tufrxztId = newNet.addGate(GateSymbol::MAJ, {newInputs[3], Gate::Signal::always(ufrId), Gate::Signal::always(xzNotTId)});
+  // <xyztufr>
+  return newNet.addGate(GateSymbol::MAJ, {newInputs[1], Gate::Signal::always(uxztufrId), Gate::Signal::always(tufrxztId)});
 }
 
 Gate::Id MigMapper::mapMaj(const Gate::SignalList &newInputs, size_t n0, size_t n1, GNet &newNet) const {
-  assert(((newInputs.size() + n0 + n1) % 2 == 1) and (newInputs.size() + n0 + n1 >= 3));
+  size_t inputSize = newInputs.size();
+  assert(((inputSize + n0 + n1) % 2 == 1) and (inputSize + n0 + n1 >= 3));
 
-  if (newInputs.size() == 0) {
+  if (inputSize == 0) {
     return mapVal((n1 > n0), newNet);
   }
 
-  if ((newInputs.size() <= 3) and (n0 == n1)) {
-    if (newInputs.size() == 3) {
+  if ((inputSize <= 3) and (n0 == n1)) {
+    if (inputSize == 3) {
       return newNet.addGate(GateSymbol::MAJ, newInputs);
-    } else { //newInputs.size() == 1
+    } else { //inputSize == 1
       return mapNop(newInputs, true, newNet);
     }
   }
 
   int n = n1 - n0;
-  size_t abs_n = abs(n);
-  if ((newInputs.size() == 2) and (abs_n == 1)) {
+  size_t absN = abs(n);
+  if ((inputSize == 2) and (absN == 1)) {
     // Maj(x1, x2, 1) =  Or(x1, x2)
     // Maj(x1, x2, 0) = And(x1, x2)
     if (n1 > 0) {
@@ -294,7 +309,7 @@ Gate::Id MigMapper::mapMaj(const Gate::SignalList &newInputs, size_t n0, size_t 
   }
 
   // med - is a mediana
-  size_t med = (newInputs.size() + n0 + n1 + 1) / 2;
+  size_t med = (inputSize + n0 + n1 + 1) / 2;
   if (n0 >= med) {
     return mapVal(false, newNet);
   }
@@ -303,55 +318,21 @@ Gate::Id MigMapper::mapMaj(const Gate::SignalList &newInputs, size_t n0, size_t 
   }
 
   Gate::SignalList inputs(newInputs.begin(), newInputs.end());
-  const size_t quantity = newInputs.size() + abs_n;
+  const size_t quantity = inputSize + absN;
   if (n != 0) {
     inputs.reserve(quantity);
     const auto valId = mapVal((n > 0), newNet);
-    while (abs_n > 0) {
+    while (absN > 0) {
       inputs.push_back(Gate::Signal::always(valId));
-      abs_n -= 1;
+      absN--;
     }
   }
-  // MAJ(x, y, z) = OR(AND(x, y), AND(y, z), AND(x, z))
-  // MAJ(x, y, z, v, w) = OR(AND(x, y, z), AND(x, y, v), AND(x, y, w), AND(x, z, v), AND(x, z, w),
-  //                         AND(x, v, w), AND(y, z, v), AND(y, z, w), AND(y, v, w), AND(z, v, w))
-  // and so on...
-  size_t C = factorial(quantity) / (factorial(med) * factorial(quantity - med));
-  Gate::SignalList newestInputs;
-  newestInputs.reserve(C);
-  size_t *indexes = new size_t [med];
-  for (size_t i = 0; i < med; ++i) {
-    indexes[i] = i;
+  if (quantity == 5) {
+    return majorityOfFive(inputs, newNet);
   }
-  for (size_t i = 0; i < C; ++i) {
-    int flag = 0;
-    bool fl = true;
-    for (size_t j = med; j > 0; --j) {
-      indexes[j - 1] += flag;
-      fl = true;
-      if (indexes[j - 1] > quantity - 1 - (med - j)) {
-        flag = 1;
-        fl = false;
-      }
-      if (fl) {
-        for (size_t k = j; k < med; ++k) {
-          indexes[k] = indexes[k - 1] + 1;
-        }
-        break;
-      }
-    }
-    Gate::SignalList tmpInputs;
-    tmpInputs.reserve(med);
-    for (size_t h = 0; h < med; ++h) {
-      tmpInputs.push_back(inputs[indexes[h]]);
-    }
-    const auto gateAndId = mapAnd(tmpInputs, true, newNet);
-    newestInputs.push_back(Gate::Signal::always(gateAndId));
-    tmpInputs.clear();
-    indexes[med - 1] += 1;
+  if (quantity == 7) {
+    return majorityOfSeven(inputs, newNet);
   }
-  delete [] indexes;
-  return mapOr(newestInputs, true, newNet);
 }
 
 } // namespace eda::gate::premapper
