@@ -13,6 +13,9 @@
 
 namespace eda::gate::premapper {
 
+using Gate = eda::gate::model::Gate;
+using GNet = eda::gate::model::GNet;
+
 Gate::SignalList getNewInputs(const Gate &oldGate,
                               const AigMapper::GateIdMap &oldToNewGates,
                               size_t &n0, size_t &n1) {
@@ -42,6 +45,8 @@ Gate::SignalList getNewInputs(const Gate &oldGate,
 Gate::Id AigMapper::mapGate(const Gate &oldGate,
                             const GateIdMap &oldToNewGates,
                             GNet &newNet) const {
+  using GateSymbol = eda::gate::model::GateSymbol;
+
   if (oldGate.isSource() || oldGate.isTrigger()) {
     // Clone sources and triggers gates w/o changes.
     return PreMapper::mapGate(oldGate, oldToNewGates, newNet);
@@ -74,7 +79,7 @@ Gate::Id AigMapper::mapGate(const Gate &oldGate,
 //===----------------------------------------------------------------------===//
 
 Gate::Id AigMapper::mapIn(GNet &newNet) const {
-  return newNet.addGate(GateSymbol::IN, {});
+  return newNet.addIn();
 }
 
 Gate::Id AigMapper::mapOut(const Gate::SignalList &newInputs,
@@ -84,10 +89,10 @@ Gate::Id AigMapper::mapOut(const Gate::SignalList &newInputs,
   // Constant output.
   if (n0 > 0 || n1 > 0) {
     auto valId = mapVal(n1 > 0, newNet);
-    return newNet.addGate(GateSymbol::OUT, {Gate::Signal::always(valId)});
+    return newNet.addOut(valId);
   }
 
-  return newNet.addGate(GateSymbol::OUT, newInputs);
+  return newNet.addOut(newInputs);
 }
 
 //===----------------------------------------------------------------------===//
@@ -95,7 +100,7 @@ Gate::Id AigMapper::mapOut(const Gate::SignalList &newInputs,
 //===----------------------------------------------------------------------===//
 
 Gate::Id AigMapper::mapVal(bool value, GNet &newNet) const {
-  return newNet.addGate(value ? GateSymbol::ONE : GateSymbol::ZERO, {});
+  return value ? newNet.addOne() : newNet.addZero();
 }
 
 //===----------------------------------------------------------------------===//
@@ -112,12 +117,12 @@ Gate::Id AigMapper::mapNop(const Gate::SignalList &newInputs,
 
   // NOT(NOT(x)) = x.
   const auto *inputGate = Gate::get(inputId);
-  if (inputGate->func() == GateSymbol::NOT) {
+  if (inputGate->func() == eda::gate::model::GateSymbol::NOT) {
     return inputGate->input(0).node();
   }
 
   // NOT(x).
-  return newNet.addGate(GateSymbol::NOT, newInputs);
+  return newNet.addNot(newInputs);
 }
 
 Gate::Id AigMapper::mapNop(const Gate::SignalList &newInputs,
@@ -155,7 +160,7 @@ Gate::Id AigMapper::mapAnd(const Gate::SignalList &newInputs,
       gateId = mapVal(!sign, newNet);
     } else {
       // AND(x,y).
-      gateId = newNet.addGate(GateSymbol::AND, {x, y});
+      gateId = newNet.addAnd(x, y);
     }
 
     inputs.push_back(Gate::Signal::always(gateId));
