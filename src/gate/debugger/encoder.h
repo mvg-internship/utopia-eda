@@ -16,8 +16,6 @@
 #include <string>
 #include <vector>
 
-using namespace eda::gate::model;
-
 namespace eda::gate::debugger {
 
 /**
@@ -25,6 +23,9 @@ namespace eda::gate::debugger {
  * \author <a href="mailto:kamkin@ispras.ru">Alexander Kamkin</a>
  */
 class Encoder final {
+  using Gate = eda::gate::model::Gate;
+  using GNet = eda::gate::model::GNet;
+
 public:
   void encode(const GNet &net, uint16_t version);
   void encode(const Gate &gate, uint16_t version);
