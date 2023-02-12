@@ -383,7 +383,7 @@ Gate::Id MigMapper::mapMaj(const Gate::SignalList &newInputs, size_t n0, size_t 
     std::swap(toFitIn, toTakeFrom);
     toFitIn.clear();
   }
-  if (count == 1) {
+  if (counter == 1) {
     const auto internalMaj = newNet.addGate(GateSymbol::MAJ, {inputs[0], toTakeFrom[0], toTakeFrom[2]});
     return newNet.addGate(GateSymbol::MAJ, {inputs[1], toTakeFrom[1], Gate::Signal::always(internalMaj)});
   }
