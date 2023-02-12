@@ -17,11 +17,11 @@ std::ostream &operator<<(const GNet &model, std::ostream &output)
 				<< "<node id = \""
 				<< b[i]->id()
 				<< "\"/>\n";
-		// описываем вершины
+		// describing the nodes
 		auto a = b[i]->links();
 		for (long k = 0; k < a.size(); k++)
 		{
-			if (don.find(std::to_string(i) + "_" + std::to_string(k)) == don.end() && don.find(std::to_string(k) + "_" + std::to_string(i)) == don.end()) // проверяем, что не рисовали это ребро
+			if (don.find(std::to_string(i) + "_" + std::to_string(k)) == don.end() && don.find(std::to_string(k) + "_" + std::to_string(i)) == don.end()) // we check that we did not draw this edge
 			{
 				output
 						<< "<edge id = \"l" + std::to_string(i) + "_" + std::to_string(k) + "\" source = \""
@@ -33,7 +33,7 @@ std::ostream &operator<<(const GNet &model, std::ostream &output)
 						<< a[k].input
 						<< "</data>\n"
 						<< "</edge>\n";
-				// описываем рёбра
+				// describing the edges
 				don.insert(std::to_string(i) + "_" + std::to_string(k));
 				don.insert(std::to_string(k) + "_" + std::to_string(i));
 			}
