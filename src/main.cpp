@@ -60,11 +60,11 @@ int rtlMain(const std::string &file, const RtlOptions &options) {
   //===---------------------------------------------------------------------===/
   // Pre-mapping
   //===---------------------------------------------------------------------===/
-  using AigMapper = eda::gate::premapper::AigMapper;
-  using GateIdMap = AigMapper::GateIdMap;
+  using MigMapper = eda::gate::premapper::MigMapper;
+  using GateIdMap = MigMapper::GateIdMap;
 
   GateIdMap oldToNewGates;
-  auto &premapper = AigMapper::get();
+  auto &premapper = MigMapper::get();
   auto premapped = premapper.map(*net, oldToNewGates);
 
   std::cout << "------ netlist (premapped) ------" << std::endl;
