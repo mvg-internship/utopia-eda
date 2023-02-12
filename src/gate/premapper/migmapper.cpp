@@ -333,6 +333,61 @@ Gate::Id MigMapper::mapMaj(const Gate::SignalList &newInputs, size_t n0, size_t 
   if (quantity == 7) {
     return majorityOfSeven(inputs, newNet);
   }
+
+  //Majority of n to several majority of 3
+  Gate::SignalList toFitIn((quantity + 1) / 2);
+  Gate::SignalList toTakeFrom((quantity + 1) / 2);
+  const auto notArgId = mapNop({inputs[quantity - 3]}, false, newNet);
+  const auto baseMaj1 = newNet.addGate(GateSymbol::MAJ, {Gate::Signal::always(notArgId), inputs[quantity - 2], inputs[quantity - 1]});
+  const auto baseMaj2 = newNet.addGate(GateSymbol::MAJ, {inputs[quantity - 3], inputs[quantity - 2], inputs[quantity - 1]});
+  toTakeFrom[1] = Gate::Signal::always(baseMaj2);
+  const auto zeroId = mapVal(false, newNet);
+  const auto oneId  = mapVal(true, newNet);
+  const auto startMaj1 = newNet.addGate(GateSymbol::MAJ, {inputs[quantity - 3], Gate::Signal::always(zeroId), Gate::Signal::always(baseMaj1)});
+  const auto startMaj2 = newNet.addGate(GateSymbol::MAJ, {inputs[quantity - 3], Gate::Signal::always(oneId),  Gate::Signal::always(baseMaj1)});
+  toTakeFrom[0] = Gate::Signal::always(startMaj1);
+  toTakeFrom[2] = Gate::Signal::always(startMaj2);
+  //the quantity of iterations
+  uint32_t qIter = 4;
+  //the lower part of the rhombus
+  for (uint32_t i = quantity - 3; i >= (quantity + 1) / 2; i--) {
+    //the cycle for a layer
+    for (uint32_t j = 0; j < qIter; j++) {
+      if (j == 0) {
+        const auto firstMaj = newNet.addGate(GateSymbol::MAJ, {inputs[i - 1], Gate::Signal::always(zeroId), toTakeFrom[j]});
+        toFitIn[0] = Gate::Signal::always(firstMaj);
+        continue;
+      }
+      if (j == qIter - 1) {
+        const auto lastMaj = newNet.addGate(GateSymbol::MAJ, {inputs[i - 1], Gate::Signal::always(oneId), toTakeFrom[j - 1]});
+        toFitIn[j] = Gate::Signal::always(lastMaj);
+        continue;
+      }
+      const auto intermedMaj = newNet.addGate(GateSymbol::MAJ, {inputs[i - 1], toTakeFrom[j - 1], toTakeFrom[j]});
+      toFitIn[j] = Gate::Signal::always(intermedMaj);
+    }
+    qIter++;
+    std::swap(toFitIn, toTakeFrom);
+    toFitIn.clear();
+  }
+  //one more counter
+  uint32_t counter;
+  //the higher part of the rhombus
+  for (counter = (quantity - 3) / 2; counter > 1; counter -= 2) {
+    //the cycle for a layer
+    for (size_t j = 0; j < counter; j++) {
+      const auto internalMaj = newNet.addGate(GateSymbol::MAJ, {inputs[counter - 1], toTakeFrom[j], toTakeFrom[j + 2]});
+      const auto externalMaj = newNet.addGate(GateSymbol::MAJ, {inputs[counter], toTakeFrom[j + 1], Gate::Signal::always(internalMaj)});
+      toFitIn[j] = Gate::Signal::always(externalMaj);
+    }
+    std::swap(toFitIn, toTakeFrom);
+    toFitIn.clear();
+  }
+  if (count == 1) {
+    const auto internalMaj = newNet.addGate(GateSymbol::MAJ, {inputs[0], toTakeFrom[0], toTakeFrom[2]});
+    return newNet.addGate(GateSymbol::MAJ, {inputs[1], toTakeFrom[1], Gate::Signal::always(internalMaj)});
+  }
+  return newNet.addGate(GateSymbol::MAJ, {inputs[0], toTakeFrom[0], toTakeFrom[1]});
 }
 
 } // namespace eda::gate::premapper
