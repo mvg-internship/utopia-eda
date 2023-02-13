@@ -267,10 +267,10 @@ Gate::Id majorityOfFive(const Gate::SignalList &newInputs, GNet &newNet) {
 Gate::Id majorityOfSeven(const Gate::SignalList &newInputs, GNet &newNet) {
   // <xyztufr> = <y<u<xzt><NOT(u)fr>><t<ufr><xzNOT(t)>>>
   const auto xztId = newNet.addGate(GateSymbol::MAJ, {newInputs[0], newInputs[2], newInputs[3]});
-  const auto notUId = mapNop({newInputs[4]}, false, newNet);
+  const auto notUId = newNet.addGate(GateSymbol::NOT, {newInputs[4]});
   const auto notUfrId = newNet.addGate(GateSymbol::MAJ, {Gate::Signal::always(notUId), newInputs[5], newInputs[6]});
   const auto ufrId = newNet.addGate(GateSymbol::MAJ, {newInputs[4], newInputs[5], newInputs[6]});
-  const auto notTId = mapNop({newInputs[3]}, false, newNet);
+  const auto notTId = newNet.addGate(GateSymbol::NOT, {newInputs[3]});
   const auto xzNotTId = newNet.addGate(GateSymbol::MAJ, {newInputs[0], newInputs[2], Gate::Signal::always(notTId)});
   // <u<xzt><NOT(u)fr>>
   const auto uxztufrId = newNet.addGate(GateSymbol::MAJ, {newInputs[4], Gate::Signal::always(xztId), Gate::Signal::always(notUfrId)});
