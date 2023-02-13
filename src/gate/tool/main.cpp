@@ -40,7 +40,7 @@ int main(){
     eda::gate::model::GNet net1(0);
     Gate::SignalList inputs1;
     Gate::Id outputId1;
-    for (unsigned i = 0; i < 2; i++) {
+    for (unsigned i = 0; i < 2; ++i) {
         const Gate::Id inputId1 = net1.addIn();
         inputs1.push_back(Gate::Signal::always(inputId1));
     }
