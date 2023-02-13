@@ -267,3 +267,21 @@ TEST(GNetTest, GNetRandTestIssue11877) {
   EXPECT_TRUE(net != nullptr);
 }
 
+TEST(GNetTest, GNetWithCheckerTest) {
+  eda::gate::debugger::Checker checker;
+  auto net = makeRand(7, 5);
+  std::unordered_map<Gate::Id, Gate::Id> TestMap = {};
+  auto netCloned = net.get()->clone(TestMap);
+  EXPECT_TRUE(checker.areEqual(*net, *netCloned, TestMap));
+}
+
+TEST(GNetTest, GNetEdgesTest) {
+  auto net = makeRand(7, 5);
+  EXPECT_TRUE(net.get()->clone()->nEdges() == net.get()->nEdges());
+}
+
+TEST(GNetTest, GNetAdressTest) {
+  auto net = makeRand(7, 5);
+  EXPECT_TRUE(net.get()->clone() != net.get());
+}
+

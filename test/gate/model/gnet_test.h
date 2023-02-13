@@ -9,6 +9,7 @@
 #pragma once
 
 #include "gate/model/gnet.h"
+#include "gate/debugger/checker.h"
 
 #include <memory>
 

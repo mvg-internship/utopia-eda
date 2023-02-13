@@ -11,6 +11,7 @@
 #include "gate/debugger/context.h"
 #include "gate/debugger/encoder.h"
 #include "gate/model/gnet.h"
+#include "gate/premapper/premapper.h"
 
 #include <memory>
 #include <unordered_map>
@@ -78,6 +79,10 @@ public:
   bool areEqual(const GNet &lhs,
                 const GNet &rhs,
                 const Hints &hints) const;
+  
+  bool areEqual(const GNet &lhs,
+                const GNet &rhs,
+                eda::gate::premapper::PreMapper::GateIdMap &gmap) const;
 
 private:
   /// Checks logic equivalence of two hierarchical nets.

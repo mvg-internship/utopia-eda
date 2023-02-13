@@ -15,6 +15,37 @@
 namespace eda::gate::debugger {
 
 bool Checker::areEqual(const GNet &lhs,
+                const GNet &rhs,
+                eda::gate::premapper::PreMapper::GateIdMap &gmap) const {
+  GateBinding ibind, obind, tbind;
+
+  // Input-to-input correspondence.
+  for (auto oldSourceLink : lhs.sourceLinks()) {
+    auto newSourceId = gmap[oldSourceLink.target];
+    ibind.insert({oldSourceLink, Gate::Link(newSourceId)});
+  }
+
+  // Output-to-output correspondence.
+  for (auto oldTargetLink : lhs.targetLinks()) {
+    auto newTargetId = gmap[oldTargetLink.source];
+    obind.insert({oldTargetLink, Gate::Link(newTargetId)});
+  }
+
+  // Trigger-to-trigger correspondence.
+  for (auto oldTriggerId : lhs.triggers()) {
+    auto newTriggerId = gmap[oldTriggerId];
+    tbind.insert({Gate::Link(oldTriggerId), Gate::Link(newTriggerId)});
+  }
+
+  Checker::Hints hints;
+  hints.sourceBinding  = std::make_shared<GateBinding>(std::move(ibind));
+  hints.targetBinding  = std::make_shared<GateBinding>(std::move(obind));
+  hints.triggerBinding = std::make_shared<GateBinding>(std::move(tbind));
+
+  return areEqual(lhs, rhs, hints);
+}
+
+bool Checker::areEqual(const GNet &lhs,
                        const GNet &rhs,
                        const Hints &hints) const {
   const unsigned flatCheckBound = 64 * 1024;
