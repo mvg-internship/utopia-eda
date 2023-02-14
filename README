@@ -13,7 +13,7 @@ The list of tools required to build the project:
 ### Coding Style
 
 We use [LLVM Coding Conventions](https://llvm.org/docs/CodingStandards.html)
-with project-specific refinements/modifications.
+with project-specific modifications.
 
 Some of them:
 
@@ -44,6 +44,9 @@ Some of them:
  * \author <a href="mailto:ivanov@somemail.somedomain">Ivan Ivanov</a>
  */
 ```
+13. All the includes should be listed in the following order: 1) project's own
+includes; 2) side library includes; 3) system includes. Includes should be
+sorted in alphabetical order at every category.
 
 ### Compiling from Command Line
 
