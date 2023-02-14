@@ -58,19 +58,19 @@ static std::unique_ptr<GNet> makeNetn(GateSymbol gate,
   return net;
 }
 
-// (x1 | ... | xN).
-std::unique_ptr<GNet> makeOr(unsigned N,
-                             Gate::SignalList &inputs,
-                             Gate::Id &outputId) {
-  return makeNet(GateSymbol::OR, N, inputs, outputId);
-}
+// // (x1 | ... | xN).
+// std::unique_ptr<GNet> makeOr(unsigned N,
+//                              Gate::SignalList &inputs,
+//                              Gate::Id &outputId) {
+//   return makeNet(GateSymbol::OR, N, inputs, outputId);
+// }
 
-// (x1 & ... & xN).
-std::unique_ptr<GNet> makeAnd(unsigned N,
-                              Gate::SignalList &inputs,
-                              Gate::Id &outputId) {
-  return makeNet(GateSymbol::AND, N, inputs, outputId);
-}
+// // (x1 & ... & xN).
+// std::unique_ptr<GNet> makeAnd(unsigned N,
+//                               Gate::SignalList &inputs,
+//                               Gate::Id &outputId) {
+//   return makeNet(GateSymbol::AND, N, inputs, outputId);
+// }
 
 // <x1, ..., xN>.
 std::unique_ptr<GNet> makeMaj(unsigned N,
@@ -79,34 +79,34 @@ std::unique_ptr<GNet> makeMaj(unsigned N,
   return makeNet(GateSymbol::MAJ, N, inputs, outputId);
 }
 
-// ~(x1 | ... | xN).
-std::unique_ptr<GNet> makeNor(unsigned N,
-                              Gate::SignalList &inputs,
-                              Gate::Id &outputId) {
-  return makeNet(GateSymbol::NOR, N, inputs, outputId);
-}
+// // ~(x1 | ... | xN).
+// std::unique_ptr<GNet> makeNor(unsigned N,
+//                               Gate::SignalList &inputs,
+//                               Gate::Id &outputId) {
+//   return makeNet(GateSymbol::NOR, N, inputs, outputId);
+// }
 
-// ~(x1 & ... & xN).
-std::unique_ptr<GNet> makeNand(unsigned N,
-                               Gate::SignalList &inputs,
-                               Gate::Id &outputId) {
-  return makeNet(GateSymbol::NAND, N, inputs, outputId);
-}
+// // ~(x1 & ... & xN).
+// std::unique_ptr<GNet> makeNand(unsigned N,
+//                                Gate::SignalList &inputs,
+//                                Gate::Id &outputId) {
+//   return makeNet(GateSymbol::NAND, N, inputs, outputId);
+// }
 
 
-// (~x1 | ... | ~xN).
-std::unique_ptr<GNet> makeOrn(unsigned N,
-                              Gate::SignalList &inputs,
-                              Gate::Id &outputId) {
-  return makeNetn(GateSymbol::OR, N, inputs, outputId);
-}
+// // (~x1 | ... | ~xN).
+// std::unique_ptr<GNet> makeOrn(unsigned N,
+//                               Gate::SignalList &inputs,
+//                               Gate::Id &outputId) {
+//   return makeNetn(GateSymbol::OR, N, inputs, outputId);
+// }
 
-// (~x1 & ... & ~xN).
-std::unique_ptr<GNet> makeAndn(unsigned N,
-                               Gate::SignalList &inputs,
-                               Gate::Id &outputId) {
-  return makeNetn(GateSymbol::AND, N, inputs, outputId);
-}
+// // (~x1 & ... & ~xN).
+// std::unique_ptr<GNet> makeAndn(unsigned N,
+//                                Gate::SignalList &inputs,
+//                                Gate::Id &outputId) {
+//   return makeNetn(GateSymbol::AND, N, inputs, outputId);
+// }
 
 void dump(const GNet &net) {
     std::cout << net << '\n';
