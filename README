@@ -28,6 +28,7 @@ Some of them:
 9. "{" symbol should be at the same line as the related operator has;
 10. "using namespace" is forbidden;
 11. Source files should have header comments (set the `<yearnum>` here):
+
 ```cpp
 //===----------------------------------------------------------------------===//
 //
@@ -37,13 +38,16 @@ Some of them:
 //
 //===----------------------------------------------------------------------===//
 ```
+
 12. All the header files should have Doxygen-formatted comments for classes:
+
 ```cpp
 /**
  * \brief Implements a very useful thing.
  * \author <a href="mailto:ivanov@somemail.somedomain">Ivan Ivanov</a>
  */
 ```
+
 13. All the includes should be listed in the following order: 1) project's own
 includes; 2) side library includes; 3) system includes. Includes should be
 sorted in alphabetical order at every category.
