@@ -13,6 +13,7 @@
 #include "gate/premapper/aigmapper.h"
 #include "options.h"
 #include "rtl/compiler/compiler.h"
+#include "rtl/library/arithmetic.h"
 #include "rtl/library/flibrary.h"
 #include "rtl/model/net.h"
 #include "rtl/parser/ril/parser.h"
@@ -39,7 +40,7 @@ struct RtlContext {
   using Gate = eda::gate::model::Gate;
   using Link = Gate::Link;
 
-  using Library = eda::rtl::library::FLibraryDefault;
+  using Library = eda::rtl::library::ArithmeticLibrary;
   using Compiler = eda::rtl::compiler::Compiler;
   using PreMapper = eda::gate::premapper::PreMapper;
   using AigMapper = eda::gate::premapper::AigMapper;

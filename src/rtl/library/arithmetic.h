@@ -2,7 +2,7 @@
 //
 // Part of the Utopia EDA Project, under the Apache License v2.0
 // SPDX-License-Identifier: Apache-2.0
-// Copyright 2021 ISP RAS (http://www.ispras.ru)
+// Copyright 2023 ISP RAS (http://www.ispras.ru)
 //
 //===----------------------------------------------------------------------===//
 
@@ -35,38 +35,59 @@ public:
 
   bool supports(FuncSymbol func) const override;
 
-  Out synth(size_t outSize, const Value &value, GNet &net) override;
+  Out synth(size_t outSize, 
+            const Value &value, 
+            GNet &net) override;
 
-  Out synth(size_t outSize, FuncSymbol func, const In &in, GNet &net) override;
+  Out synth(size_t outSize, 
+            const Out &out, 
+            GNet &net) override;
 
-  Out synth(const Out &out, const In &in, const SignalList &control, GNet &net) override;
+  Out synth(size_t outSize, 
+            FuncSymbol func, 
+            const In &in, 
+            GNet &net) override;
 
-  Out alloc(size_t outSize, GNet &net) override;
+  Out synth(const Out &out, 
+            const In &in, 
+            const SignalList &control, 
+            GNet &net) override;
+
+  Out alloc(size_t outSize, 
+            GNet &net) override;
 
 private:
   ArithmeticLibrary(FLibrary &library) : supportLibrary(library) {}
   ~ArithmeticLibrary() override {}
 
-  static Out synthAdd(size_t outSize, const In &in, GNet &net);
+  static Out synthAdd(size_t outSize, 
+                      const In &in, 
+                      GNet &net);
 
-  static Out synthSub(size_t outSize, const In &in, GNet &net);
+  static Out synthSub(size_t outSize, 
+                      const In &in, 
+                      GNet &net);
 
-  static Out synthAdder(size_t outSize, const In &in, bool plusOne, GNet &net);
-
-  static inline Signal signalNewGate(GateSymbol func, const SignalList &in, GNet &net);
+  static Out synthAdder(size_t outSize, 
+                        const In &in, 
+                        bool plusOne, 
+                        GNet &net);
 
   // Complements in with zeros to the transmitted size, if necessary 
-  static inline void filling(size_t size, GateIdList &in, GNet &net);
+  static inline void filling(size_t size, 
+                             GateIdList &in, 
+                             GNet &net);
 
   // Forms signals for input identifiers 
-  static inline SignalList formInputSignals(size_t size, GateIdList in);
+  static inline SignalList formInputSignals(size_t size, 
+                                            GateIdList in);
   
-  static inline SignalList formCarrySignals(size_t size, GateSymbol func, SignalList &xWire, SignalList &yWire, GNet &net);
+  static inline SignalList formCarrySignals(size_t size, 
+                                            GateSymbol func, 
+                                            SignalList &xWire, 
+                                            SignalList &yWire, 
+                                            GNet &net);
 
-  static inline void addCell(size_t lastReg, size_t middleReg, int firstReg, SignalTree &p, SignalTree &g, GNet &net);
-
-  static inline void addCell(size_t lastReg, int firstReg, SignalTree &p, SignalTree &g, SignalList &preP, SignalList &preG, Signal &inG, GNet &net);
- 
   FLibrary &supportLibrary;
 };
 
