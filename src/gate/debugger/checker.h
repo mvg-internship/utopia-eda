@@ -30,6 +30,7 @@ public:
   using GateBinding = std::unordered_map<Gate::Link, Gate::Link>;
   using SubnetBinding = std::unordered_map<GNet::SubnetId, GNet::SubnetId>;
   using GateConnect = Context::GateConnect;
+  using GateIdMap = eda::gate::premapper::PreMapper::GateIdMap;
 
   /// Represents LEC hints.
   struct Hints final {

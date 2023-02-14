@@ -15,8 +15,8 @@
 namespace eda::gate::debugger {
 
 bool Checker::areEqual(const GNet &lhs,
-                const GNet &rhs,
-                eda::gate::premapper::PreMapper::GateIdMap &gmap) const {
+                       const GNet &rhs,
+                       GateIdMap &gmap) const {
   GateBinding ibind, obind, tbind;
 
   // Input-to-input correspondence.
