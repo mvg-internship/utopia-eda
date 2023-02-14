@@ -58,55 +58,12 @@ static std::unique_ptr<GNet> makeNetn(GateSymbol gate,
   return net;
 }
 
-// // (x1 | ... | xN).
-// std::unique_ptr<GNet> makeOr(unsigned N,
-//                              Gate::SignalList &inputs,
-//                              Gate::Id &outputId) {
-//   return makeNet(GateSymbol::OR, N, inputs, outputId);
-// }
-
-// // (x1 & ... & xN).
-// std::unique_ptr<GNet> makeAnd(unsigned N,
-//                               Gate::SignalList &inputs,
-//                               Gate::Id &outputId) {
-//   return makeNet(GateSymbol::AND, N, inputs, outputId);
-// }
-
 // <x1, ..., xN>.
 std::unique_ptr<GNet> makeMaj(unsigned N,
                               Gate::SignalList &inputs,
                               Gate::Id &outputId) {
   return makeNet(GateSymbol::MAJ, N, inputs, outputId);
 }
-
-// // ~(x1 | ... | xN).
-// std::unique_ptr<GNet> makeNor(unsigned N,
-//                               Gate::SignalList &inputs,
-//                               Gate::Id &outputId) {
-//   return makeNet(GateSymbol::NOR, N, inputs, outputId);
-// }
-
-// // ~(x1 & ... & xN).
-// std::unique_ptr<GNet> makeNand(unsigned N,
-//                                Gate::SignalList &inputs,
-//                                Gate::Id &outputId) {
-//   return makeNet(GateSymbol::NAND, N, inputs, outputId);
-// }
-
-
-// // (~x1 | ... | ~xN).
-// std::unique_ptr<GNet> makeOrn(unsigned N,
-//                               Gate::SignalList &inputs,
-//                               Gate::Id &outputId) {
-//   return makeNetn(GateSymbol::OR, N, inputs, outputId);
-// }
-
-// // (~x1 & ... & ~xN).
-// std::unique_ptr<GNet> makeAndn(unsigned N,
-//                                Gate::SignalList &inputs,
-//                                Gate::Id &outputId) {
-//   return makeNetn(GateSymbol::AND, N, inputs, outputId);
-// }
 
 void dump(const GNet &net) {
     std::cout << net << '\n';
@@ -126,33 +83,33 @@ TEST(MigMapperTest, MigMapperOrTest) {
   EXPECT_TRUE(net != nullptr);
 }
 
-// TEST(MigMapperTest, MigMapperAndTest) {
-//   Gate::SignalList inputs;
-//   Gate::Id outputId;
-//   auto net = makeAnd(2, inputs, outputId);
-//   EXPECT_TRUE(net != nullptr);
-// }
+TEST(MigMapperTest, MigMapperAndTest) {
+  Gate::SignalList inputs;
+  Gate::Id outputId;
+  auto net = makeAnd(2, inputs, outputId);
+  EXPECT_TRUE(net != nullptr);
+}
 
-// TEST(MigMapperTest, MigMapperMaj3Test) {
-//   Gate::SignalList inputs;
-//   Gate::Id outputId;
-//   auto net = makeMaj(3, inputs, outputId);
-//   EXPECT_TRUE(net != nullptr);
-// }
+TEST(MigMapperTest, MigMapperMaj3Test) {
+  Gate::SignalList inputs;
+  Gate::Id outputId;
+  auto net = makeMaj(3, inputs, outputId);
+  EXPECT_TRUE(net != nullptr);
+}
 
-// TEST(MigMapperTest, MigMapperMaj5Test) {
-//   Gate::SignalList inputs;
-//   Gate::Id outputId;
-//   auto net = makeMaj(5, inputs, outputId);
-//   EXPECT_TRUE(net != nullptr);
-// }
+TEST(MigMapperTest, MigMapperMaj5Test) {
+  Gate::SignalList inputs;
+  Gate::Id outputId;
+  auto net = makeMaj(5, inputs, outputId);
+  EXPECT_TRUE(net != nullptr);
+}
 
-// TEST(MigMapperTest, MigMapperMaj7Test) {
-//   Gate::SignalList inputs;
-//   Gate::Id outputId;
-//   auto net = makeMaj(7, inputs, outputId);
-//   EXPECT_TRUE(net != nullptr);
-// }
+TEST(MigMapperTest, MigMapperMaj7Test) {
+  Gate::SignalList inputs;
+  Gate::Id outputId;
+  auto net = makeMaj(7, inputs, outputId);
+  EXPECT_TRUE(net != nullptr);
+}
 
 // TEST(MigMapperTest, MigMapperMaj9Test) {
 //   Gate::SignalList inputs;
@@ -175,30 +132,30 @@ TEST(MigMapperTest, MigMapperOrTest) {
 //   EXPECT_TRUE(net != nullptr);
 // }
 
-// TEST(MigMapperTest, MigMapperNorTest) {
-//   Gate::SignalList inputs;
-//   Gate::Id outputId;
-//   auto net = makeNor(2, inputs, outputId);
-//   EXPECT_TRUE(net != nullptr);
-// }
+TEST(MigMapperTest, MigMapperNorTest) {
+  Gate::SignalList inputs;
+  Gate::Id outputId;
+  auto net = makeNor(2, inputs, outputId);
+  EXPECT_TRUE(net != nullptr);
+}
 
-// TEST(MigMapperTest, MigMapperNandTest) {
-//   Gate::SignalList inputs;
-//   Gate::Id outputId;
-//   auto net = makeNand(2, inputs, outputId);
-//   EXPECT_TRUE(net != nullptr);
-// }
+TEST(MigMapperTest, MigMapperNandTest) {
+  Gate::SignalList inputs;
+  Gate::Id outputId;
+  auto net = makeNand(2, inputs, outputId);
+  EXPECT_TRUE(net != nullptr);
+}
 
-// TEST(MigMapperTest, MigMapperOrnTest) {
-//   Gate::SignalList inputs;
-//   Gate::Id outputId;
-//   auto net = makeOrn(2, inputs, outputId);
-//   EXPECT_TRUE(net != nullptr);
-// }
+TEST(MigMapperTest, MigMapperOrnTest) {
+  Gate::SignalList inputs;
+  Gate::Id outputId;
+  auto net = makeOrn(2, inputs, outputId);
+  EXPECT_TRUE(net != nullptr);
+}
 
-// TEST(MigMapperTest, MigMapperAndnTest) {
-//   Gate::SignalList inputs;
-//   Gate::Id outputId;
-//   auto net = makeAndn(2, inputs, outputId);
-//   EXPECT_TRUE(net != nullptr);
-// }
+TEST(MigMapperTest, MigMapperAndnTest) {
+  Gate::SignalList inputs;
+  Gate::Id outputId;
+  auto net = makeAndn(2, inputs, outputId);
+  EXPECT_TRUE(net != nullptr);
+}
