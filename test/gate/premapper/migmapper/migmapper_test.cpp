@@ -127,26 +127,26 @@ TEST(MigMapperTest, MigMapperMaj7Test) {
   EXPECT_TRUE(net != nullptr);
 }
 
-// TEST(MigMapperTest, MigMapperMaj9Test) {
-//   Gate::SignalList inputs;
-//   Gate::Id outputId;
-//   auto net = makeMaj(9, inputs, outputId);
-//   EXPECT_TRUE(net != nullptr);
-// }
+TEST(MigMapperTest, MigMapperMaj9Test) {
+  Gate::SignalList inputs;
+  Gate::Id outputId;
+  auto net = makeMaj(9, inputs, outputId);
+  EXPECT_TRUE(net != nullptr);
+}
 
-// TEST(MigMapperTest, MigMapperMaj11Test) {
-//   Gate::SignalList inputs;
-//   Gate::Id outputId;
-//   auto net = makeMaj(11, inputs, outputId);
-//   EXPECT_TRUE(net != nullptr);
-// }
+TEST(MigMapperTest, MigMapperMaj11Test) {
+  Gate::SignalList inputs;
+  Gate::Id outputId;
+  auto net = makeMaj(11, inputs, outputId);
+  EXPECT_TRUE(net != nullptr);
+}
 
-// TEST(MigMapperTest, MigMapperMaj17Test) {
-//   Gate::SignalList inputs;
-//   Gate::Id outputId;
-//   auto net = makeMaj(17, inputs, outputId);
-//   EXPECT_TRUE(net != nullptr);
-// }
+TEST(MigMapperTest, MigMapperMaj17Test) {
+  Gate::SignalList inputs;
+  Gate::Id outputId;
+  auto net = makeMaj(17, inputs, outputId);
+  EXPECT_TRUE(net != nullptr);
+}
 
 TEST(MigMapperTest, MigMapperNorTest) {
   Gate::SignalList inputs;
