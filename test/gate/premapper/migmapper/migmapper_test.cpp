@@ -131,6 +131,10 @@ TEST(MigMapperTest, MigMapperMaj9Test) {
   Gate::SignalList inputs;
   Gate::Id outputId;
   auto net = makeMaj(9, inputs, outputId);
+  dump(*net);
+  eda::gate::premapper::MigMapper migmapper;
+  auto migmapped = migmapper.map(*net);
+  dump(*migmapped);
   EXPECT_TRUE(net != nullptr);
 }
 
@@ -138,6 +142,10 @@ TEST(MigMapperTest, MigMapperMaj11Test) {
   Gate::SignalList inputs;
   Gate::Id outputId;
   auto net = makeMaj(11, inputs, outputId);
+  dump(*net);
+  eda::gate::premapper::MigMapper migmapper;
+  auto migmapped = migmapper.map(*net);
+  dump(*migmapped);
   EXPECT_TRUE(net != nullptr);
 }
 
@@ -145,6 +153,10 @@ TEST(MigMapperTest, MigMapperMaj17Test) {
   Gate::SignalList inputs;
   Gate::Id outputId;
   auto net = makeMaj(17, inputs, outputId);
+  dump(*net);
+  eda::gate::premapper::MigMapper migmapper;
+  auto migmapped = migmapper.map(*net);
+  dump(*migmapped);
   EXPECT_TRUE(net != nullptr);
 }
 
