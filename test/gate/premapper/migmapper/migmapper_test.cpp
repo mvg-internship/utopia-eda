@@ -110,7 +110,7 @@ std::unique_ptr<GNet> makeAndn(unsigned N,
 
 void dump(const GNet &net) {
     std::cout << net << '\n';
-    std::cout << "N=" << net.NGates() << '\n';
+    std::cout << "N=" << net.nGates() << '\n';
     std::cout << "I=" << net.nSourceLinks() << '\n';
     std::cout << "O=" << net.nTargetLinks() << '\n';
 }
