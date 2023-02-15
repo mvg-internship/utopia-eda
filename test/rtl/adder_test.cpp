@@ -1,17 +1,26 @@
+//===----------------------------------------------------------------------===//
+//
+// Part of the Utopia EDA Project, under the Apache License v2.0
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2021 ISP RAS (http://www.ispras.ru)
+//
+//===----------------------------------------------------------------------===//
+
+
 #include "gate/model/gnet.h"
-#include "rtl/library/flibrary.h"
 #include "gate/simulator/simulator.h"
 #include "gtest/gtest.h"
+#include "rtl/library/flibrary.h"
 
 #include <iostream>
 
 using GNet = eda::gate::model::GNet;
-using FuncSymbol = eda::rtl::model::FuncSymbol;
 using FLibrary = eda::rtl::library::FLibrary;
 using FLibraryDefault = eda::rtl::library::FLibraryDefault;
-using simulator = eda::gate::simulator::Simulator;
+using FuncSymbol = eda::rtl::model::FuncSymbol;
+using Simulator = eda::gate::simulator::Simulator;
 
-bool addTest(FuncSymbol func, const size_t size) {
+bool adderTest(FuncSymbol func, const size_t size) {
 
   GNet::In inputs(2);
   auto &term1 = inputs[0];
@@ -21,7 +30,6 @@ bool addTest(FuncSymbol func, const size_t size) {
   for (size_t n = 0; n < size; n++) {
     term1.push_back(net.addIn());
   }
-
   for (size_t n = 0; n < size; n++) {
     term2.push_back(net.addIn());
   }
@@ -66,7 +74,6 @@ bool addTest(FuncSymbol func, const size_t size) {
     std::cout << input[n];
   }
   std::cout << "\n = " << std::endl;
-
   for(int n = outputs.size() - 1; n >= 0; n--) {
     std::cout << output[n];
   }
@@ -76,8 +83,6 @@ bool addTest(FuncSymbol func, const size_t size) {
   return true;
 }
 
-TEST(FLibraryDefaultTest, AddTest) {
-  EXPECT_TRUE(addTest(FuncSymbol::ADD,  6));
+TEST(FLibraryDefaultTest, AdderTest) {
+  EXPECT_TRUE(adderTest(FuncSymbol::ADD,  8));
 }
-
-

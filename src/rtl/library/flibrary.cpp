@@ -125,7 +125,7 @@ FLibrary::Out FLibraryDefault::synth(const Out &out,
   return out;
 }
 
-FLibrary::Out FLibraryDefault::synthMyAdder(size_t outSize, const In &in, GNet &net) {
+FLibrary::Out FLibraryDefault::synthSimpleAdder(size_t outSize, const In &in, GNet &net) {
 
   const auto &term1 = in[0];
   const auto &term2 = in[1];
@@ -138,16 +138,15 @@ FLibrary::Out FLibraryDefault::synthMyAdder(size_t outSize, const In &in, GNet &
   Signal clause2;
   Signal clause3;
 
-  for (size_t i = 0; i < outSize; i++){
+  for (size_t i = 0; i < outSize; i++) {
     auto termWire1 = Signal::always(term1[i]);
     auto termWire2 = Signal::always(term2[i]);
     auto sum = net.addGate(GateSymbol::XOR, {termWire1, termWire2});
 
-    if (i == 0){
+    if (i == 0) {
       out[i] = sum;
       carrybit = Signal::always(net.addGate(GateSymbol::AND, {termWire1, termWire2}));
-    }
-    else{
+    } else {
       out[i] = net.addGate(GateSymbol::XOR, {Signal::always(sum), carrybit});
 
     // counting carrybit
@@ -166,7 +165,7 @@ FLibrary::Out FLibraryDefault::synthMyAdder(size_t outSize, const In &in, GNet &
 FLibrary::Out FLibraryDefault::synthAdd(size_t outSize,
                                         const In &in,
                                         GNet &net) {
-  return synthMyAdder(outSize, in, net);
+  return synthSimpleAdder(outSize, in, net);
 }
 
 FLibrary::Out FLibraryDefault::synthSub(size_t outSize,
