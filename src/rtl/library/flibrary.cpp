@@ -125,10 +125,48 @@ FLibrary::Out FLibraryDefault::synth(const Out &out,
   return out;
 }
 
+FLibrary::Out FLibraryDefault::synthMyAdder(size_t outSize, const In &in, GNet &net) {
+
+  const auto &term1 = in[0];
+  const auto &term2 = in[1];
+
+  Out out(outSize);
+
+  Signal carrybit;
+  Signal clause;
+  Signal clause1;
+  Signal clause2;
+  Signal clause3;
+
+  for (size_t i = 0; i < outSize; i++){
+    auto termWire1 = Signal::always(term1[i]);
+    auto termWire2 = Signal::always(term2[i]);
+    auto sum = net.addGate(GateSymbol::XOR, {termWire1, termWire2});
+
+    if (i == 0){
+      out[i] = sum;
+      carrybit = Signal::always(net.addGate(GateSymbol::AND, {termWire1, termWire2}));
+    }
+    else{
+      out[i] = net.addGate(GateSymbol::XOR, {Signal::always(sum), carrybit});
+
+    // counting carrybit
+    // carrybit = (term1 & term2) || (term1 & previous carrybit) || (term2 & previous carrybit)
+
+      clause1 = Signal::always(net.addGate(GateSymbol::AND, {termWire1, termWire2}));
+      clause2 = Signal::always(net.addGate(GateSymbol::AND, {termWire1, carrybit}));
+      clause3 = Signal::always(net.addGate(GateSymbol::AND, {termWire2, carrybit}));
+      clause = Signal::always(net.addGate(GateSymbol::OR, {clause1, clause2}));
+      carrybit = Signal::always(net.addGate(GateSymbol::OR, {clause, clause3}));
+    }
+  }
+  return out;
+}
+
 FLibrary::Out FLibraryDefault::synthAdd(size_t outSize,
                                         const In &in,
                                         GNet &net) {
-  return synthAdder(outSize, in, false, net);
+  return synthMyAdder(outSize, in, net);
 }
 
 FLibrary::Out FLibraryDefault::synthSub(size_t outSize,
@@ -189,48 +227,6 @@ FLibrary::Out FLibraryDefault::synthAdder(Gate::Id x,
     auto carryOutRhs = Signal::always(net.addGate(GateSymbol::AND,
                                                   { xPlusY, cWire }));
     out.push_back(net.addGate(GateSymbol::OR, { carryOutLhs, carryOutRhs }));
-  }
-
-  return out;
-}
-
-FLibrary::Out FLibraryDefault::synthMyAdder(size_t outSize, const In &in, GNet &net){
-
-
-  const auto &term1 = in[0];
-  const auto &term2 = in[1];
-
-  Out out(term1.size());
-
-
-  auto carrybit = Signal::always(net.addGate(GateSymbol::ZERO,{}));
-  auto clause   = Signal::always(net.addGate(GateSymbol::ZERO,{}));
-  auto clause1 = Signal::always(net.addGate(GateSymbol::ZERO,{}));
-  auto clause2 = Signal::always(net.addGate(GateSymbol::ZERO,{}));
-  auto clause3 = Signal::always(net.addGate(GateSymbol::ZERO,{}));
-
-  for (unsigned int i = 0; i < term1.size(); i++){
-    auto termWire1 = Signal::always(term1[i]);
-    auto termWire2 = Signal::always(term2[i]);
-
-    auto sum = net.addGate(GateSymbol::XOR, {termWire1, termWire2});
-
-    if (i == 0){
-      out[i] = sum;
-      carrybit = Signal::always(net.addGate(GateSymbol::XOR, {termWire1, termWire2}));
-    }
-    else{
-      out[i] = net.addGate(GateSymbol::XOR, {Signal::always(sum), carrybit});
-
-    //counting carrybit
-    // carrybit = (term1 & term2) || (term1 & previous carrybit) || (term2 & previous carrybit)
-
-    clause1 = Signal::always(net.addGate(GateSymbol::AND, {termWire1, termWire2}));
-    clause2 = Signal::always(net.addGate(GateSymbol::AND, {termWire1, carrybit}));
-    clause3 = Signal::always(net.addGate(GateSymbol::AND, {termWire2, carrybit}));
-    clause = Signal::always(net.addGate(GateSymbol::OR, {clause1, clause2}));
-    carrybit = Signal::always(net.addGate(GateSymbol::OR, {clause, clause3}));
-    }
   }
 
   return out;
