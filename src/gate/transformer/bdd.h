@@ -23,13 +23,13 @@ namespace eda::gate::transformer {
 */
 class GNetBDDConverter {
   using Gate = eda::gate::model::Gate;
-  using GNet = eda::gate::model::GNet;
   using GateSymbol = eda::gate::model::GateSymbol;
+  using GNet = eda::gate::model::GNet;
 
 public:
-  using GateList = std::vector<Gate::Id>;
   using BDDList = std::vector<BDD>;
   using GateBDDMap = std::map<Gate::Id, BDD>;
+  using GateList = std::vector<Gate::Id>;
   using GateUintMap = std::map<Gate::Id, unsigned>;
 
   // Converts only one gate of the net.

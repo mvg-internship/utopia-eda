@@ -3,6 +3,7 @@
 The list of tools required to build the project:
 
 * `cmake` 3.13+
+* `automake`
 * `flex`
 * `bison`
 * `clang-tidy`
@@ -14,8 +15,7 @@ The list of tools required to build the project:
 CUDD installation
 
 1. Get `CUDD` from here: https://github.com/ivmai/cudd
-2. Install `automake` (e.g. `apt-get install automake` for Debian)
-3. Configure and build `CUDD` using following commands in the `CUDD` 
+2. Configure and build `CUDD` using following commands in the `CUDD` 
 source directory:
 
 ```
@@ -25,8 +25,6 @@ touch Makefile.in configure
 ./configure --enable-obj
 make install
 ```
-
-[CUDD]: https://github.com/ivmai/cudd
 
 ### Coding Style
 

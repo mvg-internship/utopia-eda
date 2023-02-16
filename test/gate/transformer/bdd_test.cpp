@@ -11,14 +11,14 @@
 #include "gtest/gtest.h"
 
 using Gate = eda::gate::model::Gate;
-using GNet = eda::gate::model::GNet;
 using GateSymbol = eda::gate::model::GateSymbol;
+using GNet = eda::gate::model::GNet;
 
 using GNetBDDConverter = eda::gate::transformer::GNetBDDConverter;
 
-using GateList = GNetBDDConverter::GateList;
 using BDDList = GNetBDDConverter::BDDList;
-using GateBDDMap = GNetBDDConverter::GateBDDMap;
+using GateBDDMap = GNetBDDConvrerter::GateBDDMap;
+using GateList = GNetBDDConverter::GateList;
 using GateUintMap = GNetBDDConverter::GateUintMap;
 
 // x0 & x1
@@ -35,6 +35,8 @@ static std::unique_ptr<GNet> makeAnd2(Gate::SignalList
   inputs = and0Inputs;
   outputId = net->addGate(GateSymbol::AND, and0Inputs);
   varList = {x0Id, x1Id};
+
+  net->sortTopologically();
 
   return net;
 }
@@ -53,6 +55,8 @@ static std::unique_ptr<GNet> makeOr2(Gate::SignalList &inputs,
   outputId = net->addGate(GateSymbol::OR, or0Inputs);
   varList = {x0Id, x1Id};
 
+  net->sortTopologically();
+
   return net;
 }
 
@@ -69,6 +73,8 @@ static std::unique_ptr<GNet> makeXor2(Gate::SignalList &inputs,
   inputs = xor0Inputs;
   outputId = net->addGate(GateSymbol::XOR, xor0Inputs);
   varList = {x0Id, x1Id};
+
+  net->sortTopologically();
 
   return net;
 }
