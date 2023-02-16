@@ -10,16 +10,14 @@
 
 #include "gtest/gtest.h"
 
-using Gate = eda::gate::model::Gate;
-using GateSymbol = eda::gate::model::GateSymbol;
-using GNet = eda::gate::model::GNet;
-
-using GNetBDDConverter = eda::gate::transformer::GNetBDDConverter;
-
 using BDDList = GNetBDDConverter::BDDList;
-using GateBDDMap = GNetBDDConvrerter::GateBDDMap;
+using Gate = eda::gate::model::Gate;
+using GateBDDMap = GNetBDDConverter::GateBDDMap;
 using GateList = GNetBDDConverter::GateList;
+using GateSymbol = eda::gate::model::GateSymbol;
 using GateUintMap = GNetBDDConverter::GateUintMap;
+using GNet = eda::gate::model::GNet;
+using GNetBDDConverter = eda::gate::transformer::GNetBDDConverter;
 
 // x0 & x1
 static std::unique_ptr<GNet> makeAnd2(Gate::SignalList 
