@@ -65,6 +65,48 @@ std::unique_ptr<GNet> makeMaj(unsigned N,
   return makeNet(GateSymbol::MAJ, N, inputs, outputId);
 }
 
+bool equivalence(const std::unique_ptr<GNet> &net, const std::shared_ptr<GNet> &migmapped) {
+  using Link = eda::gate::model::Gate::Link;
+  using Checker = eda::gate::debugger::Checker;
+  using GateBinding = Checker::GateBinding;
+  using Hints = Checker::Hints;
+  using MigMapper = eda::gate::premapper::MigMapper;
+  using GateIdMap = MigMapper::GateIdMap;
+
+  Checker checker;
+  GateIdMap oldToNewGates;
+  GateBinding imap, omap, tmap;
+
+  for (auto oldSourceLink : net->sourceLinks()) {
+    auto newSourceId = oldToNewGates[oldSourceLink.target];
+    imap.insert({oldSourceLink, Link(newSourceId)});
+  }
+
+  for (auto oldTriggerId : net->triggers()) {
+    auto newTriggerId = oldToNewGates[oldTriggerId];
+    tmap.insert({Link(oldTriggerId), Link(newTriggerId)});
+  }
+
+  // TODO: Here are only triggers.
+  for (auto oldTriggerId : net->triggers()) {
+    auto newTriggerId = oldToNewGates[oldTriggerId];
+    auto *oldTrigger = Gate::get(oldTriggerId);
+    auto *newTrigger = Gate::get(newTriggerId);
+
+    auto oldDataId = oldTrigger->input(0).node();
+    auto newDataId = newTrigger->input(0).node();
+
+    omap.insert({Link(oldDataId), Link(newDataId)});
+  }
+
+  Hints hints;
+  hints.sourceBinding = std::make_shared<GateBinding>(std::move(imap));
+  hints.targetBinding = std::make_shared<GateBinding>(std::move(omap));
+  hints.triggerBinding = std::make_shared<GateBinding>(std::move(tmap));
+  
+  return checker.areEqual(*net, *migmapped, hints);
+}
+
 void dump(const GNet &net) {
     std::cout << net << '\n';
     std::cout << "N=" << net.nGates() << '\n';
@@ -80,6 +122,11 @@ TEST(MigMapperTest, MigMapperOrTest) {
   eda::gate::premapper::MigMapper migmapper;
   auto migmapped = migmapper.map(*net);
   dump(*migmapped);
+
+  // equivalence
+  bool equal = equivalence(net, migmapped);
+  std::cout << "equivalence:" << '\n';
+  EXPECT_TRUE(equal);
   EXPECT_TRUE(net != nullptr);
 }
 
@@ -91,6 +138,11 @@ TEST(MigMapperTest, MigMapperAndTest) {
   eda::gate::premapper::MigMapper migmapper;
   auto migmapped = migmapper.map(*net);
   dump(*migmapped);
+
+  // equivalence
+  bool equal = equivalence(net, migmapped);
+  std::cout << "equivalence:" << '\n';
+  EXPECT_TRUE(equal);
   EXPECT_TRUE(net != nullptr);
 }
 
@@ -102,6 +154,11 @@ TEST(MigMapperTest, MigMapperMaj3Test) {
   eda::gate::premapper::MigMapper migmapper;
   auto migmapped = migmapper.map(*net);
   dump(*migmapped);
+
+  // equivalence
+  bool equal = equivalence(net, migmapped);
+  std::cout << "equivalence:" << '\n';
+  EXPECT_TRUE(equal);
   EXPECT_TRUE(net != nullptr);
 }
 
@@ -113,6 +170,11 @@ TEST(MigMapperTest, MigMapperMaj5Test) {
   eda::gate::premapper::MigMapper migmapper;
   auto migmapped = migmapper.map(*net);
   dump(*migmapped);
+
+  // equivalence
+  bool equal = equivalence(net, migmapped);
+  std::cout << "equivalence:" << '\n';
+  EXPECT_TRUE(equal);
   EXPECT_TRUE(net != nullptr);
 }
 
@@ -124,6 +186,11 @@ TEST(MigMapperTest, MigMapperMaj7Test) {
   eda::gate::premapper::MigMapper migmapper;
   auto migmapped = migmapper.map(*net);
   dump(*migmapped);
+
+  // equivalence
+  bool equal = equivalence(net, migmapped);
+  std::cout << "equivalence:" << '\n';
+  EXPECT_TRUE(equal);
   EXPECT_TRUE(net != nullptr);
 }
 
@@ -135,6 +202,11 @@ TEST(MigMapperTest, MigMapperMaj9Test) {
   eda::gate::premapper::MigMapper migmapper;
   auto migmapped = migmapper.map(*net);
   dump(*migmapped);
+
+  // equivalence
+  bool equal = equivalence(net, migmapped);
+  std::cout << "equivalence:" << '\n';
+  EXPECT_TRUE(equal);
   EXPECT_TRUE(net != nullptr);
 }
 
@@ -146,6 +218,11 @@ TEST(MigMapperTest, MigMapperMaj11Test) {
   eda::gate::premapper::MigMapper migmapper;
   auto migmapped = migmapper.map(*net);
   dump(*migmapped);
+
+  // equivalence
+  bool equal = equivalence(net, migmapped);
+  std::cout << "equivalence:" << '\n';
+  EXPECT_TRUE(equal);
   EXPECT_TRUE(net != nullptr);
 }
 
@@ -157,6 +234,11 @@ TEST(MigMapperTest, MigMapperMaj17Test) {
   eda::gate::premapper::MigMapper migmapper;
   auto migmapped = migmapper.map(*net);
   dump(*migmapped);
+
+  // equivalence
+  bool equal = equivalence(net, migmapped);
+  std::cout << "equivalence:" << '\n';
+  EXPECT_TRUE(equal);
   EXPECT_TRUE(net != nullptr);
 }
 
@@ -168,6 +250,11 @@ TEST(MigMapperTest, MigMapperNorTest) {
   eda::gate::premapper::MigMapper migmapper;
   auto migmapped = migmapper.map(*net);
   dump(*migmapped);
+
+  // equivalence
+  bool equal = equivalence(net, migmapped);
+  std::cout << "equivalence:" << '\n';
+  EXPECT_TRUE(equal);
   EXPECT_TRUE(net != nullptr);
 }
 
@@ -179,6 +266,11 @@ TEST(MigMapperTest, MigMapperNandTest) {
   eda::gate::premapper::MigMapper migmapper;
   auto migmapped = migmapper.map(*net);
   dump(*migmapped);
+
+  // equivalence
+  bool equal = equivalence(net, migmapped);
+  std::cout << "equivalence:" << '\n';
+  EXPECT_TRUE(equal);
   EXPECT_TRUE(net != nullptr);
 }
 
@@ -190,6 +282,11 @@ TEST(MigMapperTest, MigMapperOrnTest) {
   eda::gate::premapper::MigMapper migmapper;
   auto migmapped = migmapper.map(*net);
   dump(*migmapped);
+
+  // equivalence
+  bool equal = equivalence(net, migmapped);
+  std::cout << "equivalence:" << '\n';
+  EXPECT_TRUE(equal);
   EXPECT_TRUE(net != nullptr);
 }
 
@@ -201,5 +298,10 @@ TEST(MigMapperTest, MigMapperAndnTest) {
   eda::gate::premapper::MigMapper migmapper;
   auto migmapped = migmapper.map(*net);
   dump(*migmapped);
+
+  // equivalence
+  bool equal = equivalence(net, migmapped);
+  std::cout << "equivalence:" << '\n';
+  EXPECT_TRUE(equal);
   EXPECT_TRUE(net != nullptr);
 }
