@@ -118,7 +118,7 @@ void dump(const GNet &net) {
 TEST(MigMapperTest, MigMapperOrTest) {
   Gate::SignalList inputs;
   Gate::Id outputId;
-  auto net = makeOr(2, inputs, outputId);
+  auto net = makeOr(3, inputs, outputId);
   dump(*net);
   eda::gate::premapper::MigMapper migmapper;
   auto migmapped = migmapper.map(*net);
