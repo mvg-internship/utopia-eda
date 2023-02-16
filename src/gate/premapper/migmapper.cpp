@@ -2,7 +2,7 @@
 //
 // Part of the Utopia EDA Project, under the Apache License v2.0
 // SPDX-License-Identifier: Apache-2.0
-// Copyright 2022 ISP RAS (http://www.ispras.ru)
+// Copyright 2022-2023 ISP RAS (http://www.ispras.ru)
 //
 //===----------------------------------------------------------------------===//
 
@@ -29,7 +29,7 @@ Gate::SignalList getNewInputs(const Gate &oldGate,
       n1 += (isZero ? 0 : 1);
     } else {
       const auto i = oldToNewGates.find(input.node());
-      assert(i != oldToNewGates.end());
+      assert((i != oldToNewGates.end()) && "Input node at the end");
 
       const auto newInputId = i->second;
       newInputs.push_back(Gate::Signal::always(newInputId));
@@ -74,7 +74,7 @@ Gate::Id MigMapper::mapGate(const Gate &oldGate,
 
 Gate::Id MigMapper::mapVal(bool value, GNet &newNet) const {
   const auto gateId = newNet.addGate(GateSymbol::ZERO, {});
-  if (value){
+  if (value) {
       return newNet.addGate(GateSymbol::NOT, {Gate::Signal::always(gateId)});
   }
   return gateId;
@@ -103,8 +103,9 @@ Gate::Id MigMapper::mapNop(const Gate::SignalList &newInputs,
 }
 
 Gate::Id MigMapper::mapNop(const Gate::SignalList &newInputs,
-                           size_t n0, size_t n1, bool sign, GNet &newNet) const {
-  assert(newInputs.size() + n0 + n1 == 1);
+                           size_t n0, size_t n1,
+                           bool sign, GNet &newNet) const {
+  assert((newInputs.size() + n0 + n1 == 1) && "Too many sources for nop");
 
   if (n0 > 0 || n1 > 0) {
     return mapVal((n0 > 0) ^ sign, newNet);
@@ -123,11 +124,11 @@ Gate::Id MigMapper::mapAnd(const Gate::SignalList &newInputs,
   inputs.reserve(2 * newInputs.size() - 1);
   const auto valId = mapVal(false, newNet);
 
-  size_t l = 0;
-  size_t r = 1;
-  while (r < inputs.size()) {
-    const auto x = inputs[l];
-    const auto y = inputs[r];
+  size_t left = 0;
+  size_t right = 1;
+  while (right < inputs.size()) {
+    const auto x = inputs[left];
+    const auto y = inputs[right];
 
     Gate::Id gateId;
     if (model::areIdentical(x, y)) {
@@ -143,11 +144,11 @@ Gate::Id MigMapper::mapAnd(const Gate::SignalList &newInputs,
 
     inputs.push_back(Gate::Signal::always(gateId));
 
-    l += 2;
-    r += 2;
+    left += 2;
+    right += 2;
   }
 
-  return mapNop({inputs[l]}, sign, newNet);
+  return mapNop({inputs[left]}, sign, newNet);
 }
 
 Gate::Id MigMapper::mapAnd(const Gate::SignalList &newInputs,
@@ -169,11 +170,11 @@ Gate::Id MigMapper::mapOr(const Gate::SignalList &newInputs,
     inputs.reserve(2 * newInputs.size() - 1);
     const auto valId = mapVal(true, newNet);
 
-    size_t l = 0;
-    size_t r = 1;
-    while (r < inputs.size()) {
-      const auto x = inputs[l];
-      const auto y = inputs[r];
+    size_t left = 0;
+    size_t right = 1;
+    while (right < inputs.size()) {
+      const auto x = inputs[left];
+      const auto y = inputs[right];
 
       Gate::Id gateId;
       if (model::areIdentical(x, y)) {
@@ -189,11 +190,11 @@ Gate::Id MigMapper::mapOr(const Gate::SignalList &newInputs,
 
       inputs.push_back(Gate::Signal::always(gateId));
 
-      l += 2;
-      r += 2;
+      left += 2;
+      right += 2;
     }
 
-    return mapNop({inputs[l]}, sign, newNet);
+    return mapNop({inputs[left]}, sign, newNet);
 }
 
 Gate::Id MigMapper::mapOr(const Gate::SignalList &newInputs,
@@ -214,15 +215,15 @@ Gate::Id MigMapper::mapXor(const Gate::SignalList &newInputs,
   Gate::SignalList inputs(newInputs.begin(), newInputs.end());
   inputs.reserve(2 * newInputs.size() - 1);
 
-  size_t l = 0;
-  size_t r = 1;
-  while (r < inputs.size()) {
+  size_t left = 0;
+  size_t right = 1;
+  while (right < inputs.size()) {
     // XOR (x,y)=AND(NAND(x,y),NAND(NOT(x),NOT(y))): 7 AND and NOT gates.
     // XNOR(x,y)=AND(NAND(x,NOT(y)),NAND(NOT(x),y)): 7 AND and NOT gates.
-    const auto x1 = mapNop({inputs[l]},  true, newNet);
-    const auto y1 = mapNop({inputs[r]},  sign, newNet);
-    const auto x2 = mapNop({inputs[l]}, false, newNet);
-    const auto y2 = mapNop({inputs[r]}, !sign, newNet);
+    const auto x1 = mapNop({inputs[left]},  true, newNet);
+    const auto y1 = mapNop({inputs[right]},  sign, newNet);
+    const auto x2 = mapNop({inputs[left]}, false, newNet);
+    const auto y2 = mapNop({inputs[right]}, !sign, newNet);
 
     const auto z1 = mapAnd({Gate::Signal::always(x1), Gate::Signal::always(y1)},
                            false, newNet);
@@ -233,13 +234,13 @@ Gate::Id MigMapper::mapXor(const Gate::SignalList &newInputs,
 
     inputs.push_back(Gate::Signal::always(id));
 
-    l += 2;
-    r += 2;
+    left += 2;
+    right += 2;
 
     sign = true;
   }
 
-  return inputs[l].node();
+  return inputs[left].node();
 }
 
 Gate::Id MigMapper::mapXor(const Gate::SignalList &newInputs,
@@ -280,9 +281,11 @@ Gate::Id majorityOfSeven(const Gate::SignalList &newInputs, GNet &newNet) {
   return newNet.addGate(GateSymbol::MAJ, {newInputs[1], Gate::Signal::always(uxztufrId), Gate::Signal::always(tufrxztId)});
 }
 
-Gate::Id MigMapper::mapMaj(const Gate::SignalList &newInputs, size_t n0, size_t n1, GNet &newNet) const {
+Gate::Id MigMapper::mapMaj(const Gate::SignalList &newInputs, size_t n0, 
+                           size_t n1, GNet &newNet) const {
   size_t inputSize = newInputs.size();
-  assert(((inputSize + n0 + n1) % 2 == 1) and (inputSize + n0 + n1 >= 3));
+  assert(((inputSize + n0 + n1) % 2 == 1) and (inputSize + n0 + n1 >= 3)
+                                          and "Invalid number of inputs");
 
   if (inputSize == 0) {
     return mapVal((n1 > n0), newNet);
