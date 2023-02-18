@@ -39,39 +39,39 @@ BDD GNetBDDConverter::applyGateFunc(const GateSymbol::Value func,
     break;
   case GateSymbol::AND:
     result = inputList[0];
-    for (int i = 1; i < inputList.size(); i++) { 
+    for (size_t i = 1; i < inputList.size(); i++) { 
       result = result & inputList[i];
     }
     break;
   case GateSymbol::OR:
     result = inputList[0];
-    for (int i = 1; i < inputList.size(); i++) { 
+    for (size_t i = 1; i < inputList.size(); i++) { 
       result = result | inputList[i];
     }
     break;
   case GateSymbol::XOR:
     result = inputList[0];
-    for (int i = 1; i < inputList.size(); i++) { 
+    for (size_t i = 1; i < inputList.size(); i++) { 
       result = result ^ inputList[i];
     }
     break;
   case GateSymbol::NAND:
     result = inputList[0];
-    for (int i = 1; i < inputList.size(); i++) { 
+    for (size_t i = 1; i < inputList.size(); i++) { 
       result = result & inputList[i];
     }
     result = !result;
     break;
   case GateSymbol::NOR:
     result = inputList[0];
-    for (int i = 1; i < inputList.size(); i++) { 
+    for (size_t i = 1; i < inputList.size(); i++) { 
       result = result | inputList[i];
     }
     result = !result;
     break;
   case GateSymbol::XNOR:
     result = inputList[0];
-    for (int i = 1; i < inputList.size(); i++) { 
+    for (size_t i = 1; i < inputList.size(); i++) { 
       result = result ^ inputList[i];
     }
     result = !result;
@@ -92,7 +92,7 @@ void GNetBDDConverter::convertList(const GNet &net,
   assert(net.isSorted());
 
   GateUintMap gateIndexMap;
-  for (int i = 0; i < gateList.size(); i++) {
+  for (size_t i = 0; i < gateList.size(); i++) {
     gateIndexMap[gateList[i]] = i;
   }
 

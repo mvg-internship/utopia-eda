@@ -31,7 +31,8 @@ touch aclocal.m4 configure
 touch Makefile.am configure
 touch Makefile.in configure
 ./configure --enable-obj
-make install
+make
+sudo make install
 ```
 
 ### Compiling from Command Line
