@@ -26,9 +26,12 @@ class RWDatabase {
   using GNet = eda::gate::model::GNet;
 
 public:
+  // "Virtual" input gate id.
   using InputId = uint32_t;
+  // Contain value vector of boolean function. Represents boolean function of 6 variables.
   using ValueVector = uint64_t;
 
+  // Binds "virtual" input ids to real primary input ids of GNet.
   using GateBinding = std::unordered_map<InputId, Gate::Id>;
 
   struct BindedGNet {
@@ -38,6 +41,11 @@ public:
 
   using BindedGNetList = std::vector<BindedGNet>;
 
+  // Basic interface.
+  bool find(ValueVector key) {
+    return (_storage.find(key) != _storage.end());
+  }  
+  
   BindedGNetList get(const ValueVector key) {
     if (_storage.find(key) == _storage.end()) {
       return BindedGNetList();
@@ -45,7 +53,7 @@ public:
     return _storage[key];
   }
 
-  void insert(ValueVector key, BindedGNetList value) {
+  void set(ValueVector key, BindedGNetList value) {
     _storage[key] = value;
   }
 
