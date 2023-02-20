@@ -24,8 +24,8 @@ enable_testing()
 add_executable(utest
   gate/debugger/checker_test.cpp
   gate/model/gnet_test.cpp
-  gate/rwdatabase/rwdatabase_test.cpp
   gate/simulator/simulator_test.cpp
+  gate/transformer/bdd_test.cpp
   lib/minisat/minisat_test.cpp
   rtl/parser/ril/ril_test.cpp
   util/fm_test.cpp
