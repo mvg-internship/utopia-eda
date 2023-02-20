@@ -42,26 +42,26 @@ public:
   using BindedGNetList = std::vector<BindedGNet>;
 
   // Basic interface.
-  bool find(ValueVector key) {
+  virtual bool find(ValueVector key) {
     return (_storage.find(key) != _storage.end());
   }
 
-  BindedGNetList get(const ValueVector key) {
-    if (_storage.find(key) == _storage.end()) {
+  virtual BindedGNetList get(const ValueVector key) {
+    if (!find(key)) {
       return BindedGNetList();
     }
     return _storage[key];
   }
 
-  void set(ValueVector key, BindedGNetList value) {
+  virtual void set(ValueVector key, BindedGNetList value) {
     _storage[key] = value;
   }
 
-  void erase(ValueVector key) {
+  virtual void erase(ValueVector key) {
     _storage.erase(key);
   }
 
-  bool empty() {
+  virtual bool empty() {
     return _storage.empty();
   }
 
