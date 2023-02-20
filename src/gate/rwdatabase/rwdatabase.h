@@ -44,8 +44,8 @@ public:
   // Basic interface.
   bool find(ValueVector key) {
     return (_storage.find(key) != _storage.end());
-  }  
-  
+  }
+
   BindedGNetList get(const ValueVector key) {
     if (_storage.find(key) == _storage.end()) {
       return BindedGNetList();
