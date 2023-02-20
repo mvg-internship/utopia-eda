@@ -22,7 +22,7 @@ bool insertTest() {
   std::shared_ptr<GNet> dummy = std::make_shared<GNet>();
   RWDatabase::GateBinding binding = {{0, 1}, {1, 3}};
   RWDatabase::ValueVector valueVector = 1;
- 
+
   rwdb.insert(valueVector, {{dummy, binding}});
   return ((rwdb.get(valueVector)[0].net == dummy) && (rwdb.get(valueVector)[0].binding == binding));
 }
