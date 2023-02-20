@@ -23,7 +23,7 @@ bool insertTest() {
   RWDatabase::GateBinding binding = {{0, 1}, {1, 3}};
   RWDatabase::ValueVector valueVector = 1;
 
-  rwdb.insert(valueVector, {{dummy, binding}});
+  rwdb.set(valueVector, {{dummy, binding}});
   return ((rwdb.get(valueVector)[0].net == dummy) && (rwdb.get(valueVector)[0].binding == binding));
 }
 
@@ -35,7 +35,7 @@ bool eraseTest() {
   RWDatabase::ValueVector valueVector = 1;
 
   bool flag1, flag2;
-  rwdb.insert(valueVector, {{dummy, binding}});
+  rwdb.set(valueVector, {{dummy, binding}});
   flag1 = !rwdb.empty();
   rwdb.erase(valueVector);
   flag2 = rwdb.empty();
