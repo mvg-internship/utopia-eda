@@ -26,6 +26,14 @@ touch Makefile.in configure
 make install
 ```
 
+If you installed `CUDD` not in default directory then building `Utopia EDA` 
+will require environment variable `CUDD_DIR` to contain the path to the 
+`CUDD` installation directory.
+
+```
+export CUDD_DIR=<cudd-installation-dir>
+```
+
 ### Coding Style
 
 We use [LLVM Coding Conventions](https://llvm.org/docs/CodingStandards.html)
