@@ -1,3 +1,11 @@
+### About
+
+Utopia EDA is an open-source tool for digital hardware design.
+
+### Coding Style
+
+See `CODE_STYLE`.
+
 ### Requirements
 
 The list of tools required to build the project:
@@ -23,7 +31,8 @@ touch aclocal.m4 configure
 touch Makefile.am configure
 touch Makefile.in configure
 ./configure --enable-obj
-make install
+make
+sudo make install
 ```
 
 If you installed `CUDD` not in default directory then building `Utopia EDA` 

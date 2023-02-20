@@ -10,12 +10,12 @@
 
 #include "gtest/gtest.h"
 
-using BDDList = GNetBDDConverter::BDDList;
+using BDDList = eda::gate::transformer::GNetBDDConverter::BDDList;
 using Gate = eda::gate::model::Gate;
-using GateBDDMap = GNetBDDConverter::GateBDDMap;
-using GateList = GNetBDDConverter::GateList;
+using GateBDDMap = eda::gate::transformer::GNetBDDConverter::GateBDDMap;
+using GateList = eda::gate::transformer::GNetBDDConverter::GateList;
 using GateSymbol = eda::gate::model::GateSymbol;
-using GateUintMap = GNetBDDConverter::GateUintMap;
+using GateUintMap = eda::gate::transformer::GNetBDDConverter::GateUintMap;
 using GNet = eda::gate::model::GNet;
 using GNetBDDConverter = eda::gate::transformer::GNetBDDConverter;
 
