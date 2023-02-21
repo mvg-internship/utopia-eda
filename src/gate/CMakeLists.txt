@@ -7,6 +7,7 @@ add_library(Gate OBJECT
   model/gsymbol.cpp
   premapper/aigmapper.cpp
   premapper/premapper.cpp
+  printer/graphml.cpp
   simulator/simulator.cpp
   transformer/hmetis.cpp
 )
