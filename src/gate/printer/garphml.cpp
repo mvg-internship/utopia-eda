@@ -4,23 +4,21 @@ using GNet = eda::gate::model::GNet;
 using Gate = eda::gate::model::Gate;
 using Link = Gate::Link;
 
-std::string link_deskriptor(Link const &link){
+std::string linkDescription(const Link &link) {
 	return std::to_string(link.source) + "_" + std::to_string(link.target);
 }
 
-bool link_not_draw(std::set<std::string> &links_draw, Link const &link){
-	if (links_draw.find(link_deskriptor(link)) == links_draw.end() &&
-			links_draw.find(link_deskriptor(link)) == links_draw.end()){
-		links_draw.insert(link_deskriptor(link));
-		links_draw.insert(link_deskriptor(link));
+bool linkDontDraw(std::set<std::string> &linksDraw, const Link &link) {
+	if (linksDraw.find(linkDescription(link)) == linksDraw.end() &&
+			linksDraw.find(linkDescription(link)) == linksDraw.end()) {
+		linksDraw.insert(linkDescription(link));
+		linksDraw.insert(linkDescription(link));
 		return true;
 	}
-	else{
-		return false;
-	}
+	return false;
 }
 
-std::ostream &operator<<(const GNet &model, std::ostream &output){
+std::ostream &operator<<(const GNet &model, std::ostream &output) {
 	output
 			<< R"HEADER(<?xml version="1.0" encoding="UTF-8"?>
     <graphml xmlns="http://graphml.graphdrawing.org/xmlns">
@@ -29,30 +27,30 @@ std::ostream &operator<<(const GNet &model, std::ostream &output){
 			<< model.id()
 			<< "\" edgedefault=\"directed\">\n";
 	// Document header
-	auto &all_gates = model.gates();
-	std::set<std::string> links_draw;
-	for (size_t number_of_gate = 0; number_of_gate < all_gates.size();
-			 number_of_gate++){
+	auto &allGates = model.gates();
+	std::set<std::string> linksDraw;
+	for (size_t numberOfGate = 0; numberOfGate < allGates.size();
+			 numberOfGate++) {
 		output
 				<< "<node id = \""
-				<< all_gates[number_of_gate]->id()
+				<< allGates[numberOfGate]->id()
 				<< "\"/>\n";
 		// describing the nodes
-		auto &all_links_from_gate = all_gates[number_of_gate]->links();
-		for (size_t number_of_link = 0;
-				 number_of_link < all_links_from_gate.size(); number_of_link++){
-			if (link_not_draw(links_draw, all_links_from_gate[number_of_link])){
+		auto &allLinksFromGate = allGates[numberOfGate]->links();
+		for (size_t numberOfLink = 0;
+				 numberOfLink < allLinksFromGate.size(); numberOfLink++) {
+			if (linkDontDraw(linksDraw, allLinksFromGate[numberOfLink])) {
 			// we check that we did not draw this edge
 				std::string link_deskription =
-						link_deskriptor(all_links_from_gate[number_of_link]);
+						linkDescription(allLinksFromGate[numberOfLink]);
 				output
 						<< "<edge id = \"l" + link_deskription + "\" source = \""
-						<< all_links_from_gate[number_of_link].source
+						<< allLinksFromGate[numberOfLink].source
 						<< "\" target = \""
-						<< all_links_from_gate[number_of_link].target
+						<< allLinksFromGate[numberOfLink].target
 						<< "\">\n"
 						<< "<data key = \"l_d" + link_deskription + "\">"
-						<< all_links_from_gate[number_of_link].input
+						<< allLinksFromGate[numberOfLink].input
 						<< "</data>\n"
 						<< "</edge>\n";
 				// describing the edges

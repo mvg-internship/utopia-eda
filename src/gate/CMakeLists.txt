@@ -1,6 +1,6 @@
 add_library(Gate OBJECT
-  debugger/encoder.cpp
   debugger/checker.cpp
+  debugger/encoder.cpp
   debugger/symexec.cpp
   model/gate.cpp
   model/gnet.cpp
