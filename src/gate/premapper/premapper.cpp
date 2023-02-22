@@ -13,11 +13,15 @@
 
 namespace eda::gate::premapper {
 
-Gate::SignalList getNewInputs(const Gate::SignalList &oldInputs,
-                              const PreMapper::GateIdMap &oldToNewGates) {
+using Gate = eda::gate::model::Gate;
+using GNet = eda::gate::model::GNet;
+
+Gate::SignalList getNewInputs(
+    const Gate::SignalList &oldInputs,
+    const PreMapper::GateIdMap &oldToNewGates) {
   Gate::SignalList newInputs(oldInputs.size());
 
-  for (size_t i = 0; i< oldInputs.size(); i++) {
+  for (size_t i = 0; i < oldInputs.size(); i++) {
     auto oldInput = oldInputs[i];
     auto newInput = oldToNewGates.find(oldInput.node());
     assert(newInput != oldToNewGates.end());
@@ -59,7 +63,7 @@ GNet *PreMapper::mapGates(const GNet &net, GateIdMap &oldToNewGates) const {
       const auto newGateId = mapGate(*oldGate, oldToNewGates, *newNet);
       assert(newGateId != Gate::INVALID);
 
-      oldToNewGates.insert({oldGateId, newGateId});
+      oldToNewGates.emplace(oldGateId, newGateId);
     }
 
     return newNet; 

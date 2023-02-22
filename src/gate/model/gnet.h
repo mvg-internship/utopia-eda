@@ -17,6 +17,43 @@
 #include <unordered_set>
 #include <vector>
 
+/// Defines the add/set methods for a gate.
+#define DEFINE_GATE_METHODS(gateSymbol, addMethod, setMethod)\
+  GateId addMethod(const SignalList &args) {\
+    return addGate(gateSymbol, args);\
+  }\
+  void setMethod(GateId gid, const SignalList &args) {\
+    setGate(gid, gateSymbol, args);\
+  }
+
+/// Defines the add/set methods for a nullary gate.
+#define DEFINE_GATE0_METHODS(gateSymbol, addMethod, setMethod)\
+  GateId addMethod() {\
+    return addGate(gateSymbol);\
+  }\
+  void setMethod(GateId gid) {\
+    setGate(gid, gateSymbol);\
+  }
+
+/// Defines the add/set methods for a unary gate.
+#define DEFINE_GATE1_METHODS(gateSymbol, addMethod, setMethod)\
+  template<typename T> GateId addMethod(const T &arg) {\
+    return addGate(gateSymbol, arg);\
+  }\
+  template<typename T> void setMethod(GateId gid, const T &arg) {\
+    setGate(gid, gateSymbol, arg);\
+  }
+
+/// Defines the add/set methods for a binary gate.
+#define DEFINE_GATE2_METHODS(gateSymbol, addMethod, setMethod)\
+  DEFINE_GATE_METHODS(gateSymbol, addMethod, setMethod)\
+  template<typename T> GateId addMethod(const T &lhs, const T &rhs) {\
+    return addGate(gateSymbol, lhs, rhs);\
+  }\
+  template<typename T> void setMethod(GateId gid, const T &lhs, const T &rhs) {\
+    setGate(gid, gateSymbol, lhs, rhs);\
+  }
+
 namespace eda::gate::premapper {
   class PreMapper;
 } // namespace eda::gate::premapper
@@ -132,6 +169,10 @@ public:
   // Statistics 
   //===--------------------------------------------------------------------===//
 
+  unsigned id() const {
+    return _id;
+  }
+
   /// Returns the net level.
   unsigned getLevel() const {
     return _level;
@@ -150,6 +191,11 @@ public:
   /// Returns the number of output links.
   size_t nTargetLinks() const {
     return _targetLinks.size();
+  }
+
+  /// Returns the number of constants.
+  size_t nConstants() const {
+    return _constants.size();
   }
 
   /// Returns the number of triggers.
@@ -186,6 +232,11 @@ public:
     return _targetLinks;
   }
 
+  /// Returns the collection of constants.
+  const GateIdSet &constants() const {
+    return _constants;
+  }
+
   /// Returns the collection of triggers.
   const GateIdSet &triggers() const {
     return _triggers;
@@ -211,6 +262,11 @@ public:
     return _targetLinks.find(link) != _targetLinks.end();
   }
 
+  /// Checks whether the net has the constant.
+  bool hasConstant(GateId gid) const {
+    return _constants.find(gid) != _constants.end();
+  }
+
   /// Checks whether the net has the trigger.
   bool hasTrigger(GateId gid) const {
     return _triggers.find(gid) != _triggers.end();
@@ -232,6 +288,113 @@ public:
 
   /// Removes the gate from the net.
   void removeGate(GateId gid);
+
+  //===--------------------------------------------------------------------===//
+  // Convenience Methods
+  //===--------------------------------------------------------------------===//
+
+  /// Adds a gate w/o inputs.
+  GateId addGate(GateSymbol func) {
+    return addGate(func, SignalList{});
+  }
+
+  /// Changes the given gate to the gate w/o inputs.
+  void setGate(GateId gid, GateSymbol func) {
+    setGate(gid, func, SignalList{});
+  }
+
+  /// Adds a single-input gate.
+  GateId addGate(GateSymbol func, const Signal &arg) {
+    return addGate(func, SignalList{arg});
+  }
+
+  /// Adds a single-input gate.
+  GateId addGate(GateSymbol func, GateId arg) {
+    return addGate(func, Signal::always(arg));
+  }
+
+  /// Changes the given gate to the single-input gate.
+  void setGate(GateId gid, GateSymbol func, const Signal &arg) {
+    setGate(gid, func, SignalList{arg});
+  }
+
+  /// Changes the given gate to the single-input gate.
+  void setGate(GateId gid, GateSymbol func, GateId arg) {
+    setGate(gid, func, Signal::always(arg));
+  }
+
+  /// Adds a two-inputs gate.
+  GateId addGate(GateSymbol func, const Signal &lhs, const Signal &rhs) {
+    return addGate(func, SignalList{lhs, rhs});
+  }
+
+  /// Adds a two-inputs gate.
+  GateId addGate(GateSymbol func, GateId lhs, GateId rhs) {
+    return addGate(func, Signal::always(lhs), Signal::always(rhs));
+  }
+
+  /// Changes the given gate to the two-inputs gate.
+  void setGate(GateId gid, GateSymbol func, const Signal &lhs, const Signal &rhs) {
+    setGate(gid, func, SignalList{lhs, rhs});
+  }
+
+  /// Changes the given gate to the two-inputs gate.
+  void setGate(GateId gid, GateSymbol func, GateId lhs, GateId rhs) {
+    setGate(gid, func, Signal::always(lhs), Signal::always(rhs));
+  }
+
+  DEFINE_GATE0_METHODS(GateSymbol::IN,   addIn,   setIn)
+  DEFINE_GATE1_METHODS(GateSymbol::OUT,  addOut,  setOut)
+  DEFINE_GATE0_METHODS(GateSymbol::ZERO, addZero, setZero)
+  DEFINE_GATE0_METHODS(GateSymbol::ONE,  addOne,  setOne)
+  DEFINE_GATE1_METHODS(GateSymbol::NOP,  addNop,  setNop)
+  DEFINE_GATE1_METHODS(GateSymbol::NOT,  addNot,  setNot)
+  DEFINE_GATE2_METHODS(GateSymbol::AND,  addAnd,  setAnd)
+  DEFINE_GATE2_METHODS(GateSymbol::OR,   addOr,   setOr)
+  DEFINE_GATE2_METHODS(GateSymbol::XOR,  addXor,  setXor)
+  DEFINE_GATE2_METHODS(GateSymbol::NAND, addNand, setNand)
+  DEFINE_GATE2_METHODS(GateSymbol::NOR,  addNor,  setNor)
+  DEFINE_GATE2_METHODS(GateSymbol::XNOR, addXnor, setXnor)
+
+  /// Adds a LATCH gate.
+  GateId addLatch(GateId d, GateId ena) {
+    return addGate(GateSymbol::LATCH, {Signal::always(d), Signal::level1(ena)});
+  }
+
+  /// Changes the given gate to LATCH.
+  void setLatch(GateId gid, GateId d, GateId ena) {
+    setGate(gid, GateSymbol::LATCH, {Signal::always(d), Signal::level1(ena)});
+  }
+
+  /// Adds a DFF gate.
+  GateId addDff(GateId d, GateId clk) {
+    return addGate(GateSymbol::DFF, {Signal::always(d), Signal::posedge(clk)});
+  }
+
+  /// Changes the given gate to DFF.
+  void setDff(GateId gid, GateId d, GateId clk) {
+    setGate(gid, GateSymbol::DFF, {Signal::always(d), Signal::posedge(clk)});
+  }
+
+  /// Adds a DFFrs gate.
+  GateId addDffrs(GateId d, GateId clk, GateId rst, GateId set) {
+    return addGate(GateSymbol::DFFrs, {
+               Signal::always(d),
+               Signal::posedge(clk),
+               Signal::level1(rst),
+               Signal::level1(set)
+           });
+  }
+
+  /// Changes the given gate to DFFrs.
+  void setDffrs(GateId gid, GateId d, GateId clk, GateId rst, GateId set) {
+    setGate(gid, GateSymbol::DFFrs, {
+        Signal::always(d),
+        Signal::posedge(clk),
+        Signal::level1(rst),
+        Signal::level1(set)
+    });
+  }
 
   //===--------------------------------------------------------------------===//
   // Subnets 
@@ -316,6 +479,9 @@ public:
     for (auto link : _sourceLinks) {
       sources.insert(link.source);
     }
+    for (auto constant : _constants) {
+      sources.insert(constant);
+    }
     for (auto trigger : _triggers) {
       sources.insert(trigger);
     }
@@ -377,7 +543,7 @@ private:
 
   /// Checks whether the link is a target link.
   bool checkTargetLink(const Link &link) const {
-    return !contains(link.target);
+    return link.isPort() || !contains(link.target);
   }
 
   /// Updates the net state when adding a gate.
@@ -389,6 +555,8 @@ private:
   // Internal Fields
   //===--------------------------------------------------------------------===//
 
+  /// Identifier.
+  const unsigned _id;
   /// Level (0 = top level).
   const unsigned _level;
 
@@ -403,6 +571,8 @@ private:
   /// Output links: {(internal gate, external gate, external input)}.
   LinkSet _targetLinks;
 
+  // Constants.
+  GateIdSet _constants;
   // Triggers.
   GateIdSet _triggers;
 
@@ -419,6 +589,9 @@ private:
 
   /// Flag indicating that the net is topologically sorted.
   bool _isSorted;
+
+  /// Counter for identifier initialization.
+  static unsigned _counter;
 };
 
 /// Outputs the net.

@@ -44,6 +44,11 @@ struct FLibrary {
                     const Value &value,
                     GNet &net) = 0;
 
+  /// Synthesizes the gate-level net for the given output.
+  virtual Out synth(size_t outSize,
+                    const Out &out,
+                    GNet &net) = 0;
+
   /// Synthesizes the gate-level net for the given function.
   virtual Out synth(size_t outSize,
                     FuncSymbol func,
@@ -77,6 +82,10 @@ public:
 
   Out synth(size_t outSize,
             const Value &value,
+            GNet &net) override;
+
+  Out synth(size_t outSize,
+            const Out &out,
             GNet &net) override;
 
   Out synth(size_t outSize,

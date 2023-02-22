@@ -61,8 +61,7 @@ void Net::muxWireDefines(VNode *phi, const VNode::List &defines) {
   // No multiplexing is required.
   if (n == 1) {
     VNode *vnode = defines.front();
-    _nConnects += vnode->arity();
-    _vnodes.push_back(vnode);
+    addVNodeFinal(vnode);
     return;
   }
 
@@ -77,8 +76,7 @@ void Net::muxWireDefines(VNode *phi, const VNode::List &defines) {
 
     // Create a { w[i] <= f[i](...) } node.
     VNode *newVNode = oldVNode->duplicate(unique_name(oldVNode->name()));
-    _nConnects += newVNode->arity();
-    _vnodes.push_back(newVNode);
+    addVNodeFinal(newVNode);
 
     // Guards come first: mux(g[1], ..., g[n]; w[1], ..., w[n]).
     inputs[i] = oldVNode->pnode()->guard().back()->always();
@@ -87,8 +85,7 @@ void Net::muxWireDefines(VNode *phi, const VNode::List &defines) {
 
   // Connect the wire w/ the multiplexor: w <= mux{ g[i] -> w[i] }.
   phi->replaceWith(VNode::MUX, phi->var(), {}, FuncSymbol::NOP, inputs, {});
-  _nConnects += phi->arity();
-  _vnodes.push_back(phi);
+  addVNodeFinal(phi);
 }
 
 // @(signal): if (g[1]) { r <= w[1] }    w <= mux{ g[i] -> w[i] }
@@ -110,8 +107,7 @@ void Net::muxRegDefines(VNode *phi, const VNode::List &defines) {
 
     // Create a multiplexor: w <= mux{ g[i] -> w[i] }.
     VNode *mux = createMux(wire, defines);
-    _nConnects += mux->arity();
-    _vnodes.push_back(mux);
+    addVNodeFinal(mux);
 
     signals.push_back(signal);
     inputs.push_back(mux->always());
@@ -119,8 +115,7 @@ void Net::muxRegDefines(VNode *phi, const VNode::List &defines) {
 
   // Connect the register w/ the multiplexor(s) via the wire(s): r <= w.
   phi->replaceWith(VNode::REG, output, signals, FuncSymbol::NOP, inputs, {});
-  _nConnects += phi->arity();
-  _vnodes.push_back(phi);
+  addVNodeFinal(phi);
 }
 
 std::vector<std::pair<VNode::Signal, VNode::List>> Net::groupRegDefines(const VNode::List &defines) {

@@ -45,17 +45,21 @@ public:
   }
 
   /// Returns the gate w/ the given function and inputs.
-  static Gate *get(GateSymbol func, const SignalList &inputs) {
-    return static_cast<Gate*>(GateBase::get(func, inputs));
+  static Gate *get(uint32_t netId, GateSymbol func, const SignalList &inputs) {
+    return static_cast<Gate*>(GateBase::get(netId, func, inputs));
   }
 
   /// Saves the gate in the hash table.
-  static void add(Gate *gate) {
-    GateBase::add(gate);
+  static void add(uint32_t netId, Gate *gate) {
+    GateBase::add(netId, gate);
   }
 
   bool isSource() const {
-    return _func == GateSymbol::NOP && _inputs.empty();
+    return _func == GateSymbol::IN;
+  }
+
+  bool isTarget() const {
+    return _func == GateSymbol::OUT;
   }
 
   bool isValue() const {
@@ -71,7 +75,7 @@ public:
   }
 
   bool isComb() const {
-    return !isSource() && !isTrigger();
+    return !isSource() && !isTarget() && !isTrigger();
   }
 
 private:
@@ -79,7 +83,15 @@ private:
   Gate(GateSymbol func, const SignalList &inputs): GateBase(func, inputs) {}
 
   /// Creates a source gate.
-  Gate(): Gate(GateSymbol::NOP, {}) {}
+  Gate(): Gate(GateSymbol::IN, {}) {}
+
+  /// Invariant.
+  bool invariant() const {
+    return // Source <=> no inputs.
+           (isSource() == (arity() == 0))
+           // Target ==> no outputs.
+        && (!isTarget() || (fanout() == 0));
+  }
 };
 
 //===----------------------------------------------------------------------===//

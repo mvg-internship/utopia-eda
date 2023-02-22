@@ -14,8 +14,6 @@
 #include <functional>
 #include <vector>
 
-using namespace eda::gate::model;
-
 namespace eda::gate::simulator {
 
 /**
@@ -23,6 +21,9 @@ namespace eda::gate::simulator {
  * \author <a href="mailto:kamkin@ispras.ru">Alexander Kamkin</a>
  */
 class Simulator final {
+  using Gate = eda::gate::model::Gate;
+  using GNet = eda::gate::model::GNet;
+
 public:
   /// Representation of a gate-level net optimized for simulation.
   class Compiled final {
