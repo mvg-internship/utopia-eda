@@ -11,6 +11,7 @@ See `CODE_STYLE`.
 The list of tools required to build the project:
 
 * `cmake` 3.13+
+* `autoconf`
 * `automake`
 * `flex`
 * `bison`
