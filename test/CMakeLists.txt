@@ -25,11 +25,7 @@ add_executable(utest
   gate/debugger/checker_test.cpp
   gate/model/gnet_test.cpp
   gate/simulator/simulator_test.cpp
-<<<<<<< HEAD
-  gate/premapper/migmapper/migmapper_test.cpp
-=======
   gate/transformer/bdd_test.cpp
->>>>>>> 2741891f522869d4f89229c52c5a515f095860b9
   lib/minisat/minisat_test.cpp
   rtl/parser/ril/ril_test.cpp
   util/fm_test.cpp

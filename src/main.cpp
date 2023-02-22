@@ -11,7 +11,6 @@
 #include "gate/model/gate.h"
 #include "gate/model/gnet.h"
 #include "gate/premapper/aigmapper.h"
-#include "gate/premapper/migmapper.h"
 #include "options.h"
 #include "rtl/compiler/compiler.h"
 #include "rtl/library/flibrary.h"
@@ -42,42 +41,8 @@ struct RtlContext {
 
   using Library = eda::rtl::library::FLibraryDefault;
   using Compiler = eda::rtl::compiler::Compiler;
-<<<<<<< HEAD
-  using FLibraryDefault = eda::rtl::library::FLibraryDefault;
-
-  Compiler compiler(FLibraryDefault::get());
-  auto net = compiler.compile(*model);
-
-  net->sortTopologically();
-
-  std::cout << "------ netlist (original) ------" << std::endl;
-  std::cout << *net;
-
-  std::cout << "Net: nGates=" << net->nGates() << std::endl;
-
-  //===---------------------------------------------------------------------===/
-  // Pre-mapping
-  //===---------------------------------------------------------------------===/
-  using MigMapper = eda::gate::premapper::MigMapper;
-  using GateIdMap = MigMapper::GateIdMap;
-
-  GateIdMap oldToNewGates;
-  auto &premapper = MigMapper::get();
-  auto premapped = premapper.map(*net, oldToNewGates);
-
-  std::cout << "------ netlist (premapped) ------" << std::endl;
-  std::cout << *premapped;
-
-  std::cout << "Net: nGates=" << premapped->nGates() << std::endl;
-
-  //===---------------------------------------------------------------------===/
-  // Equivalence checking
-  //===---------------------------------------------------------------------===/
-  using Link = eda::gate::model::Gate::Link;
-=======
   using PreMapper = eda::gate::premapper::PreMapper;
   using AigMapper = eda::gate::premapper::AigMapper;
->>>>>>> 2741891f522869d4f89229c52c5a515f095860b9
   using Checker = eda::gate::debugger::Checker;
 
   RtlContext(const std::string &file, const RtlOptions &options):
