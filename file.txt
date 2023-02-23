@@ -1,0 +1,229 @@
+
+flex -o lexer.cpp -i lexer.l
+g++ -o lexer.o -c lexer.cpp
+g++ -o lexer main.o lexer.o
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+int rc = yylex();
+while (rc != 0) {
+  switch (rc) {
+...
+  }
+  rc == yylex();
+} 
+
+
+
+
+
+#include <iostream>
+#include <FlexLexer.h>
+
+#include "token.h"
+
+int main()
+{
+    FlexLexer* l = new yyFlexLexer(std::cin, std::cerr);
+
+    token_t tok = (token_t)( l -> yylex() );
+
+    switch (tok)
+    {
+        case IF:        std::cout << "IF ";    break;
+        case OUTPUT:    std::cout << "OUTPUT ";break;
+        case DFF:       std::cout << "DFF ";   break;
+        case NOT:       std::cout << "NOT ";   break;
+        case AND:       std::cout << "AND ";   break;
+        case OR:        std::cout << "OR ";    break;
+        case NAND:      std::cout << "NAND ";  break;
+        case NOR:       std::cout << "NOR ";   break;
+        case LP:        std::cout << "LP ";    break;
+        case RP:        std::cout << "RP ";    break;
+        case E:         std::cout << "E ";     break;
+        case DIGIT:     std::cout << "DIGIT "; break;
+        case ID:        std::cout << "ID ";    break;
+        case NUM:       std::cout << "NUM ";   break;
+    }
+
+    delete l;
+
+    return 0;
+}
+
+
+
+
+
+
+// 1 version
+%{
+    #include <iostream>
+    #include <string>
+%}
+
+%option noyywrap 
+%option c++
+
+NUM      [1-9][0-9]*
+DIGIT    [0-9]
+ID       [a-z][a-z0-9]*
+
+%%
+
+"INPUT"                                 { std::cout << "A INPUT: " << yytext << std::endl; return TOK_INPUT; }
+
+"OUTPUT"                                { std::cout << "A OUTPUT: " << yytext << std::endl; return TOK_OUTPUT; }
+
+"DFF"                                   { std::cout << "A DFF: " << yytext << std::endl; return TOK_DFF; }
+
+"NOT"                                   { std::cout << "A NOT: " << yytext << std::endl; return TOK_NOT; }
+
+"AND"                                   { std::cout << "A AND: " << yytext << std::endl; return TOK_AND; }
+
+"OR"                                    { std::cout << "A OR: " << yytext << std::endl; return TOK_OR; }
+
+"NAND"                                  { std::cout << "A NAND: " << yytext << std::endl; return TOK_NAND; }
+
+"NOR"                                   { std::cout << "A NOR: " << yytext << std::endl; return TOK_NOR; }
+
+"("                                     { std::cout << "A LPAR: " << yytext << std::endl; return TOK_LPAR; }
+
+")"                                     { std::cout << "A RPAR: " << yytext << std::endl; return TOK_RPAR; } 
+
+"="                                     { std::cout << "AN ASSIGN: " << yytext << std::endl; return TOK_ASSIGN; }
+
+{DIGIT}+                                { std::cout << "An integer: " << yytext << std::endl;  }
+
+{ID}                                    { std::cout << "An identifier: " << yytext << std::endl; }
+
+{NUM}                                   {
+                                            rrlval = new std::string(yytext);
+                                            return TOK_NUM;
+                                        }
+
+%%
+
+
+
+
+
+
+// 2 version
+
+%{
+    #include <tokens.h>
+
+%}
+
+NUM      [1-9][0-9]*
+DIGIT    [0-9]
+ID       [a-z][a-z0-9]*
+
+%%
+
+"INPUT"                                 { printf("this is INPUT:\t%s\n", yytext); }
+
+"OUTPUT"                                { printf("this is OUTPUT:\t%s\n", yytext); }
+
+"DFF"                                   { printf("this is DFF:\t%s\n", yytext); }
+
+"NOT"                                   { printf("this is NOT:\t%s\n", yytext); }
+
+"AND"                                   { printf("this is AND:\t%s\n", yytext); }
+
+"OR"                                    { printf("this is OR:\t%s\n", yytext); }
+
+"NAND"                                  { printf("this is NAND:\t%s\n", yytext); }
+
+"NOR"                                   { printf("this is NOR:\t%s\n", yytext); }
+
+"("                                     { printf("this is (:\t%s\n", yytext); }
+
+")"                                     { printf("this is ):\t%s\n", yytext); } 
+
+"="                                     { printf("this is =:\t%s\n", yytext); }
+
+{DIGIT}+                                { printf("this is DIGIT:\t%s\n", yytext);  }
+
+{ID}                                    { printf("this is ID:\t%s\n", yytext); }
+
+{NUM}                                   { printf("this is NUM:\t%s\n", yytext); }
+
+%%
+
+yywrap(){}
+
+int main(){
+    printf("enter the string:\t");
+    yylex();
+
+    return 0;
+}
+
+// version 3
+
+%{
+    #include "tokens.h"
+
+%}
+
+NUM      [1-9][0-9]*
+DIGIT    [0-9]
+ID       [a-z][a-z0-9]*
+
+%%
+
+"INPUT"                                 { return INPUT; }
+
+"OUTPUT"                                { return OUTPUT; }
+
+"DFF"                                   { return DFF; }
+
+"NOT"                                   { return NOT; }
+
+"AND"                                   { return AND; }
+
+"OR"                                    { return OR; }
+
+"NAND"                                  { return NAND; }
+
+"NOR"                                   { return NOR; }
+
+"("                                     { return LP; }
+
+")"                                     { return RP; } 
+
+"="                                     { return E; }
+
+{DIGIT}+                                { return DIGIT; }
+
+{ID}                                    { return ID; }
+
+{NUM}                                   { return NUM; }
+
+%%
+
+yywrap(){}
+
+int main(){
+    printf("enter the string:\t");
+    yylex();
+
+    return 0;
+}
