@@ -77,10 +77,9 @@ Gate::Id MigMapper::mapGate(const Gate &oldGate,
 //===----------------------------------------------------------------------===//
 
 Gate::Id MigMapper::mapVal(bool value, GNet &newNet) const {
-  const auto gateId = newNet.addZero(); // add
+  const auto gateId = newNet.addZero();
   if (value) {
-    using GateSymbol = eda::gate::model::GateSymbol;
-      return newNet.addGate(GateSymbol::NOT, {Gate::Signal::always(gateId)});
+    return newNet.addNot(Gate::Signal::always(gateId));
   }
   return gateId;
 }
@@ -105,7 +104,7 @@ Gate::Id MigMapper::mapNop(const Gate::SignalList &newInputs,
   }
 
   // NOT(x).
-  return newNet.addGate(GateSymbol::NOT, newInputs);
+  return newNet.addNot(newInputs.at(0));
 }
 
 Gate::Id MigMapper::mapNop(const Gate::SignalList &newInputs,
@@ -128,7 +127,7 @@ Gate::Id MigMapper::mapAnd(const Gate::SignalList &newInputs,
                            bool sign, GNet &newNet) const {
   Gate::SignalList inputs(newInputs.begin(), newInputs.end());
   inputs.reserve(2 * newInputs.size() - 1);
-  const auto valId = mapVal(false, newNet);
+  const auto valId = newNet.addZero();
 
   size_t left = 0;
   size_t right = 1;
@@ -273,43 +272,59 @@ Gate::Id MigMapper::mapXor(const Gate::SignalList &newInputs,
 Gate::Id majorityOfFive(const Gate::SignalList &newInputs, GNet &newNet) {
   using GateSymbol = eda::gate::model::GateSymbol;
   // <xyztu> = <<xyz>t<<xyu>uz>>
-  const auto xyzId = newNet.addGate(GateSymbol::MAJ, 
-      {newInputs[0], newInputs[1], newInputs[2]});
-  const auto xyuId = newNet.addGate(GateSymbol::MAJ, 
-      {newInputs[0], newInputs[1], newInputs[4]});
+  const auto xyzId = newNet.addGate(GateSymbol::MAJ,
+                                   {newInputs[0],
+                                    newInputs[1], 
+                                    newInputs[2]});
+  const auto xyuId = newNet.addGate(GateSymbol::MAJ,
+                                   {newInputs[0],
+                                    newInputs[1],
+                                    newInputs[4]});
   // <<xyu>uz>
-  const auto muzId = newNet.addGate(GateSymbol::MAJ, 
-      {Gate::Signal::always(xyuId), newInputs[4], newInputs[2]});
-  return newNet.addGate(GateSymbol::MAJ, {Gate::Signal::always(xyzId), 
-                                          newInputs[3],
-                                          Gate::Signal::always(muzId)});
+  const auto muzId = newNet.addGate(GateSymbol::MAJ,
+                                   {newInputs[4],
+                                    newInputs[2],
+                                    Gate::Signal::always(xyuId)});
+  return newNet.addGate(GateSymbol::MAJ,
+                       {Gate::Signal::always(xyzId), 
+                        newInputs[3],
+                        Gate::Signal::always(muzId)});
 }
 
 Gate::Id majorityOfSeven(const Gate::SignalList &newInputs, GNet &newNet) {
   using GateSymbol = eda::gate::model::GateSymbol;
   // <xyztufr> = <y<u<xzt><NOT(u)fr>><t<ufr><xzNOT(t)>>>
-  const auto xztId = newNet.addGate(GateSymbol::MAJ, {newInputs[0],
-                                                      newInputs[2],
-                                                      newInputs[3]});
-  const auto notUId = newNet.addGate(GateSymbol::NOT, {newInputs[4]});
-  const auto notUfrId = newNet.addGate(GateSymbol::MAJ, 
-      {Gate::Signal::always(notUId), newInputs[5], newInputs[6]});
-  const auto ufrId = newNet.addGate(GateSymbol::MAJ, {newInputs[4],
-                                                      newInputs[5], 
-                                                      newInputs[6]});
-  const auto notTId = newNet.addGate(GateSymbol::NOT, {newInputs[3]});
-  const auto xzNotTId = newNet.addGate(GateSymbol::MAJ, 
-      {newInputs[0], newInputs[2], Gate::Signal::always(notTId)});
+  const auto xztId = newNet.addGate(GateSymbol::MAJ,
+                                   {newInputs[0],
+                                    newInputs[2],
+                                    newInputs[3]});
+  const auto notUId = newNet.addNot(newInputs[4]);
+  const auto notUfrId = newNet.addGate(GateSymbol::MAJ,
+                                      {newInputs[5],
+                                       newInputs[6],
+                                       Gate::Signal::always(notUId)});
+  const auto ufrId = newNet.addGate(GateSymbol::MAJ,
+                                   {newInputs[4],
+                                    newInputs[5], 
+                                    newInputs[6]});
+  const auto notTId = newNet.addNot(newInputs[3]);
+  const auto xzNotTId = newNet.addGate(GateSymbol::MAJ,
+                                      {newInputs[0],
+                                       newInputs[2],
+                                       Gate::Signal::always(notTId)});
   // <u<xzt><NOT(u)fr>>
-  const auto uxztufrId = newNet.addGate(GateSymbol::MAJ, {newInputs[4],
+  const auto uxztufrId = newNet.addGate(GateSymbol::MAJ,
+                                       {newInputs[4],
                                         Gate::Signal::always(xztId),
                                         Gate::Signal::always(notUfrId)});
   // <t<ufr><xzNOT(t)>>
-  const auto tufrxztId = newNet.addGate(GateSymbol::MAJ, {newInputs[3],
+  const auto tufrxztId = newNet.addGate(GateSymbol::MAJ,
+                                       {newInputs[3],
                                         Gate::Signal::always(ufrId),
                                         Gate::Signal::always(xzNotTId)});
   // <xyztufr>
-  return newNet.addGate(GateSymbol::MAJ, {newInputs[1], 
+  return newNet.addGate(GateSymbol::MAJ,
+                       {newInputs[1], 
                         Gate::Signal::always(uxztufrId), 
                         Gate::Signal::always(tufrxztId)});
 }
@@ -374,7 +389,7 @@ Gate::Id MigMapper::mapMaj(const Gate::SignalList &newInputs, size_t n0,
   //Majority of n to several majority of 3
   Gate::SignalList toFitIn((quantity + 1) / 2);
   Gate::SignalList toTakeFrom((quantity + 1) / 2);
-  const auto notArgId = mapNop({inputs[quantity - 3]}, false, newNet);
+  const auto notArgId = newNet.addNot(inputs[quantity - 3]);
   const auto baseMaj1 = newNet.addGate(GateSymbol::MAJ,
                                       {Gate::Signal::always(notArgId),
                                        inputs[quantity - 2],
@@ -384,8 +399,8 @@ Gate::Id MigMapper::mapMaj(const Gate::SignalList &newInputs, size_t n0,
                                        inputs[quantity - 2],
                                        inputs[quantity - 1]});
   toTakeFrom[1] = Gate::Signal::always(baseMaj2);
-  const auto zeroId = mapVal(false, newNet);
-  const auto oneId  = mapVal(true, newNet);
+  const auto zeroId = newNet.addZero();
+  const auto oneId  = newNet.addNot(Gate::Signal::always(zeroId));
   const auto startMaj1 = newNet.addGate(GateSymbol::MAJ,
                                        {inputs[quantity - 3],
                                         Gate::Signal::always(zeroId),
