@@ -119,11 +119,13 @@ void migmapping(const std::unique_ptr<GNet> &net) {
   eda::gate::premapper::MigMapper migmapper;
   auto migmapped = migmapper.map(*net);
   dump(*migmapped);
+  net->sortTopologically();
+  migmapped->sortTopologically();
 
   //equivalence
-  // bool equal = equivalence(net, migmapped);
-  // std::cout << "equivalence: " << equal << '\n';
-  // EXPECT_TRUE(equal);
+  bool equal = equivalence(net, migmapped);
+  std::cout << "equivalence: " << equal << '\n';
+  EXPECT_TRUE(equal);
 }
 
 TEST(MigMapperTest, MigMapperOrTest) {
