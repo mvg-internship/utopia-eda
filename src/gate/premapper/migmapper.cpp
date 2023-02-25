@@ -55,6 +55,8 @@ Gate::Id MigMapper::mapGate(const Gate &oldGate,
   auto newInputs = getNewInputs(oldGate, oldToNewGates, n0, n1);
 
   switch (oldGate.func()) {
+  case GateSymbol::IN   : return mapIn (                          newNet);
+  case GateSymbol::OUT  : return mapOut(newInputs, n0, n1,        newNet);
   case GateSymbol::ZERO : return mapVal(                   false, newNet);
   case GateSymbol::ONE  : return mapVal(                   true,  newNet);
   case GateSymbol::NOP  : return mapNop(newInputs, n0, n1, true,  newNet);
@@ -70,6 +72,27 @@ Gate::Id MigMapper::mapGate(const Gate &oldGate,
   }
 
   return Gate::INVALID;
+}
+
+//===----------------------------------------------------------------------===//
+// IN/OUT
+//===----------------------------------------------------------------------===//
+
+Gate::Id MigMapper::mapIn(GNet &newNet) const {
+  return newNet.addIn();
+}
+
+Gate::Id MigMapper::mapOut(const Gate::SignalList &newInputs,
+                           size_t n0, size_t n1, GNet &newNet) const {
+  assert(newInputs.size() + n0 + n1 == 1);
+
+  // Constant output.
+  if (n0 > 0 || n1 > 0) {
+    auto valId = mapVal(n1 > 0, newNet);
+    return newNet.addOut(valId);
+  }
+
+  return newNet.addOut(newInputs);
 }
 
 //===----------------------------------------------------------------------===//
@@ -343,9 +366,9 @@ Gate::Id MigMapper::mapMaj(const Gate::SignalList &newInputs, size_t n0,
   if ((inputSize <= 3) and (n0 == n1)) {
     if (inputSize == 3) {
       return newNet.addGate(GateSymbol::MAJ, newInputs);
-    } else { //inputSize == 1
-      return mapNop(newInputs, true, newNet);
     }
+    //inputSize == 1
+    return mapNop(newInputs, true, newNet);
   }
 
   int n = n1 - n0;
@@ -355,9 +378,8 @@ Gate::Id MigMapper::mapMaj(const Gate::SignalList &newInputs, size_t n0,
     // Maj(x1, x2, 0) = And(x1, x2)
     if (n1 > 0) {
       return mapOr(newInputs, true, newNet);
-    } else {
-      return mapAnd(newInputs, true, newNet);
     }
+    return mapAnd(newInputs, true, newNet);
   }
 
   // med - is a mediana
