@@ -76,34 +76,33 @@ bool equivalence(const std::unique_ptr<GNet> &net, const std::shared_ptr<GNet> &
 
   Checker checker;
   GateIdMap oldToNewGates;
-  GateBinding imap, omap, tmap;
+  GateBinding ibind, obind, tbind;
 
+  assert(net->nSourceLinks() == migmapped->nSourceLinks());
+  assert(net->nTargetLinks() == migmapped->nTargetLinks());
+
+  // Input-to-input correspondence
   for (auto oldSourceLink : net->sourceLinks()) {
     auto newSourceId = oldToNewGates[oldSourceLink.target];
-    imap.insert({oldSourceLink, Link(newSourceId)});
+    ibind.insert({oldSourceLink, Link(newSourceId)});
   }
 
-  for (auto oldTriggerId : net->triggers()) {
-    auto newTriggerId = oldToNewGates[oldTriggerId];
-    tmap.insert({Link(oldTriggerId), Link(newTriggerId)});
+  // Output-to-output correspondence
+  for (auto oldTargetLink : net->targetLinks()) {
+    auto newTargetId = oldToNewGates[oldTargetLink.source];
+    obind.insert({oldTargetLink, Link(newTargetId)});
   }
 
-  // TODO: Here are only triggers.
+  // Trigger-to-trigger correspondence
   for (auto oldTriggerId : net->triggers()) {
     auto newTriggerId = oldToNewGates[oldTriggerId];
-    auto *oldTrigger = Gate::get(oldTriggerId);
-    auto *newTrigger = Gate::get(newTriggerId);
-
-    auto oldDataId = oldTrigger->input(0).node();
-    auto newDataId = newTrigger->input(0).node();
-
-    omap.insert({Link(oldDataId), Link(newDataId)});
+    tbind.insert({Link(oldTriggerId), Link(newTriggerId)});
   }
 
   Hints hints;
-  hints.sourceBinding = std::make_shared<GateBinding>(std::move(imap));
-  hints.targetBinding = std::make_shared<GateBinding>(std::move(omap));
-  hints.triggerBinding = std::make_shared<GateBinding>(std::move(tmap));
+  hints.sourceBinding = std::make_shared<GateBinding>(std::move(ibind));
+  hints.targetBinding = std::make_shared<GateBinding>(std::move(obind));
+  hints.triggerBinding = std::make_shared<GateBinding>(std::move(tbind));
   
   return checker.areEqual(*net, *migmapped, hints);
 }
@@ -115,19 +114,23 @@ void dump(const GNet &net) {
     std::cout << "O=" << net.nTargetLinks() << '\n';
 }
 
-TEST(MigMapperTest, MigMapperOrTest) {
-  Gate::SignalList inputs;
-  Gate::Id outputId;
-  auto net = makeOr(3, inputs, outputId);
+void migmapping(const std::unique_ptr<GNet> &net) {
   dump(*net);
   eda::gate::premapper::MigMapper migmapper;
   auto migmapped = migmapper.map(*net);
   dump(*migmapped);
 
-  // equivalence
-  //bool equal = equivalence(net, migmapped);
-  //std::cout << "equivalence:" << '\n';
-  //EXPECT_TRUE(equal);
+  //equivalence
+  bool equal = equivalence(net, migmapped);
+  std::cout << "equivalence: " << equal << '\n';
+  EXPECT_TRUE(equal);
+}
+
+TEST(MigMapperTest, MigMapperOrTest) {
+  Gate::SignalList inputs;
+  Gate::Id outputId;
+  auto net = makeOr(3, inputs, outputId);
+  migmapping(net);
   EXPECT_TRUE(net != nullptr);
 }
 
@@ -135,15 +138,7 @@ TEST(MigMapperTest, MigMapperAndTest) {
   Gate::SignalList inputs;
   Gate::Id outputId;
   auto net = makeAnd(2, inputs, outputId);
-  dump(*net);
-  eda::gate::premapper::MigMapper migmapper;
-  auto migmapped = migmapper.map(*net);
-  dump(*migmapped);
-
-  // equivalence
-  // bool equal = equivalence(net, migmapped);
-  // std::cout << "equivalence:" << '\n';
-  // EXPECT_TRUE(equal);
+  migmapping(net);
   EXPECT_TRUE(net != nullptr);
 }
 
@@ -151,15 +146,7 @@ TEST(MigMapperTest, MigMapperMaj3Test) {
   Gate::SignalList inputs;
   Gate::Id outputId;
   auto net = makeMaj(3, inputs, outputId);
-  dump(*net);
-  eda::gate::premapper::MigMapper migmapper;
-  auto migmapped = migmapper.map(*net);
-  dump(*migmapped);
-
-  // equivalence
-  bool equal = equivalence(net, migmapped);
-  std::cout << "equivalence:" << '\n';
-  EXPECT_TRUE(equal);
+  migmapping(net);
   EXPECT_TRUE(net != nullptr);
 }
 
@@ -167,15 +154,7 @@ TEST(MigMapperTest, MigMapperMaj5Test) {
   Gate::SignalList inputs;
   Gate::Id outputId;
   auto net = makeMaj(5, inputs, outputId);
-  dump(*net);
-  eda::gate::premapper::MigMapper migmapper;
-  auto migmapped = migmapper.map(*net);
-  dump(*migmapped);
-
-  // equivalence
-  bool equal = equivalence(net, migmapped);
-  std::cout << "equivalence:" << '\n';
-  EXPECT_TRUE(equal);
+  migmapping(net);
   EXPECT_TRUE(net != nullptr);
 }
 
@@ -183,15 +162,7 @@ TEST(MigMapperTest, MigMapperMaj7Test) {
   Gate::SignalList inputs;
   Gate::Id outputId;
   auto net = makeMaj(7, inputs, outputId);
-  dump(*net);
-  eda::gate::premapper::MigMapper migmapper;
-  auto migmapped = migmapper.map(*net);
-  dump(*migmapped);
-
-  // equivalence
-  bool equal = equivalence(net, migmapped);
-  std::cout << "equivalence:" << '\n';
-  EXPECT_TRUE(equal);
+  migmapping(net);
   EXPECT_TRUE(net != nullptr);
 }
 
@@ -199,15 +170,7 @@ TEST(MigMapperTest, MigMapperMaj9Test) {
   Gate::SignalList inputs;
   Gate::Id outputId;
   auto net = makeMaj(9, inputs, outputId);
-  dump(*net);
-  eda::gate::premapper::MigMapper migmapper;
-  auto migmapped = migmapper.map(*net);
-  dump(*migmapped);
-
-  // equivalence
-  bool equal = equivalence(net, migmapped);
-  std::cout << "equivalence:" << '\n';
-  EXPECT_TRUE(equal);
+  migmapping(net);
   EXPECT_TRUE(net != nullptr);
 }
 
@@ -215,15 +178,7 @@ TEST(MigMapperTest, MigMapperMaj11Test) {
   Gate::SignalList inputs;
   Gate::Id outputId;
   auto net = makeMaj(11, inputs, outputId);
-  dump(*net);
-  eda::gate::premapper::MigMapper migmapper;
-  auto migmapped = migmapper.map(*net);
-  dump(*migmapped);
-
-  // equivalence
-  bool equal = equivalence(net, migmapped);
-  std::cout << "equivalence:" << '\n';
-  EXPECT_TRUE(equal);
+  migmapping(net);
   EXPECT_TRUE(net != nullptr);
 }
 
@@ -231,15 +186,7 @@ TEST(MigMapperTest, MigMapperMaj17Test) {
   Gate::SignalList inputs;
   Gate::Id outputId;
   auto net = makeMaj(17, inputs, outputId);
-  dump(*net);
-  eda::gate::premapper::MigMapper migmapper;
-  auto migmapped = migmapper.map(*net);
-  dump(*migmapped);
-
-  // equivalence
-  bool equal = equivalence(net, migmapped);
-  std::cout << "equivalence:" << '\n';
-  EXPECT_TRUE(equal);
+  migmapping(net);
   EXPECT_TRUE(net != nullptr);
 }
 
@@ -247,15 +194,7 @@ TEST(MigMapperTest, MigMapperNorTest) {
   Gate::SignalList inputs;
   Gate::Id outputId;
   auto net = makeNor(2, inputs, outputId);
-  dump(*net);
-  eda::gate::premapper::MigMapper migmapper;
-  auto migmapped = migmapper.map(*net);
-  dump(*migmapped);
-
-  // equivalence
-  bool equal = equivalence(net, migmapped);
-  std::cout << "equivalence:" << '\n';
-  EXPECT_TRUE(equal);
+  migmapping(net);
   EXPECT_TRUE(net != nullptr);
 }
 
@@ -263,15 +202,7 @@ TEST(MigMapperTest, MigMapperNandTest) {
   Gate::SignalList inputs;
   Gate::Id outputId;
   auto net = makeNand(2, inputs, outputId);
-  dump(*net);
-  eda::gate::premapper::MigMapper migmapper;
-  auto migmapped = migmapper.map(*net);
-  dump(*migmapped);
-
-  // equivalence
-  bool equal = equivalence(net, migmapped);
-  std::cout << "equivalence:" << '\n';
-  EXPECT_TRUE(equal);
+  migmapping(net);
   EXPECT_TRUE(net != nullptr);
 }
 
@@ -279,15 +210,7 @@ TEST(MigMapperTest, MigMapperOrnTest) {
   Gate::SignalList inputs;
   Gate::Id outputId;
   auto net = makeOrn(2, inputs, outputId);
-  dump(*net);
-  eda::gate::premapper::MigMapper migmapper;
-  auto migmapped = migmapper.map(*net);
-  dump(*migmapped);
-
-  // equivalence
-  bool equal = equivalence(net, migmapped);
-  std::cout << "equivalence:" << '\n';
-  EXPECT_TRUE(equal);
+  migmapping(net);
   EXPECT_TRUE(net != nullptr);
 }
 
@@ -295,14 +218,6 @@ TEST(MigMapperTest, MigMapperAndnTest) {
   Gate::SignalList inputs;
   Gate::Id outputId;
   auto net = makeAndn(2, inputs, outputId);
-  dump(*net);
-  eda::gate::premapper::MigMapper migmapper;
-  auto migmapped = migmapper.map(*net);
-  dump(*migmapped);
-
-  // equivalence
-  bool equal = equivalence(net, migmapped);
-  std::cout << "equivalence:" << '\n';
-  EXPECT_TRUE(equal);
+  migmapping(net);
   EXPECT_TRUE(net != nullptr);
 }
