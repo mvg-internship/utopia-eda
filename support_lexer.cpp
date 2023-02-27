@@ -7,36 +7,6 @@
         return (err); \
     } \
 } while (0)
-// /Users/georgryabov/Desktop/ study/lexer/a.out
-// /Users/georgryabov/Desktop/\ study/lexer/support_lexer.cpp
-//file tokens.h consist of 
-/*
-enum token_t{
-    INPUT = 1,
-    OUTPUT,
-    DFF,
-    NOT,
-    AND,
-    OR,
-    NAND,
-    NOR,
-    LP, //left parenthesis
-    RP, //right paranthesis
-    E,  // equal
-    ID, //var
-    COMMA,
-    EOF_TOKEN,
-    STRING
-};
-
-enum error_types
-{
-    SUCCESS,
-    FAILURE_FILE_READING,
-    FAILURE_IOSTREAM_PARENTHESIS,
-    FAILURE_ID_PARENTHESIS,
-};
-*/
 
 token_t get_next_token();
 error_types parse_bench_file();
@@ -49,8 +19,13 @@ static std::size_t place = 0;
 token_t get_next_token()
 { 
     // std::cout << "\nplace = " << place << std::endl;
+    std::cout << " black box 1 " << scan_token() << "  " << std::endl;
+    std::cout << " black box 2 " << scan_token() << "  " << std::endl;
+    std::cout << " black box 3 " << scan_token() << "  " << std::endl;
+    std::cout << " black box 4 " << scan_token() << "  " << std::endl;
+    std::cout << " black box 5 " << scan_token() << "  " << std::endl;
     token_t val = static_cast<token_t>(scan_token());
-    std::cout << "This is scan_token: "<< val << std::endl;
+    std::cout << " token: "<< val << " " << place << std::endl;
     place += 1;
     return val;
 }
@@ -60,9 +35,11 @@ error_types parse_bench_file()
     token_t token; 
     while((token = get_next_token()))
     {
+         std::cout << " rkalfd " << token << " " << place << std::endl;
         if(token == INPUT || token == OUTPUT) {
             parse_parenthesis_io();
         } else if(token == ID) {
+            std::cout << " askf " << token;
             parse_id();
         } else {
             return FAILURE_FILE_READING;
@@ -73,13 +50,21 @@ error_types parse_bench_file()
 
 error_types parse_id()
 {
-    token_t token = get_next_token();
-    ASSERT_NEXT_TOKEN(token, E, FAILURE_FILE_READING);
-    if ((token = get_next_token()) == STRING) {
+     std::cout << " sdjnfjnfdasnpfasndf; ";
+    token_t token;
+    // ASSERT_NEXT_TOKEN(token, E, FAILURE_PARSE_ID);
+    token = get_next_token();
+    if ( token == AND 
+            || token == OR 
+            || token == NAND 
+            || token== NOR
+       ) 
         return parse_parenthesis_id();
-    } else {
-        return FAILURE_FILE_READING;
-    }
+    else if ( token == DFF 
+                || token == NOT )
+        return parse_parenthesis_io();
+     else 
+        return FAILURE_PARSE_ID;    
 }
 
 error_types parse_parenthesis_io()
@@ -99,13 +84,14 @@ error_types parse_parenthesis_id()
     while ((token = get_next_token()) == COMMA)
         ASSERT_NEXT_TOKEN(token, ID, FAILURE_ID_PARENTHESIS);
     ASSERT_NEXT_TOKEN(token, RP, FAILURE_ID_PARENTHESIS);
+    std::cout << "END OF P_ID " << token << std::endl;
     return SUCCESS;
 }
 
 int main()
 {
     yyin = fopen( "s27.txt", "r" );
-    std::cout << "error type " << parse_bench_file() << std::endl;
+    std::cout << parse_bench_file() << std::endl;
     // while
     // std::cout << "error place " << place << std::endl;
     return 0;

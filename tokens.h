@@ -1,12 +1,12 @@
 enum token_t{
     INPUT = 1,
     OUTPUT,
-    // DFF,
-    // NOT,
-    // AND,
-    // OR,
-    // NAND,
-    // NOR,
+    DFF,
+    NOT,
+    AND,
+    OR,
+    NAND,
+    NOR,
     LP, //left parenthesis
     RP, //right paranthesis
     E,  // equal
@@ -19,6 +19,7 @@ enum error_types
 {
     SUCCESS = 1,
     FAILURE_FILE_READING,
+    FAILURE_PARSE_ID,
     FAILURE_IOSTREAM_PARENTHESIS,
     FAILURE_ID_PARENTHESIS,
 };
