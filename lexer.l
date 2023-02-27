@@ -5,7 +5,7 @@
 %}
 
 %option noyywrap 
-ID       [a-z][a-z0-9]*
+IDD       [a-zA-Z][a-zA-Z0-9]*
 
 %%
 
@@ -24,6 +24,6 @@ ID       [a-z][a-z0-9]*
 "="                                     { return E; }
 ","                                     { return COMMA; }
 
-{ID}                                    { return ID; }
+{IDD}                                    { return ID; }
 
 %%
