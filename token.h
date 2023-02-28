@@ -1,28 +1,20 @@
-namespace tokens
-{
     enum token_t
-    {   TOK_EOF,
+    {  
         MODULE,
         ENDMODULE,
         INPUT,
         OUTPUT,
-        WHIRE,
+        WIRE,
         REG,
-        ASSIGN,
-        PARAMETR,
-        iINTEGER,
-        LOGICAL_OPERATOR,
-        CONDITIONAL_OPERATOR,
-        AN_OPERATOR,
-        AN_IDENTIFIER,
-        AN_VARIABLE,
-        ID,
         SEMICOLON,
         COLON,
+        LBRACE,
+        RBRACE,
         LBRACKET,
         RBRACKET,
-        RBRACE,
-        LBRACE
-
+        COMMA,
+        STRING,
+        NUM,
+        UNRECOGNIZED_CHARACTER
     };
-}
+

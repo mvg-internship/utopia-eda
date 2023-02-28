@@ -1,14 +1,10 @@
 %{
         //Define section
-        #include <iostream>
+        #include <stdio.h>
         #include "token.h"       
-        #define YY_DECL int scan_token();
-        #define TOKEN(X) return token:: X;
-        extern std::string* pStr;
-        
 %}
 
-%option c++
+
 %option noyywrap
  
 NUM     [0-9]
@@ -17,34 +13,24 @@ STRING  [a-zA-Z][a-zA-Z0-9]*
         //Rule section
 %%
 
-module      {TOKEN(MODULE)}
-endmodule   {TOKEN(ENDMODULE)}
+[ \t\n]+    
 
-input   {TOKEN(INPUT)}
-output  {TOKEN(OUTPUT)}   
-wire    {TOKEN(WIRE)}
-reg     {TOKEN(REG)}
+module      { return MODULE; }
+endmodule   { return ENDMODULE; }
 
-";"     {TOKEN(SEMICOLON)}
-":"     {TOKEN(COLON)}
-"("     {TOKEN(LBRACE)}
-")"     {TOKEN(RBRACE)}
-"["     {TOKEN(LBRACKET)}
-"]"     {TOKEN(RBRACKET)}
-","     {TOKEN(COMMA)}
+input   { return INPUT; }
+output  { return OUTPUT; }   
+wire    { return WIRE; }
+reg     { return REG; }
 
-                        // "&"|"|"         {pStr = new std::string(yytext, yylen);TOKEN(LOGICAL_OPERATOR)}
+";"     { return SEMICOLON; }
+":"     { return COLON; }
+"("     { return LBRACE; }
+")"     { return RBRACE; }
+"["     { return LBRACKET; }
+"]"     { return RBRACKET; }
+","     { return COMMA; }
 
-                        // if|case|else    {pStr = new std::string(yytext, yylen);TOKEN(CONDITIONAL_OPERATOR)}
+{STRING}    { return STRING; }
+{NUM} { return NUM; }
 
-                        // "+"|"-"|"*"|"/"|"?"   {pStr = new std::string(yytext, yylen);TOKEN(AN_OPERATOR)} // Тут добавил фигурные скобки. Не знаю почему без них вообще работало
-
-"{"[^{}\n]*"}"  // eat up one-line comments 
-[ \t\n]+        // eat up whitespace 
-
-{ID}    {pStr = std::string(yytext, yylen); TOKEN(AN_IDENTIFIER)}
-{DIGIT} {pStr = std::string(yytext, yylen); TOKEN(AN_VARIABLE)}
-
-.       {TOKEN(UNRECOGNIZED_CHARACTER)}
-
-<<EOF>> {TOKEN(TOK_EOF)}

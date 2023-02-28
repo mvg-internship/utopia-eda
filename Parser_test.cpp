@@ -68,15 +68,16 @@ kind_of_error parse_name_list(token_t&, token_t);
 
 token_t get_next_token()
 {
-  if (yywrap() != 0)
-  {
-    yyin = fopen("c432.v.txt", "r");
+ // if (yywrap() != 0)
+ // {
+  //  yyin = fopen("c432.v.txt", "r");
     // scan_token();
-    token_t val = static_cast<token_t>(scan_token());
-    std::cout << "This is scan_token: " << val << std::endl;
+   // token_t val = static_cast<token_t>(scan_token());
+   // std::cout << "This is scan_token: " << val << std::endl;
     // std::cout << "This is yytext: "<< yytext << std::endl;
-    return val;
-  }
+    //}
+    return NUM;
+ 
 }
 
 kind_of_error parse_gatelevel_verilog()
