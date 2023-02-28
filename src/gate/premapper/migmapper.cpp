@@ -168,7 +168,8 @@ Gate::Id MigMapper::mapAnd(const Gate::SignalList &newInputs,
     } else {
       using GateSymbol = eda::gate::model::GateSymbol;
       // AND(x,y).
-      gateId = newNet.addGate(GateSymbol::MAJ, {x, y, Gate::Signal::always(valId)});
+      gateId = newNet.addGate(GateSymbol::MAJ, 
+                             {x, y, Gate::Signal::always(valId)});
     }
 
     inputs.push_back(Gate::Signal::always(gateId));
@@ -216,7 +217,8 @@ Gate::Id MigMapper::mapOr(const Gate::SignalList &newInputs,
       } else {
         using GateSymbol = eda::gate::model::GateSymbol;
         // OR(x,y).
-        gateId = newNet.addGate(GateSymbol::MAJ, {x, y, Gate::Signal::always(valId)});
+        gateId = newNet.addGate(GateSymbol::MAJ,
+                               {x, y, Gate::Signal::always(valId)});
       }
 
       inputs.push_back(Gate::Signal::always(gateId));
@@ -478,7 +480,7 @@ Gate::Id MigMapper::mapMaj(const Gate::SignalList &newInputs, size_t n0,
       const auto externalMaj = newNet.addGate(GateSymbol::MAJ,
                                              {inputs[counter],
                                               toTakeFrom[j + 1],
-                                              Gate::Signal::always(internalMaj)});
+                                           Gate::Signal::always(internalMaj)});
       toFitIn[j] = Gate::Signal::always(externalMaj);
     }
     std::swap(toFitIn, toTakeFrom);

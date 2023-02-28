@@ -66,7 +66,8 @@ std::unique_ptr<GNet> makeMaj(unsigned N,
   return makeNet(GateSymbol::MAJ, N, inputs, outputId);
 }
 
-bool equivalence(const std::unique_ptr<GNet> &net, const std::shared_ptr<GNet> &migmapped) {
+bool equivalence(const std::unique_ptr<GNet> &net,
+                 const std::shared_ptr<GNet> &migmapped) {
   using Link = eda::gate::model::Gate::Link;
   using Checker = eda::gate::debugger::Checker;
   using GateBinding = Checker::GateBinding;
