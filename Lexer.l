@@ -1,7 +1,8 @@
 %{
         //Define section
         #include <stdio.h>
-        #include "token.h"       
+        #include "token.h"
+        #define YY_DECL int scan_token()      
 %}
 
 

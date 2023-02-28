@@ -471,11 +471,12 @@ char *yytext;
 #line 2 "Lexer.l"
         //Define section
         #include <stdio.h>
-        #include "token.h"       
-#line 476 "lex.yy.c"
-#line 14 "Lexer.l"
+        #include "token.h"
+        #define YY_DECL int scan_token()      
+#line 477 "lex.yy.c"
+#line 15 "Lexer.l"
         //Rule section
-#line 479 "lex.yy.c"
+#line 480 "lex.yy.c"
 
 #define INITIAL 0
 
@@ -692,10 +693,10 @@ YY_DECL
 		}
 
 	{
-#line 15 "Lexer.l"
+#line 16 "Lexer.l"
 
 
-#line 699 "lex.yy.c"
+#line 700 "lex.yy.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -755,90 +756,90 @@ do_action:	/* This label is used only to access EOF actions. */
 case 1:
 /* rule 1 can match eol */
 YY_RULE_SETUP
-#line 17 "Lexer.l"
+#line 18 "Lexer.l"
 
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 19 "Lexer.l"
+#line 20 "Lexer.l"
 { return MODULE; }
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 20 "Lexer.l"
+#line 21 "Lexer.l"
 { return ENDMODULE; }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 22 "Lexer.l"
+#line 23 "Lexer.l"
 { return INPUT; }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 23 "Lexer.l"
+#line 24 "Lexer.l"
 { return OUTPUT; }   
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 24 "Lexer.l"
+#line 25 "Lexer.l"
 { return WIRE; }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 25 "Lexer.l"
+#line 26 "Lexer.l"
 { return REG; }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 27 "Lexer.l"
+#line 28 "Lexer.l"
 { return SEMICOLON; }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 28 "Lexer.l"
+#line 29 "Lexer.l"
 { return COLON; }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 29 "Lexer.l"
+#line 30 "Lexer.l"
 { return LBRACE; }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 30 "Lexer.l"
+#line 31 "Lexer.l"
 { return RBRACE; }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 31 "Lexer.l"
+#line 32 "Lexer.l"
 { return LBRACKET; }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 32 "Lexer.l"
+#line 33 "Lexer.l"
 { return RBRACKET; }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 33 "Lexer.l"
+#line 34 "Lexer.l"
 { return COMMA; }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 35 "Lexer.l"
+#line 36 "Lexer.l"
 { return STRING; }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 36 "Lexer.l"
+#line 37 "Lexer.l"
 { return NUM; }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 38 "Lexer.l"
+#line 39 "Lexer.l"
 ECHO;
 	YY_BREAK
-#line 842 "lex.yy.c"
+#line 843 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -1843,4 +1844,4 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 38 "Lexer.l"
+#line 39 "Lexer.l"

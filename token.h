@@ -1,20 +1,31 @@
-    enum token_t
-    {  
-        MODULE,
-        ENDMODULE,
-        INPUT,
-        OUTPUT,
-        WIRE,
-        REG,
-        SEMICOLON,
-        COLON,
-        LBRACE,
-        RBRACE,
-        LBRACKET,
-        RBRACKET,
-        COMMA,
-        STRING,
-        NUM,
-        UNRECOGNIZED_CHARACTER
-    };
+enum token_t
+{
+  MODULE,
+  ENDMODULE,
+  INPUT,
+  OUTPUT,
+  WIRE,
+  REG,
+  SEMICOLON,
+  COLON,
+  LBRACKET,
+  RBRACKET,
+  RBRACE,
+  LBRACE,
+  STRING,
+  NUM,
+  COMMA,
+  EOF_TOKEN
+};
 
+    enum kind_of_error
+{
+  SUCCESS,
+  FAILURE_IN_MODULE_NAME,
+  FAILURE_IN_PARSE_NAME_LIST,
+  FAILURE_IN_DECL,
+  FAILURE_IN_MODULE_INCAPTULATION,
+  FAILURE_IN_EXPR,
+  FAILURE_IN_ARG,
+  FAILURE_IN_GATE_LEVEL_VERILOG
+};

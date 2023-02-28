@@ -1,7 +1,7 @@
 #include <iostream>
 #include <vector>
-// #include "token.h"
-//#include "Lexer.l"
+#include"lex.yy.c"
+
 /*
 some defenicion in Verilog
 
@@ -14,37 +14,6 @@ decl -> (input|output|wire)?[NUM:NUM]? name(,name)* ;// тут мы будем �
 expr -> name name (arg*,);
 arg-> name ?[NUM]?; // тут мы будем проверять, есть ли далее скобка, так как она опциональна
 */
-
-enum kind_of_error
-{
-  SUCCESS,
-  FAILURE_IN_MODULE_NAME,
-  FAILURE_IN_PARSE_NAME_LIST,
-  FAILURE_IN_DECL,
-  FAILURE_IN_MODULE_INCAPTULATION,
-  FAILURE_IN_EXPR,
-  FAILURE_IN_ARG,
-  FAILURE_IN_GATE_LEVEL_VERILOG
-};
-
-enum token_t
-{
-  MODULE,
-  ENDMODULE,
-  INPUT,
-  OUTPUT,
-  WIRE,
-  SEMICOLON,
-  COLON,
-  LBRACKET,
-  RBRACKET,
-  RBRACE,
-  LBRACE,
-  STRING,
-  NUM,
-  COMMA,
-  EOF_TOKEN
-};
 
 static std::vector<token_t> store;
 
@@ -66,18 +35,15 @@ kind_of_error parse_name_list(token_t&, token_t);
     }                                    \
   } while (0)
 
+static std::size_t place = 0;
+static std::size_t line = 0;
+
 token_t get_next_token()
-{
- // if (yywrap() != 0)
- // {
-  //  yyin = fopen("c432.v.txt", "r");
-    // scan_token();
-   // token_t val = static_cast<token_t>(scan_token());
-   // std::cout << "This is scan_token: " << val << std::endl;
-    // std::cout << "This is yytext: "<< yytext << std::endl;
-    //}
-    return NUM;
- 
+{ 
+  token_t val = static_cast<token_t>(scan_token());
+  std::cout << " tok: "<< val << " pl: " << place << " ln: " << line << std::endl;
+  place += 1;
+  return val;
 }
 
 kind_of_error parse_gatelevel_verilog()
@@ -100,6 +66,7 @@ kind_of_error parse_module()
   rc = parse_name_list(tok, RBRACE);
 
   ASSERT_NEXT_TOKEN(tok, SEMICOLON, FAILURE_IN_MODULE_NAME);
+  line += 1;
 
   while (rc == SUCCESS && tok != ENDMODULE)
   {
@@ -118,8 +85,7 @@ kind_of_error parse_module()
       break;
     }
   }
-  std::cout << "result of module analis\n"
-            << rc;
+  
   return rc;
 }
 
@@ -135,15 +101,17 @@ kind_of_error parse_decl(token_t tok)
     ASSERT_NEXT_TOKEN(tok, RBRACKET, FAILURE_IN_DECL);
     ASSERT_NEXT_TOKEN(tok, STRING, FAILURE_IN_DECL);
     rc = parse_name_list(tok, SEMICOLON);
+    line += 1;
     break;
   case STRING:
     rc = parse_name_list(tok, SEMICOLON);
+    line += 1;
     break;
   default:
+    rc = FAILURE_IN_DECL;
     break;
   }
-  std::cout << "result of decl analis\n"
-            << rc;
+ 
   return rc;
 }
 
@@ -154,6 +122,7 @@ kind_of_error parse_expr(token_t tok)
   ASSERT_NEXT_TOKEN(tok, STRING, FAILURE_IN_EXPR);
   ASSERT_NEXT_TOKEN(tok, STRING, FAILURE_IN_EXPR);
   ASSERT_NEXT_TOKEN(tok, LBRACE, FAILURE_IN_EXPR);
+  line += 1;
 
   rc = parse_arg(tok);
 
@@ -218,8 +187,7 @@ kind_of_error parse_name_list(token_t &tok, token_t separate_tok)
   return rc;
 }
 
-int main()
-{
-  std::cout << "Hello!\n";
-  return 0;
+int main(int argc, char *argv[]) {
+    yyin = fopen(argv[1], "r");
+    return parse_module();
 }
