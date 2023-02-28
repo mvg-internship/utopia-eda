@@ -14,8 +14,8 @@
 namespace eda::gate::premapper {
 
 /**
- * \brief Implements an netlist-to-AIG pre-mapper.
- * \author <a href="mailto:kamkin@ispras.ru">Alexander Kamkin</a>
+ * \brief Implements an netlist-to-MIG pre-mapper.
+ * \author <a href="mailto:mdvershkov@edu.hse.ru">Maksim Vershkov</a>
  */
 class MigMapper final : public PreMapper, public util::Singleton<MigMapper> {
   friend class util::Singleton<MigMapper>;
