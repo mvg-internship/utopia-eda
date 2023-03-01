@@ -8,6 +8,10 @@
     } \
 } while (0)
 
+// cd build/
+// cmake ..
+// make
+
 token_t get_next_token();
 error_types parse_bench_file();
 error_types parse_id();
@@ -79,10 +83,12 @@ error_types parse_parenthesis_id()
 
 int main(int argc, char* argv[])
 {
-    for (int i = 1; i < argc; i++) {
-        yyin = fopen( argv[i], "r" );
-        std::cout << parse_bench_file() << std::endl;
-    }
-    
+    // for (int i = 1; i < argc; i++) {
+    //     yyin = fopen( argv[i], "r" );
+    //     std::cout << parse_bench_file() << std::endl;
+    // }
+
+    yyin = fopen( "s27.txt", "r" );
+    std::cout << parse_bench_file() << std::endl;
     return 0;
 }
