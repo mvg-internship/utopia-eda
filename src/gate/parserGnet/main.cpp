@@ -8,11 +8,6 @@
 #include <map>
 #include<string>
 using namespace eda::gate::model;
-std::map<unsigned, Gate::Id> outputs;
-std::map<unsigned, Gate::Id> inputs;
-
-std::map<int, std::pair<int, int>> cell;
-std::map<int,GateSymbol> typeFunc;
 int root;
 void print_modules(const int ind, std::ostream &out){
     for (const auto &it1 : Yosys::RTLIL::IdString::global_id_index_){
@@ -22,7 +17,7 @@ void print_modules(const int ind, std::ostream &out){
     }
 }
 
-void print_wires(const Yosys::hashlib::dict<Yosys::RTLIL::IdString, Yosys::RTLIL::Wire*> &wires, std::ostream &out, eda::gate::model::GNet &net){
+void print_wires(const Yosys::hashlib::dict<Yosys::RTLIL::IdString, Yosys::RTLIL::Wire*> &wires, std::ostream &out, eda::gate::model::GNet &net,std::map<unsigned, Gate::Id> &inputs,std::map<unsigned, Gate::Id> &outputs){
     out << "Wires:" << "\n";
     for (auto it1=wires.begin(); it1 != wires.end(); ++it1){
         unsigned index;
@@ -71,7 +66,7 @@ GateSymbol function(size_t type){
     }
     return func;
 }
-Gate::Id buildNet(int root,eda::gate::model::GNet &net){
+Gate::Id buildNet(int root,eda::gate::model::GNet &net,std::map<int,GateSymbol> typeFunc,std::map<int, std::pair<int, int>> &cell,std::map<unsigned, Gate::Id> &inputs){
 
     bool flag1=0,flag2=0;
     if(inputs.find(cell.find(root)->second.first)!=inputs.end()){
@@ -94,29 +89,29 @@ Gate::Id buildNet(int root,eda::gate::model::GNet &net){
     if (flag1==0&&flag2==0){
         Gate::SignalList inputs1;
         if (cell.find(root)->second.first!=cell.find(root)->second.second){
-        inputs1.push_back(Gate::Signal::always(buildNet(cell.find(root)->second.first,net)));
-        inputs1.push_back(Gate::Signal::always(buildNet(cell.find(root)->second.second,net)));
+            inputs1.push_back(Gate::Signal::always(buildNet(cell.find(root)->second.first,net,typeFunc,cell,inputs)));
+            inputs1.push_back(Gate::Signal::always(buildNet(cell.find(root)->second.second,net,typeFunc,cell,inputs)));
         }
         else{
-            inputs1.push_back(Gate::Signal::always(buildNet(cell.find(root)->second.first,net)));
+            inputs1.push_back(Gate::Signal::always(buildNet(cell.find(root)->second.first,net,typeFunc,cell,inputs)));
         }
         return net.addGate(typeFunc.find(root)->second,inputs1);
     }
     if (flag1==0&&flag2==1){
         Gate::SignalList inputs1;
-        inputs1.push_back(Gate::Signal::always(buildNet(cell.find(root)->second.first,net)));
+        inputs1.push_back(Gate::Signal::always(buildNet(cell.find(root)->second.first,net,typeFunc,cell,inputs)));
         inputs1.push_back(Gate::Signal::always(inputs.find(cell.find(root)->second.second)->second));
         return net.addGate(typeFunc.find(root)->second,inputs1);
     }
     if (flag1==1&&flag2==0){
         Gate::SignalList inputs1;
         inputs1.push_back(Gate::Signal::always(inputs.find(cell.find(root)->second.first)->second));
-        inputs1.push_back(Gate::Signal::always(buildNet(cell.find(root)->second.second,net)));
+        inputs1.push_back(Gate::Signal::always(buildNet(cell.find(root)->second.second,net,typeFunc,cell,inputs)));
         return net.addGate(typeFunc.find(root)->second,inputs1);
     }
 }
 
-void print_cells(const Yosys::hashlib::dict<Yosys::RTLIL::IdString, Yosys::RTLIL::Cell*> &cells, std::ostream &out, eda::gate::model::GNet &net){
+void print_cells(const Yosys::hashlib::dict<Yosys::RTLIL::IdString, Yosys::RTLIL::Cell*> &cells, std::ostream &out, eda::gate::model::GNet &net, std::map<int,GateSymbol> &typeFunc,std::map<int, std::pair<int, int>> &cell){
     out << "Cells:" << "\n";
     int p=0;
     for (auto it1=cells.begin(); it1 != cells.end(); ++it1){
@@ -163,14 +158,23 @@ void print_cells(const Yosys::hashlib::dict<Yosys::RTLIL::IdString, Yosys::RTLIL
         }
     }
 }
-void makeGate(int root,eda::gate::model::GNet &net){
-    auto outs=buildNet(root,net);
-    net.addOut(outs);
-}
-void print_connections(const std::vector<std::pair<Yosys::RTLIL::SigSpec, Yosys::RTLIL::SigSpec> > &connections, std::ostream &out){
+void print_connections(const std::vector<std::pair<Yosys::RTLIL::SigSpec, Yosys::RTLIL::SigSpec> > &connections, std::ostream &out,eda::gate::model::GNet &net,std::map<int,GateSymbol> typeFunc,std::map<int, std::pair<int, int>> &cell,std::map<unsigned, Gate::Id> &inputs,std::map<unsigned, Gate::Id> &outputs){
     out << "Connections count: " << connections.size() << "\n";
     for (auto it1 = connections.begin(); it1 != connections.end(); ++it1){
         out<<"    Wire " << it1->first.as_wire()->name.index_ << " connects with " << it1->second.as_wire()->name.index_ << "\n";
+        if(inputs.find(it1->second.as_wire()->name.index_)==inputs.end()){
+            root=it1->second.as_wire()->name.index_;
+            auto output=buildNet(root,net,typeFunc,cell,inputs);
+            outputs.find(it1->first.as_wire()->name.index_)->second=net.addOut(output);
+            std::cout << net;
+        }
+        else{
+            Gate::SignalList inputs1;
+            inputs1.push_back(Gate::Signal::always(inputs.find(it1->second.as_wire()->name.index_)->second));
+            auto output=net.addGate(GateSymbol::NOP,inputs1);
+            outputs.find(it1->first.as_wire()->name.index_)->second=net.addOut(output);
+            std::cout << net;
+        }
     }
 }
 
@@ -219,15 +223,19 @@ void print_ports(const std::vector<Yosys::RTLIL::IdString> &ports, std::ostream 
     }
 }
 
-void print_params(const std::pair<Yosys::RTLIL::IdString, Yosys::RTLIL::Module*> &m, std::ostream &out, eda::gate::model::GNet &net){
+void print_params(const std::pair<Yosys::RTLIL::IdString, Yosys::RTLIL::Module*> &m, std::ostream &out){
+    eda::gate::model::GNet net(0);
+    std::map<unsigned, Gate::Id> outputs;
+    std::map<unsigned, Gate::Id> inputs;
+    std::map<int, std::pair<int, int>> cell;
+    std::map<int,GateSymbol> typeFunc;
     print_modules(m.first.index_, out);
     out << "\n";
-    print_wires(m.second->wires_, out,net);
+    print_wires(m.second->wires_, out,net,inputs,outputs);
     out << "\n";
-    print_cells(m.second->cells_, out,net);
+    print_cells(m.second->cells_, out,net,typeFunc,cell);
     out << "\n" ;
-    makeGate(root,net);
-    print_connections(m.second->connections_, out);
+    print_connections(m.second->connections_, out,net,typeFunc,cell,inputs,outputs);
     out << "\n";
     print_memory(m.second->memories, out);
     out << "\n";
@@ -243,9 +251,9 @@ void print_params(const std::pair<Yosys::RTLIL::IdString, Yosys::RTLIL::Module*>
     out << "\n";
 }
 
-void print_parsed(const Yosys::RTLIL::Design &des, std::ostream &out, eda::gate::model::GNet &net){
+void print_parsed(const Yosys::RTLIL::Design &des, std::ostream &out){
     for (auto &m: des.modules_){
-        print_params(m, out,net);
+        print_params(m, out);
     }
 }
 int main(int argc, char* argv[]){
@@ -254,12 +262,7 @@ int main(int argc, char* argv[]){
     for (size_t o=1;o<argc;++o){
         Yosys::RTLIL::Design design;
         Yosys::run_frontend(argv[o], "liberty", &design, nullptr);
-        eda::gate::model::GNet net(0);
-        print_parsed(design, out, net);
-      //  net.sortTopologically();
-        std::cout<<net.nSourceLinks()<<"\n";
-        std::cout<<net.nTargetLinks()<<"\n";
-        std::cout<<net;
+        print_parsed(design, out);
     }
     Yosys::yosys_shutdown();
 }
