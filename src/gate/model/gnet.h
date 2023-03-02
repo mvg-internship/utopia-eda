@@ -512,9 +512,10 @@ public:
 
   GNet* clone();
 
-  /** Clones the net
-   *  @param oldToNewId correspondence between gates. Original net -> cloned
-   *  @return The clone
+  /** Clones the net.
+   *  Original net -> cloned.
+   *  @param oldToNewId Stores correspondence between gates. 
+   *  @return The clone of this net.
    */
   GNet* clone(std::unordered_map<Gate::Id, Gate::Id> &oldToNewId);
 
