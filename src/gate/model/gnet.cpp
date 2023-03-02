@@ -653,7 +653,7 @@ void GNet::sortTopologically() {
 // Cloning 
 //===--------------------------------------------------------------------===//
 
-/// Clones the net
+/// Clones the net.
 GNet *GNet::clone() {
   if (_gates.empty()) {
     return new GNet(_level);
