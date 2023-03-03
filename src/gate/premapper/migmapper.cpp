@@ -11,10 +11,11 @@
 #include <cassert>
 #include <unordered_set>
 
-namespace eda::gate::premapper {
-
 using Gate = eda::gate::model::Gate;
+using GateSymbol = eda::gate::model::GateSymbol;
 using GNet = eda::gate::model::GNet;
+
+namespace eda::gate::premapper {
 
 Gate::SignalList getNewInputs(const Gate &oldGate,
                               const MigMapper::GateIdMap &oldToNewGates,
@@ -49,7 +50,6 @@ Gate::Id MigMapper::mapGate(const Gate &oldGate,
     // Clone sources and triggers gates w/o changes.
     return PreMapper::mapGate(oldGate, oldToNewGates, newNet);
   }
-  using GateSymbol = eda::gate::model::GateSymbol;
 
   size_t n0, n1;
   auto newInputs = getNewInputs(oldGate, oldToNewGates, n0, n1);
@@ -113,7 +113,6 @@ Gate::Id MigMapper::mapVal(bool value, GNet &newNet) const {
 
 Gate::Id MigMapper::mapNop(const Gate::SignalList &newInputs,
                            bool sign, GNet &newNet) const {
-  using GateSymbol = eda::gate::model::GateSymbol;
   // NOP(x) = x.
   const auto inputId = newInputs.at(0).node();
   if (sign) {
@@ -166,7 +165,6 @@ Gate::Id MigMapper::mapAnd(const Gate::SignalList &newInputs,
       // AND(x,NOT(x)) = 0.
       gateId = mapVal(!sign, newNet);
     } else {
-      using GateSymbol = eda::gate::model::GateSymbol;
       // AND(x,y).
       gateId = newNet.addGate(GateSymbol::MAJ, 
                              {x, y, Gate::Signal::always(valId)});
@@ -215,7 +213,6 @@ Gate::Id MigMapper::mapOr(const Gate::SignalList &newInputs,
         // OR(x,NOT(x)) = 1.
         gateId = mapVal(sign, newNet);
       } else {
-        using GateSymbol = eda::gate::model::GateSymbol;
         // OR(x,y).
         gateId = newNet.addGate(GateSymbol::MAJ,
                                {x, y, Gate::Signal::always(valId)});
@@ -295,7 +292,6 @@ Gate::Id MigMapper::mapXor(const Gate::SignalList &newInputs,
 //===----------------------------------------------------------------------===//
 
 Gate::Id majorityOfFive(const Gate::SignalList &newInputs, GNet &newNet) {
-  using GateSymbol = eda::gate::model::GateSymbol;
   // <xyztu> = <<xyz>t<<xyu>uz>>
   const auto xyzId = newNet.addGate(GateSymbol::MAJ,
                                    {newInputs[0],
@@ -317,7 +313,6 @@ Gate::Id majorityOfFive(const Gate::SignalList &newInputs, GNet &newNet) {
 }
 
 Gate::Id majorityOfSeven(const Gate::SignalList &newInputs, GNet &newNet) {
-  using GateSymbol = eda::gate::model::GateSymbol;
   // <xyztufr> = <y<u<xzt><NOT(u)fr>><t<ufr><xzNOT(t)>>>
   const auto xztId = newNet.addGate(GateSymbol::MAJ,
                                    {newInputs[0],
@@ -356,7 +351,6 @@ Gate::Id majorityOfSeven(const Gate::SignalList &newInputs, GNet &newNet) {
 
 Gate::Id MigMapper::mapMaj(const Gate::SignalList &newInputs, size_t n0, 
                            size_t n1, GNet &newNet) const {
-  using GateSymbol = eda::gate::model::GateSymbol;
   size_t inputSize = newInputs.size();
   assert(((inputSize + n0 + n1) % 2 == 1) and (inputSize + n0 + n1 >= 3)
                                           and "Invalid number of inputs");
