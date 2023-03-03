@@ -1,1 +1,1 @@
-scan_token
+ALERT()
