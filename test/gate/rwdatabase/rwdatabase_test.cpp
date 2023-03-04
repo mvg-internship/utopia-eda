@@ -23,7 +23,11 @@ bool insertTest() {
   RWDatabase::GateBinding binding = {{0, 1}, {1, 3}};
   RWDatabase::ValueVector valueVector = 1;
 
+<<<<<<< HEAD
   rwdb.set(valueVector, {{dummy, binding}});
+=======
+  rwdb.insert(valueVector, {{dummy, binding}});
+>>>>>>> 29425631a1473688f538ed8863931b4db061d3ff
   return ((rwdb.get(valueVector)[0].net == dummy) && (rwdb.get(valueVector)[0].binding == binding));
 }
 
