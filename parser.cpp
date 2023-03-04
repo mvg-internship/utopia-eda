@@ -19,7 +19,7 @@
         else if ( comp == E)    \
             ALERT("'E'");    \
     }   \
-} while ( false )
+} while (false)
 
 // cd build/
 // cmake ..
@@ -93,7 +93,7 @@ error_types parse_parenthesis_id()
     token_t token;
     ASSERT_NEXT_TOKEN( token, LP, FAILURE_ID_PARENTHESIS );
     ASSERT_NEXT_TOKEN( token, ID, FAILURE_ID_PARENTHESIS );
-    while ((token = get_next_token()) == COMMA)
+    while ( (token = get_next_token()) == COMMA )
         ASSERT_NEXT_TOKEN( token, ID, FAILURE_ID_PARENTHESIS );
     if ( token != RP ) {
         ALERT("'RP'");
