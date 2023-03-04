@@ -6,7 +6,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "gate/rwdatabase/rwdatabase.h"
+#include "gate/optimizer/rwdatabase.h"
 
 #include "gtest/gtest.h"
 
