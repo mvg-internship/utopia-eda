@@ -18,18 +18,20 @@
 #include <utility>
 #include <vector>
 
-using namespace eda::gate::model;
-using namespace eda::rtl::model;
+using GNet = eda::gate::model::GNet;
+using GateId = GNet::GateId;
+using FuncSymbol = eda::rtl::model::FuncSymbol;
 
 namespace eda::rtl::library {
 
 class ArithmeticLibrary final : public FLibrary {
 public:
-  using Key = std::pair<size_t, int>;
-  using SignalTree = std::map<Key, Signal>;
+  using GateIdKey = std::pair<size_t, int>;
+  using GateIdTree = std::map<GateIdKey, GateId>;
 
   static FLibrary &get() {
-    static auto instance = std::unique_ptr<FLibrary>(new ArithmeticLibrary(FLibraryDefault::get()));
+    static auto instance = std::unique_ptr<FLibrary>(
+                                 new ArithmeticLibrary(FLibraryDefault::get()));
     return *instance;
   }
 
@@ -73,23 +75,7 @@ private:
                         bool plusOne, 
                         GNet &net);
 
-  // Complements in with zeros to the transmitted size, if necessary 
-  static inline void filling(size_t size, 
-                             GateIdList &in, 
-                             GNet &net);
-
-  // Forms signals for input identifiers 
-  static inline SignalList formInputSignals(size_t size, 
-                                            GateIdList in);
-  
-  static inline SignalList formCarrySignals(size_t size, 
-                                            GateSymbol func, 
-                                            SignalList &xWire, 
-                                            SignalList &yWire, 
-                                            GNet &net);
-
   FLibrary &supportLibrary;
 };
 
 } // namespace eda::rtl::library
-

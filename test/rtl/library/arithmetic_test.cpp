@@ -12,6 +12,8 @@
 
 #include "gtest/gtest.h"
 
+#include <cassert>
+#include <cstdint>
 #include <iostream>
 
 using GNet = eda::gate::model::GNet;
@@ -19,91 +21,128 @@ using FuncSymbol = eda::rtl::model::FuncSymbol;
 using FLibrary = eda::rtl::library::FLibrary;
 using ArithmeticLibrary = eda::rtl::library::ArithmeticLibrary;
 using Simulator = eda::gate::simulator::Simulator;
+using BV = eda::gate::simulator::Simulator::Compiled::BV;
 
-bool ADDTest(const size_t xSize,
-             const size_t ySize,
-             const size_t outSize) {
-  GNet::GateIdList x(xSize);
-  GNet::GateIdList y(ySize);
+// Add inputs to the net and returns their identifiers
+GNet::GateIdList addInputs(const size_t quantity,
+                           GNet &net) {
+  GNet::GateIdList list(quantity);
+  for (size_t i = 0; i < quantity; i++) {
+    list[i] = net.addIn();
+  }
+  return list;
+}
+
+// Add the links to the passed list
+void addLinks(const GNet::GateIdList &ids,
+              GNet::LinkList &links) {
+  for (size_t i = 0; i < ids.size(); i++ ) {
+    links.push_back(GNet::Link(ids[i]));
+  }
+}
+
+// Generate number for BV and convert it to uint64_t
+// inputReg - required number register
+// maxReg - max register for significant figures
+// (it is necessary to not overflow output register)
+uint64_t generateInput(const size_t inputReg,
+                       const size_t maxReg,
+                       BV &input) {
+  const size_t begin{input.size()};
+  uint64_t number{0};
+  for (size_t i = 0; i < inputReg; i++) {
+    if (i < maxReg) {
+      input.push_back(rand() % 2);
+    } else {
+      input.push_back(0);
+    }
+    number += input[begin + i] * (1ull << i);
+  }
+  return number;
+}
+
+// Convert from BV to uint64_t
+uint64_t convertToInteger(const BV &vector) {
+  uint64_t number{0};
+  for (size_t i = 0; i < vector.size(); i++) {
+    number += vector[i] * (1ull << i);
+  }
+  return number;
+}
+
+bool arithmeticTest(FuncSymbol func,
+                    const size_t xSize,
+                    const size_t ySize,
+                    const size_t outSize) {
   GNet net;
-  for (size_t n = 0; n < xSize; n++) {
-    x[n] = net.addIn();
-  }
-  for (size_t n = 0; n < ySize; n++) {
-    y[n] = net.addIn();
-  }
+  GNet::GateIdList x = addInputs(xSize, net);
+  GNet::GateIdList y = addInputs(ySize, net);
 
   GNet::In inputs = {x, y};
   FLibrary &library = ArithmeticLibrary::get();
-  GNet::GateIdList outputs = library.synth(outSize, FuncSymbol::ADD, inputs, net);
+  GNet::GateIdList outputs = library.synth(outSize, func, inputs, net);
   net.sortTopologically();
 
   GNet::LinkList in;
-  for (size_t n = 0; n < xSize; n++) {
-    in.push_back(GNet::Link(x[n]));
-  }
-  for (size_t n = 0; n < ySize; n++) {
-    in.push_back(GNet::Link(y[n]));
-  }
-
+  addLinks(x, in);
+  addLinks(y, in);
   GNet::LinkList out;
-  for (size_t n = 0; n < outSize; n++) {
-    out.push_back(Gate::Link(outputs[n]));
-  }
+  addLinks(outputs, out);
 
   Simulator simulator;
   auto compiled = simulator.compile(net, in, out);
 
-  std::vector<bool> o(outSize);
-  std::vector<bool> i(xSize + ySize);
-  for (size_t n = 0; n < xSize + ySize; n++)
-     i[n] = rand() % 2;
+  BV i;
+  uint64_t first{0};
+  uint64_t second{0};
+  switch (func) {
+  case FuncSymbol::ADD:
+    first = generateInput(xSize, outSize - 1, i);
+    second = generateInput(ySize, outSize - 1, i); 
+    break;
+  case FuncSymbol::SUB:
+    do {
+      first = generateInput(xSize, outSize, i);
+      second = generateInput(ySize, outSize, i);
+      if (second > first) {
+        i.resize(0);
+      }
+    } while (i.size()==0);
+    break; 
+  default:
+    assert(false);
+  }
+  BV o(outSize);
+
   compiled.simulate(o, i);
 
-  
-  for (int n = xSize - 1; n >= 0; n--) {
-    std::cout << i[n];
+  uint64_t result{convertToInteger(o)};
+  switch (func) {
+  case FuncSymbol::ADD:
+    return(result == first + second);
+  case FuncSymbol::SUB:
+    return(result == first - second);
+  default:
+    assert(false);
+  return {};
   }
-  std::cout << " + ";
-  for (int n = xSize + ySize - 1; n >= x.size(); n--) {
-    std::cout << i[n];
-  }
-  std::cout << " = ";
-
-  for (int n = outputs.size() - 1; n >= 0; n--) {
-    std::cout << o[n];
-  }
-  std::cout << std::endl;
-  return true;
 }
 
-TEST(ArithmeticTest, ADDTest_1) {
-  EXPECT_TRUE(ADDTest(7, 7, 50));
+// Randomly generate a register from 1 to 64
+size_t reg() {
+  return 1 + rand() % 64;
 }
-TEST(ArithmeticTest, ADDTest_2) {
-  EXPECT_TRUE(ADDTest(10, 15, 7));
+
+TEST(arithmeticTest, addTest) {
+  for (size_t i = 0; i < 100; i++) {
+    assert(arithmeticTest(FuncSymbol::ADD, reg(), reg(), reg()));
+  }
+  EXPECT_TRUE(true);
 }
-TEST(ArithmeticTest, ADDTest_3) {
-    EXPECT_TRUE(ADDTest(15, 15, 16));
-}
-TEST(ArithmeticTest, ADDTest_4) {
-  EXPECT_TRUE(ADDTest(15, 15, 15));
-}
-TEST(ArithmeticTest, ADDTest_5) {
-    EXPECT_TRUE(ADDTest(17, 4, 10));
-}
-TEST(ArithmeticTest, ADDTest_6) {
-  EXPECT_TRUE(ADDTest(8, 8, 7));
-}
-TEST(ArithmeticTest, ADDTest_7) {
-    EXPECT_TRUE(ADDTest(7, 14, 8));
-}
-TEST(ArithmeticTest, ADDTest_8) {
-  EXPECT_TRUE(ADDTest(14, 7, 7));
-}
-TEST(ArithmeticTest, ADDTest_9) {
-    EXPECT_TRUE(ADDTest(23, 28, 20));
-}
-TEST(ArithmeticTest, ADDTest_10) {
-  EXPECT_TRUE(ADDTest(1, 1, 1));
+
+TEST(arithmeticTest, subTest) {
+  for (size_t i = 0; i < 10; i++) {
+    assert(arithmeticTest(FuncSymbol::SUB, 10, 10, 11));
+  }
+  EXPECT_TRUE(true);
 }

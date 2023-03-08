@@ -6,17 +6,41 @@
 //
 //===----------------------------------------------------------------------===//
 
+#include "gate/model/gnet.h"
 #include "rtl/library/arithmetic.h"
+#include "rtl/model/fsymbol.h"
 
 #include <cassert>
 #include <cmath>
 #include <iostream>
 
-using namespace eda::base::model;
-using namespace eda::gate::model;
-using namespace eda::rtl::model;
+using GNet = eda::gate::model::GNet;
+using GateId = GNet::GateId;
+using GateIdList = eda::rtl::library::FLibrary::GateIdList;
+using GateSymbol = eda::gate::model::GateSymbol;
+using FuncSymbol = eda::rtl::model::FuncSymbol;
 
 namespace eda::rtl::library {
+
+// Complete GateIdList with zeros up to the passed size
+void fillingWithZeros(const size_t size,
+                      FLibrary::GateIdList &in,
+                      GNet &net);
+
+// Make inputs equal to each other,
+// but no longer than outSize
+inline void makeInputsEqual(const size_t outSize,
+                            FLibrary::GateIdList &x,
+                            FLibrary::GateIdList &y,
+                            GNet &net);
+
+// Form GateIdList of outputs for the operation 
+// applied to pairs of input identifiers 
+GateIdList formGateIdList(const size_t size,
+                          GateSymbol func,
+                          const GateIdList &x,
+                          const GateIdList &y,
+                          GNet &net);
 
 bool ArithmeticLibrary::supports(FuncSymbol func) const {
   return true;
@@ -63,21 +87,25 @@ FLibrary::Out ArithmeticLibrary::alloc(size_t outSize,
 FLibrary::Out ArithmeticLibrary::synthAdd(size_t outSize, 
                                           const In &in, 
                                           GNet &net) {
-  return synthAdder(outSize, in, false, net);
+  auto x = in[0];
+  auto y = in[1];
+ 
+  makeInputsEqual(outSize, x, y, net);
+  
+  return synthAdder(outSize, {x, y}, false, net);
 }
 
 FLibrary::Out ArithmeticLibrary::synthSub(size_t outSize, 
                                           const In &in, 
                                           GNet &net) {
-  const auto &x = in[0];
-  const auto &y = in[1];
+  auto x = in[0];
+  auto y = in[1];
 
-  assert(outSize == y.size());
+  makeInputsEqual(outSize, x, y, net);
 
-  Out temp(outSize);
+  Out temp(y.size());
   for (size_t i = 0; i < temp.size(); i++) {
-    auto yWire = Signal::always(y[i]);
-    temp[i] = net.addGate(GateSymbol::NOT, {yWire});
+    temp[i] = net.addGate(GateSymbol::NOT, y[i]);
   }
 
   return synthAdder(outSize, {x, temp}, true, net);
@@ -85,7 +113,8 @@ FLibrary::Out ArithmeticLibrary::synthSub(size_t outSize,
 
 //
 //                              LADNER-FISHER ADDER
-//
+//  G - gates for generated carry
+//  P - gates for propagated carry
 //                                                          Input
 //                                                          carry    1
 //  | 6 |   | 5 |   | 4 |   | 3 |   | 2 |   | 1 |   | 0 |   | -1| _________
@@ -120,95 +149,80 @@ FLibrary::Out ArithmeticLibrary::synthSub(size_t outSize,
 //
 //  2. Calculation of all carries in prefix tree (there are groups of cells at
 //     each level. For example, at the level 1 there are 2 groups consisting 
-//     of 1 cell, and at the level 2 there is 1 groups consisting 2 cells. 
-//     Levels of prefix tree has numbers 0, 1, 2, 3, 4, etc. The numbers of 
-//     cells at each level is 0, 1, 2, 3, etc.
+//     of 1 cell, and at the level 2 there is 1 group consisting 2 cells. 
+//     Levels of prefix tree has numbers: 0, 1, 2, 3, 4, etc. The numbers of 
+//     cells at each level are 0, 1, 2, 3, etc.
 //       cell X:
 //         level 0:
 //           P[i,j] = P[i] and P[j]
-//           G[i,j] = G[i] or ( G[j] and P[i] )
+//           G[i,j] = G[i] or (G[j] and P[i])
 //         levels before the last level:
 //           P[i,j] = P[i,k] and P[k-1,j]
-//           G[i,j] = G[i,k] or ( G[k-1,j] and P[i, k] )
+//           G[i,j] = G[i,k] or (G[k-1,j] and P[i, k])
 //      
 //       cell O:
 //         level 0:
-//           G[i,j] = G[i] or ( G[-1] and P[i] )
+//           G[i,j] = G[i] or (G[-1] and P[i])
 //         levels before the last level:
-//           G[i,j] = G[i,k] or ( G[k-1,j] and P[i, k] )
+//           G[i,j] = G[i,k] or (G[k-1,j] and P[i, k])
 //         the last level:
-//           G[i,-1] = G[i] or ( G[i-1,-1] and P[i] )
+//           G[i,-1] = G[i] or (G[i-1,-1] and P[i])
 //
 //  3. Generating the sum
 //       cell ( i ):
 //         S[i] =  P[i] xor G[i,-1]
 //
-
 FLibrary::Out ArithmeticLibrary::synthAdder(size_t outSize, 
                                             const In &in, 
                                             bool plusOne, 
                                             GNet &net) {
-  assert(in.size() == 2);
+  const auto &x = in[0];
+  const auto &y = in[1];
 
-  // Setting input identifiers
-  auto x = in[0];
-  auto y = in[1];
+  assert((x.size() == y.size()) && "Terms must be equal in size");
 
-  if (outSize >= x.size() && outSize >= y.size()) {
-    // x.size() and y.size() become equal to the maximum of them
-    filling(x.size(), {y}, net);
-    filling(y.size(), {x}, net);
-  } else {
-    // x.size() and y.size() become equal to the outSize
-    filling(outSize, {x}, net);
-    filling(outSize, {y}, net);
-    x.resize(outSize);
-    y.resize(outSize);
-  }
+  auto carryIn = plusOne ? net.addOne() : net.addZero();
+  const size_t inSize = x.size();
+  const bool needsCarryOut = ((outSize > inSize) && (plusOne == 0));
 
-  // Setting input signals
-  const size_t sumSize = x.size();
-  auto inG = Signal::always(net.addGate(plusOne ? GateSymbol::ONE : GateSymbol::ZERO));
-  auto xWire = formInputSignals(sumSize, x);
-  auto yWire = formInputSignals(sumSize, y);
-
-  const bool needsCarryOut = outSize > sumSize;
-  if (!needsCarryOut && sumSize == 1) {
-    Out out(sumSize);
-    auto temp = Signal::always(net.addGate(GateSymbol::XOR, {xWire[0], yWire[0]}));
-    out[0] = net.addGate(GateSymbol::XOR, {inG, temp});
+  if ((!needsCarryOut) && (inSize == 1)) {
+    Out out(1);
+    auto temp = net.addGate(GateSymbol::XOR, x[0], y[0]);
+    out[0] = net.addGate(GateSymbol::XOR, carryIn, temp);
     return out;
   } else {
-    // Pre-calculation of P[i] and G[i]
-    const size_t cut = needsCarryOut ? 1 : 2;
-    SignalList preP = formCarrySignals(sumSize, GateSymbol::XOR, xWire, yWire, net);
-    SignalList preG = formCarrySignals(sumSize-cut+1, GateSymbol::AND, xWire, yWire, net);
+    const size_t maxReg = needsCarryOut ? (inSize - 1) : (inSize - 2);
+    auto preP = formGateIdList(inSize, GateSymbol::XOR, x, y, net);
+    auto preG = formGateIdList(maxReg + 1, GateSymbol::AND, x, y, net);
 
-    // Carry signals in prefix tree
-    SignalTree p;
-    SignalTree g;
+    // Tree of gates for generated carry
+    GateIdTree p;
+    // Tree of gates for propagated carry
+    GateIdTree g;
 
-    const size_t size = needsCarryOut ? sumSize + 1 : sumSize;
+    const size_t size = needsCarryOut ? (inSize + 1) : inSize;
     // A new level of prefix tree is added for size: 4, 6, 10, 18, etc.
-    const size_t treeDepth = size <= 3 ? 1 : floor(log2(size - 2)) + 1;
+    const size_t treeDepth = (size <= 3) ? 1 : (floor(log2(size - 2)) + 1);
 
     // Level 0 of prefix tree
-    // Cell indexes start with lastReg = 0 and firstReg = -1.
-    // Step bitween cells is 2 for lastreg and 2 for firstReg.
-    auto spread = Signal::always(net.addGate(GateSymbol::AND, {inG, preP[0]}));
-    g[{0, -1}] = Signal::always(net.addGate(GateSymbol::OR, {preG[0], spread}));
-    size_t lastReg = 2;
-    int firstReg = 1;
-    while (lastReg <= sumSize - cut) {
-      p[{lastReg, firstReg}] = Signal::always(net.addGate(GateSymbol::AND, {preP[lastReg], preP[firstReg]}));
-      auto spread = Signal::always(net.addGate(GateSymbol::AND, {preG[firstReg], preP[lastReg]}));
-      g[{lastReg, firstReg}] = Signal::always(net.addGate(GateSymbol::OR, {preG[lastReg], spread}));
+    // Cell indices start with lastReg = 0 and firstReg = -1.
+    // Step between cells is 2 for lastReg and 2 for firstReg.
+    auto temp = net.addGate(GateSymbol::AND, preP[0], carryIn);
+    g[{0, -1}] = net.addGate(GateSymbol::OR, preG[0], temp);
+    // 
+    GateIdKey key(2, 1);
+    size_t &lastReg{key.first};
+    int &firstReg{key.second};
+    while (lastReg <= maxReg) {
+      p[key] = net.addGate(GateSymbol::AND, preP[lastReg], preP[firstReg]);
+      temp = net.addGate(GateSymbol::AND, preP[lastReg], preG[firstReg]);
+      g[key] = net.addGate(GateSymbol::OR, preG[lastReg], temp);
       lastReg += 2;
       firstReg += 2;
     }
 
     // Levels of prefix tree before the last level
-    // Cell indexes start with lastReg = (2^level) and firstReg = -1.  
+    // Cell indices start with lastReg = (2^level) and firstReg = -1.  
     // a) Transition to cell in the same group:
     //      step is 2 only for lastReg
     // b) Transition to cell in a new group:
@@ -219,80 +233,95 @@ FLibrary::Out ArithmeticLibrary::synthAdder(size_t outSize,
     //      It start with 2^level and has step (2^(level+1)) (It changes only when there is the transition to a new group)     
     // d) Transition condition to a new group of cells:
     //      (2^(level-1)) is a multiple of (number of cell + 1)
-    size_t middleReg;
+    size_t middleReg{0};
+    std::pair<size_t&, size_t> lKey(lastReg, 0);
+    std::pair<size_t, int&> rKey(0, firstReg);
     for (size_t i = 1; i < treeDepth; i++) {
-      lastReg = 1 << i;
+      lastReg = (1 << i);
       firstReg = -1;
-      middleReg = 1 << i;
-      size_t j = 0;
-      while (lastReg <= sumSize - cut) {
+      middleReg = (1 << i);
+      lKey.second = middleReg - 1;
+      rKey.first = middleReg - 2;
+      size_t j{0};
+      while (lastReg <= maxReg) {
         if (firstReg != -1) {
-          p[{lastReg, firstReg}] = Signal::always(net.addGate(GateSymbol::AND, {p[{lastReg, middleReg-1}], p[{middleReg-2,firstReg}]}));
+          p[key] = net.addGate(GateSymbol::AND, p[lKey], p[rKey]);
         }
-        auto spread = Signal::always(net.addGate(GateSymbol::AND, {g[{middleReg-2, firstReg}], p[{lastReg, middleReg-1}]}));
-        g[{lastReg, firstReg}] = Signal::always(net.addGate(GateSymbol::OR, {g[{lastReg, middleReg-1}], spread}));
+        temp = net.addGate(GateSymbol::AND, p[lKey], g[rKey]);
+        g[key] = net.addGate(GateSymbol::OR, g[lKey], temp);
         lastReg += 2;
         if ((j + 1) % (1 << (i - 1)) == 0) {
-          lastReg += 1 << i;
-          firstReg += 1 << (i + 1);
-          middleReg += 1 << (i + 1);
+          lastReg += (1 << i);
+          firstReg += (1 << (i + 1));
+          middleReg += (1 << (i + 1));
+          lKey.second = middleReg - 1;
+          rKey.first = middleReg - 2;  
         }
         j++;
       }
     }
 
     // The last level of prefix tree
-    // Cell indexes start with lastReg = 1 and firstReg = -1.
-    // Step bitween cells is 2 for lastreg and frstReg remains constant.
+    // Cell indices start with lastReg = 1 and firstReg = -1.
+    // Step between cells is 2 for lastreg and frstReg remains constant.
     lastReg = 1;
-    while (lastReg <= sumSize - cut) {
-      auto spread = Signal::always(net.addGate(GateSymbol::AND, {g[{lastReg - 1, -1}], preP[lastReg]}));
-      g[{lastReg, -1}] = Signal::always(net.addGate(GateSymbol::OR, {preG[lastReg], spread}));
+    firstReg = -1;
+    while (lastReg <= maxReg) {
+      temp = net.addGate(GateSymbol::AND, preP[lastReg], g[{lastReg - 1, -1}]);
+      g[key] = net.addGate(GateSymbol::OR, preG[lastReg], temp);
       lastReg += 2;
     }
 
     // Generating the sum
-    Out out(sumSize);
-    out[0] = net.addGate(GateSymbol::XOR, {preP[0], inG});
-    for (size_t i = 1; i < sumSize; i++) {
-      out[i] = net.addGate(GateSymbol::XOR, {preP[i], g[{i-1, -1}]});
+    Out out(inSize);
+    out[0] = net.addGate(GateSymbol::XOR, preP[0], carryIn);
+    for (size_t i = 1; i < inSize; i++) {
+      out[i] = net.addGate(GateSymbol::XOR, preP[i], g[{i - 1, -1}]);
     }
     if (needsCarryOut) {
-      out.push_back(net.addGate(GateSymbol::NOP, {g[{sumSize-1, -1}]}));
+      out.push_back(net.addGate(GateSymbol::NOP, g[{inSize - 1, -1}]));
     }
 
-    filling(outSize, {out}, net);
+    fillingWithZeros(outSize, {out}, net);
 
     return out;
   }
 
 }
 
-inline void ArithmeticLibrary::filling(size_t size, 
-                                       GateIdList &in, 
-                                       GNet &net) {
+void fillingWithZeros(const size_t size,
+                      FLibrary::GateIdList &in,
+                      GNet &net) {
   while (size > in.size()) {
-    in.push_back(net.addGate(GateSymbol::ZERO));
+    in.push_back(net.addZero());
   }
 }
 
-inline FLibrary::SignalList ArithmeticLibrary::formInputSignals(size_t size, 
-                                                                GateIdList in) {
-  SignalList list(size);
-  for (size_t i = 0; i < size; i++) {
-    list[i] = (Signal::always(in[i]));
+void makeInputsEqual(const size_t outSize,
+                     FLibrary::GateIdList &x,
+                     FLibrary::GateIdList &y,
+                     GNet &net) {
+  if ((outSize >= x.size()) && (outSize >= y.size())) {
+    // Make x.size() and y.size() equal to the maximum of them
+    fillingWithZeros(x.size(), {y}, net);
+    fillingWithZeros(y.size(), {x}, net);
+  } else {
+    // Make x.size() and y.size() equal to the outSize
+    fillingWithZeros(outSize, {x}, net);
+    fillingWithZeros(outSize, {y}, net);
+    x.resize(outSize);
+    y.resize(outSize);
   }
-  return list;
 }
 
-inline FLibrary::SignalList ArithmeticLibrary::formCarrySignals(size_t size, 
-                                                                GateSymbol func, 
-                                                                SignalList &xWire, 
-                                                                SignalList &yWire, 
-                                                                GNet &net) {
-  SignalList list(size);
+GateIdList formGateIdList(const size_t size,
+                          GateSymbol func, 
+                          const GateIdList &x, 
+                          const GateIdList &y, 
+                          GNet &net) {
+  GateIdList list(size);
   for (size_t i = 0; i < size; i++) {
-    list[i] = Signal::always(net.addGate(func, { xWire[i], yWire[i] }));
+    list[i] = net.addGate(func, x[i], y[i]);
   }
   return list;
 }
