@@ -2,7 +2,7 @@
 //
 // Part of the Utopia EDA Project, under the Apache License v2.0
 // SPDX-License-Identifier: Apache-2.0
-// Copyright 2021 ISP RAS (http://www.ispras.ru)
+// Copyright 2023 ISP RAS (http://www.ispras.ru)
 //
 //===----------------------------------------------------------------------===//
 
@@ -28,7 +28,7 @@ Result Generator(const GNet &net, const unsigned int tries, bool flag = false) {
 
   std::uint64_t count = 0;
 
-  // counting the number of inputs
+  // counting the arity of inputs
   for (auto x : net.sourceLinks()) {
     count += Gate::get(x.source)->arity();
   }
@@ -51,7 +51,7 @@ Result Generator(const GNet &net, const unsigned int tries, bool flag = false) {
   if (!flag) {
     for (std::uint64_t t = 0; t < tries; t++) {
       for (std::uint64_t i = 0; i < count; i++) {
-        compiled.simulate(o, i);
+        compiled.simulate(o, (i + count * t));
         if (o == 1) {
           return  Result::NOTEQUAL;
         }
@@ -63,7 +63,7 @@ Result Generator(const GNet &net, const unsigned int tries, bool flag = false) {
   if (flag) {
     for (std::uint64_t t = 0; t < std::pow(2, net.nSourceLinks()); t++) {
       for (std::uint64_t i = 0; i < count; i++) {
-        compiled.simulate(o, i);
+        compiled.simulate(o, (i + count * t));
         if (o == 1) {
           return  Result::NOTEQUAL;
         }
