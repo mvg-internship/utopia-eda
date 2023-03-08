@@ -1,18 +1,48 @@
+### About
+
+Utopia EDA is an open-source tool for digital hardware design.
+
+### Coding Style
+
+See `CODE_STYLE`.
+
 ### Requirements
 
 The list of tools required to build the project:
 
 * `cmake` 3.13+
+* `autoconf`
+* `automake`
 * `flex`
 * `bison`
 * `clang-tidy`
 * `zlib1g-dev`
 * C++17-compatible compiler (e.g, `gcc` or `clang`)
 * CMake-supported "build" system (e.g., `make` or `ninja`)
+* `CUDD` library (see installation guide below)
 
-### Coding Style
+CUDD installation
 
-We use [LLVM Coding Conventions](https://llvm.org/docs/CodingStandards.html) with some project-specific refinements.
+1. Get `CUDD` from here: https://github.com/ivmai/cudd
+2. Configure and build `CUDD` using following commands in the `CUDD` 
+source directory:
+
+```
+touch aclocal.m4 configure
+touch Makefile.am configure
+touch Makefile.in configure
+./configure --enable-obj
+make
+sudo make install
+```
+
+If you installed `CUDD` not in default directory then building `Utopia EDA` 
+will require environment variable `CUDD_DIR` to contain the path to the 
+`CUDD` installation directory.
+
+```
+export CUDD_DIR=<cudd-installation-dir>
+```
 
 ### Compiling from Command Line
 
@@ -56,4 +86,13 @@ Running applications and tests based on `libueda` requires environment variable
 ```
 export UTOPIA_HOME=<utopia-source-dir>
 <build-dir>/test/utest
+```
+To keep `UTOPIA_HOME` variable persistently at your system,
+add the following line to your `.bashrc` (or `profile`) file:
+```
+export UTOPIA_HOME=<utopia-source-dir>
+```
+and, if needed, reinitialize the environment:
+```
+source ~/.bashrc
 ```
