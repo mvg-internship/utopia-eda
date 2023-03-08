@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
-#include"lex.yy.c"
+#include <FlexLexer.h>
+#include "lex.yy.c"
 
 /*
 some defenicion in Verilog
@@ -31,6 +32,7 @@ kind_of_error parse_name_list(token_t&, token_t);
     var = get_next_token();              \
     if ((var) != (tok))                  \
     {                                    \
+      std::cout<<"Error = " << (err) << std::endl;   \
       return (err);                      \
     }                                    \
   } while (0)
@@ -40,8 +42,8 @@ static std::size_t line = 0;
 
 token_t get_next_token()
 { 
-  token_t val = static_cast<token_t>(scan_token());
-  std::cout << " tok: "<< val << " pl: " << place << " ln: " << line << std::endl;
+  token_t val = static_cast<token_t>( scan_token());
+  std::cout << " type: "<< val << " tok: "<< yytext << " pl: " << place << " ln: " <<  line << std::endl;
   place += 1;
   return val;
 }
@@ -51,8 +53,7 @@ kind_of_error parse_gatelevel_verilog()
   token_t tok;
   kind_of_error rc = SUCCESS;
   ASSERT_NEXT_TOKEN(tok, MODULE, FAILURE_IN_GATE_LEVEL_VERILOG);
-
-  return rc;
+  rc = parse_module();
 }
 
 kind_of_error parse_module()
@@ -86,7 +87,6 @@ kind_of_error parse_module()
     }
   }
   
-  return rc;
 }
 
 kind_of_error parse_decl(token_t tok)
@@ -189,5 +189,5 @@ kind_of_error parse_name_list(token_t &tok, token_t separate_tok)
 
 int main(int argc, char *argv[]) {
     yyin = fopen(argv[1], "r");
-    return parse_module();
+    return parse_gatelevel_verilog();
 }

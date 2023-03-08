@@ -2,11 +2,12 @@
         //Define section
         #include <stdio.h>
         #include "token.h"
-        #define YY_DECL int scan_token()      
+        
 %}
 
 
 %option noyywrap
+%x IN_COMMENT
  
 NUM     [0-9]
 STRING  [a-zA-Z][a-zA-Z0-9]*
@@ -14,7 +15,17 @@ STRING  [a-zA-Z][a-zA-Z0-9]*
         //Rule section
 %%
 
-[ \t\n]+    
+[ \t\n]+
+
+<INITIAL>{
+"/*"              BEGIN(IN_COMMENT);
+}
+<IN_COMMENT>{
+"*/"      BEGIN(INITIAL);
+[^*\n]+   // eat comment in chunks
+"*"       // eat the lone star
+\n        yylineno++;
+}
 
 module      { return MODULE; }
 endmodule   { return ENDMODULE; }
@@ -32,6 +43,6 @@ reg     { return REG; }
 "]"     { return RBRACKET; }
 ","     { return COMMA; }
 
+
 {STRING}    { return STRING; }
 {NUM} { return NUM; }
-

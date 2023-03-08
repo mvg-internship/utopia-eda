@@ -1,3 +1,4 @@
+#define YY_DECL int scan_token() 
 enum token_t
 {
   MODULE,
