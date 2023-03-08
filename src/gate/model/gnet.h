@@ -513,7 +513,8 @@ public:
   GNet* clone();
 
   /** Clones the net.
-   *  Original net -> cloned.
+   *  The input map provides correspondence between gates of the original
+   *  net and gates of the cloned one.
    *  @param oldToNewId Stores correspondence between gates. 
    *  @return The clone of this net.
    */

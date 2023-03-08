@@ -126,9 +126,6 @@ bool premap(RtlContext &context) {
 }
 
 bool check(RtlContext &context) {
-  using Link = RtlContext::Link;
-  using GateBinding = RtlContext::Checker::GateBinding;
-
   LOG(INFO) << "RTL check";
 
   RtlContext::Checker checker;

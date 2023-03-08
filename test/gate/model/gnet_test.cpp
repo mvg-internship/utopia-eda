@@ -280,7 +280,7 @@ TEST(GNetTest, GNetEdgesTest) {
   EXPECT_TRUE(net.get()->clone()->nEdges() == net.get()->nEdges());
 }
 
-TEST(GNetTest, GNetAdressTest) {
+TEST(GNetTest, GNetAddressTest) {
   auto net = makeRand(7, 5);
   EXPECT_TRUE(net.get()->clone() != net.get());
 }
