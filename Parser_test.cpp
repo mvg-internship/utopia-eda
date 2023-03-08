@@ -86,7 +86,7 @@ kind_of_error parse_module()
       break;
     }
   }
-  
+  return rc;
 }
 
 kind_of_error parse_decl(token_t tok)
@@ -179,10 +179,24 @@ kind_of_error parse_arg(token_t tok)
 kind_of_error parse_name_list(token_t &tok, token_t separate_tok)
 {
   kind_of_error rc = SUCCESS;
-  while (tok != separate_tok && rc == SUCCESS)
+  
+  while (tok  != separate_tok && rc == SUCCESS)
   {
-    ASSERT_NEXT_TOKEN(tok, COMMA, FAILURE_IN_PARSE_NAME_LIST);
-    ASSERT_NEXT_TOKEN(tok, STRING, FAILURE_IN_PARSE_NAME_LIST);
+    tok = get_next_token();
+    switch (tok)
+    {
+    case COMMA:
+      ASSERT_NEXT_TOKEN(tok, STRING, FAILURE_IN_PARSE_NAME_LIST);
+      break;
+
+    default:
+      if(tok != separate_tok){
+      rc = FAILURE_IN_PARSE_NAME_LIST;
+      }else{
+        break;
+      }
+      break;
+    }
   }
   return rc;
 }
