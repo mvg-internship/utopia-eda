@@ -23,6 +23,7 @@ kind_of_error parse_gatelevel_verilog();
 kind_of_error parse_module();
 kind_of_error parse_decl(token_t);
 kind_of_error parse_expr(token_t);
+kind_of_error parse_assign(token_t);
 kind_of_error parse_arg(token_t);
 kind_of_error parse_name_list(token_t&, token_t);
 
@@ -54,6 +55,7 @@ kind_of_error parse_gatelevel_verilog()
   kind_of_error rc = SUCCESS;
   ASSERT_NEXT_TOKEN(tok, MODULE, FAILURE_IN_GATE_LEVEL_VERILOG);
   rc = parse_module();
+  std::cout << "Error! "<< "type = "<< rc << std::endl;
 }
 
 kind_of_error parse_module()
@@ -71,6 +73,7 @@ kind_of_error parse_module()
 
   while (rc == SUCCESS && tok != ENDMODULE)
   {
+    std::cout<< "ttt"<< std::endl;
     switch (tok)
     {
     case INPUT:
@@ -78,9 +81,12 @@ kind_of_error parse_module()
     case WIRE:
       rc = parse_decl(tok);
       break;
+    case ASSIGN:
+      rc = parse_assign(tok);
+      break;
     case STRING:
       rc = parse_expr(tok);
-      break;
+      break;   
     default:
       rc = FAILURE_IN_MODULE_INCAPTULATION;
       break;
@@ -91,6 +97,7 @@ kind_of_error parse_module()
 
 kind_of_error parse_decl(token_t tok)
 {
+  std::cout<< "asda"<< std::endl;
   tok = get_next_token();
   kind_of_error rc = SUCCESS;
   switch (tok)
@@ -102,6 +109,7 @@ kind_of_error parse_decl(token_t tok)
     ASSERT_NEXT_TOKEN(tok, RBRACKET, FAILURE_IN_DECL);
     ASSERT_NEXT_TOKEN(tok, STRING, FAILURE_IN_DECL);
     rc = parse_name_list(tok, SEMICOLON);
+    tok = get_next_token();
     line += 1;
     break;
   case STRING:
@@ -110,8 +118,8 @@ kind_of_error parse_decl(token_t tok)
     tok = get_next_token();
     break;
   default:
-    rc = FAILURE_IN_DECL;
-    std::cout << "Error! "<< "type = "<< rc << std::endl;
+    rc = FAILURE_IN_ARG;
+    
     break;
   }
  
@@ -130,6 +138,39 @@ kind_of_error parse_expr(token_t tok)
   rc = parse_arg(tok);
 
   return rc;
+}
+
+kind_of_error parse_assign(token_t tok)
+{
+  std::cout<< "fff"<< std::endl;
+  kind_of_error rc = SUCCESS;
+  ASSERT_NEXT_TOKEN(tok, NUM, FAILURE_IN_ASSIGN);
+  tok = get_next_token();
+  while (tok != SEMICOLON)
+  {
+    switch (tok)
+    {
+    case LBRACKET:
+      ASSERT_NEXT_TOKEN(tok, NUM, FAILURE_IN_ASSIGN);
+      ASSERT_NEXT_TOKEN(tok, COLON, FAILURE_IN_ASSIGN);
+      ASSERT_NEXT_TOKEN(tok, NUM, FAILURE_IN_ASSIGN);
+      ASSERT_NEXT_TOKEN(tok, RBRACKET, FAILURE_IN_ASSIGN);
+      ASSERT_NEXT_TOKEN(tok, EQUALS, FAILURE_IN_ASSIGN);
+      ASSERT_NEXT_TOKEN(tok, LFIGURNAYA, FAILURE_IN_ASSIGN);
+      ASSERT_NEXT_TOKEN(tok, STRING, FAILURE_IN_ASSIGN);
+      rc = parse_name_list(tok, LFIGURNAYA);
+      break;
+    case EQUALS:
+      ASSERT_NEXT_TOKEN(tok, STRING, FAILURE_IN_ASSIGN);
+      ASSERT_NEXT_TOKEN(tok, COMMA, FAILURE_IN_ASSIGN);
+      tok = get_next_token();
+      break;
+  
+    default:
+      break;
+    }
+
+  }
 }
 
 kind_of_error parse_arg(token_t tok)
