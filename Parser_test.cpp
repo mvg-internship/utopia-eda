@@ -65,9 +65,9 @@ kind_of_error parse_module()
   ASSERT_NEXT_TOKEN(tok, LBRACE, FAILURE_IN_MODULE_NAME);
   ASSERT_NEXT_TOKEN(tok, STRING, FAILURE_IN_MODULE_NAME);
   rc = parse_name_list(tok, RBRACE);
-
-  ASSERT_NEXT_TOKEN(tok, SEMICOLON, FAILURE_IN_MODULE_NAME);
   line += 1;
+  ASSERT_NEXT_TOKEN(tok, SEMICOLON, FAILURE_IN_MODULE_NAME);
+  tok = get_next_token();
 
   while (rc == SUCCESS && tok != ENDMODULE)
   {
@@ -98,6 +98,7 @@ kind_of_error parse_decl(token_t tok)
   case LBRACKET:
     ASSERT_NEXT_TOKEN(tok, NUM, FAILURE_IN_DECL);
     ASSERT_NEXT_TOKEN(tok, COLON, FAILURE_IN_DECL);
+    ASSERT_NEXT_TOKEN(tok, NUM, FAILURE_IN_DECL);
     ASSERT_NEXT_TOKEN(tok, RBRACKET, FAILURE_IN_DECL);
     ASSERT_NEXT_TOKEN(tok, STRING, FAILURE_IN_DECL);
     rc = parse_name_list(tok, SEMICOLON);
@@ -106,9 +107,11 @@ kind_of_error parse_decl(token_t tok)
   case STRING:
     rc = parse_name_list(tok, SEMICOLON);
     line += 1;
+    tok = get_next_token();
     break;
   default:
     rc = FAILURE_IN_DECL;
+    std::cout << "Error! "<< "type = "<< rc << std::endl;
     break;
   }
  
