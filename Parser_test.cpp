@@ -159,6 +159,7 @@ kind_of_error parse_assign(token_t tok)
       ASSERT_NEXT_TOKEN(tok, LFIGURNAYA, FAILURE_IN_ASSIGN);
       ASSERT_NEXT_TOKEN(tok, STRING, FAILURE_IN_ASSIGN);
       rc = parse_name_list(tok, LFIGURNAYA);
+      ASSERT_NEXT_TOKEN(tok, COMMA, FAILURE_IN_ASSIGN);
       break;
     case EQUALS:
       ASSERT_NEXT_TOKEN(tok, STRING, FAILURE_IN_ASSIGN);

@@ -34,6 +34,7 @@ input   { return INPUT; }
 output  { return OUTPUT; }   
 wire    { return WIRE; }
 reg     { return REG; }
+assign  { return ASSIGN; }
 
 ";"     { return SEMICOLON; }
 ":"     { return COLON; }
@@ -42,6 +43,9 @@ reg     { return REG; }
 "["     { return LBRACKET; }
 "]"     { return RBRACKET; }
 ","     { return COMMA; }
+"="     { return EQUALS; }
+"{"     { return LFIGURNAYA; }
+"}"     { return RFIGURNAYA; }
 
 
 {STRING}    { return STRING; }
