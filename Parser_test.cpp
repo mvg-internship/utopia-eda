@@ -21,10 +21,10 @@ static std::vector<token_t> store;
 token_t get_next_token();
 kind_of_error parse_gatelevel_verilog();
 kind_of_error parse_module();
-kind_of_error parse_decl(token_t);
-kind_of_error parse_expr(token_t);
-kind_of_error parse_assign(token_t);
-kind_of_error parse_arg(token_t);
+kind_of_error parse_decl(token_t&);
+kind_of_error parse_expr(token_t&);
+kind_of_error parse_assign(token_t&);
+kind_of_error parse_arg(token_t&);
 kind_of_error parse_name_list(token_t&, token_t);
 
 #define ASSERT_NEXT_TOKEN(var, tok, err) \
@@ -70,10 +70,11 @@ kind_of_error parse_module()
   line += 1;
   ASSERT_NEXT_TOKEN(tok, SEMICOLON, FAILURE_IN_MODULE_NAME);
   tok = get_next_token();
-
+  std::cout<<__FILE__ <<__LINE__ <<yytext <<"tok =" << tok << std::endl;
   while (rc == SUCCESS && tok != ENDMODULE)
   {
     std::cout<< "ttt"<< std::endl;
+    std::cout<<__FILE__ <<__LINE__ <<yytext <<"tok =" << tok << std::endl;
     switch (tok)
     {
     case INPUT:
@@ -95,7 +96,7 @@ kind_of_error parse_module()
   return rc;
 }
 
-kind_of_error parse_decl(token_t tok)
+kind_of_error parse_decl(token_t &tok)
 {
   std::cout<< "asda"<< std::endl;
   tok = get_next_token();
@@ -110,6 +111,7 @@ kind_of_error parse_decl(token_t tok)
     ASSERT_NEXT_TOKEN(tok, STRING, FAILURE_IN_DECL);
     rc = parse_name_list(tok, SEMICOLON);
     tok = get_next_token();
+    std::cout<<__FILE__ <<__LINE__ <<yytext <<"tok =" << tok << std::endl;
     line += 1;
     break;
   case STRING:
@@ -126,7 +128,7 @@ kind_of_error parse_decl(token_t tok)
   return rc;
 }
 
-kind_of_error parse_expr(token_t tok)
+kind_of_error parse_expr(token_t &tok)
 {
   kind_of_error rc = SUCCESS;
 
@@ -140,7 +142,7 @@ kind_of_error parse_expr(token_t tok)
   return rc;
 }
 
-kind_of_error parse_assign(token_t tok)
+kind_of_error parse_assign(token_t &tok)
 {
   std::cout<< "fff"<< std::endl;
   kind_of_error rc = SUCCESS;
@@ -174,7 +176,7 @@ kind_of_error parse_assign(token_t tok)
   }
 }
 
-kind_of_error parse_arg(token_t tok)
+kind_of_error parse_arg(token_t &tok)
 {
   kind_of_error rc = SUCCESS;
 
