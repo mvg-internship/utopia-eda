@@ -17,11 +17,11 @@
 using namespace eda::gate::model;
 
 // gate(x1, ..., xN).
-static std::unique_ptr<GNet> makeNet(GateSymbol gate,
+static std::shared_ptr<GNet> makeNet(GateSymbol gate,
                                      unsigned N,
                                      Gate::SignalList &inputs,
                                      Gate::Id &outputId) {
-  auto net = std::make_unique<GNet>();
+  auto net = std::make_shared<GNet>();
 
   for (unsigned i = 0; i < N; i++) {
     const Gate::Id inputId = net->addIn();
@@ -36,11 +36,11 @@ static std::unique_ptr<GNet> makeNet(GateSymbol gate,
 }
 
 // gate(~x1, ..., ~xN).
-static std::unique_ptr<GNet> makeNetn(GateSymbol gate,
+static std::shared_ptr<GNet> makeNetn(GateSymbol gate,
                                       unsigned N,
                                       Gate::SignalList &inputs,
                                       Gate::Id &outputId) {
-  auto net = std::make_unique<GNet>();
+  auto net = std::make_shared<GNet>();
 
   Gate::SignalList andInputs;
   for (unsigned i = 0; i < N; i++) {
@@ -59,14 +59,14 @@ static std::unique_ptr<GNet> makeNetn(GateSymbol gate,
 }
 
 // (x1 | ... | xN).
-std::unique_ptr<GNet> makeOr(unsigned N,
+std::shared_ptr<GNet> makeOr(unsigned N,
                              Gate::SignalList &inputs,
                              Gate::Id &outputId) {
   return makeNet(GateSymbol::OR, N, inputs, outputId);
 }
 
 // (x1 & ... & xN).
-std::unique_ptr<GNet> makeAnd(unsigned N,
+std::shared_ptr<GNet> makeAnd(unsigned N,
                               Gate::SignalList &inputs,
                               Gate::Id &outputId) {
   return makeNet(GateSymbol::AND, N, inputs, outputId);
@@ -74,14 +74,14 @@ std::unique_ptr<GNet> makeAnd(unsigned N,
 
 
 // ~(x1 | ... | xN).
-std::unique_ptr<GNet> makeNor(unsigned N,
+std::shared_ptr<GNet> makeNor(unsigned N,
                               Gate::SignalList &inputs,
                               Gate::Id &outputId) {
   return makeNet(GateSymbol::NOR, N, inputs, outputId);
 }
 
 // ~(x1 & ... & xN).
-std::unique_ptr<GNet> makeNand(unsigned N,
+std::shared_ptr<GNet> makeNand(unsigned N,
                                Gate::SignalList &inputs,
                                Gate::Id &outputId) {
   return makeNet(GateSymbol::NAND, N, inputs, outputId);
@@ -89,24 +89,24 @@ std::unique_ptr<GNet> makeNand(unsigned N,
 
 
 // (~x1 | ... | ~xN).
-std::unique_ptr<GNet> makeOrn(unsigned N,
+std::shared_ptr<GNet> makeOrn(unsigned N,
                               Gate::SignalList &inputs,
                               Gate::Id &outputId) {
   return makeNetn(GateSymbol::OR, N, inputs, outputId);
 }
 
 // (~x1 & ... & ~xN).
-std::unique_ptr<GNet> makeAndn(unsigned N,
+std::shared_ptr<GNet> makeAndn(unsigned N,
                                Gate::SignalList &inputs,
                                Gate::Id &outputId) {
   return makeNetn(GateSymbol::AND, N, inputs, outputId);
 }
 
 // Random hierarchical network.
-std::unique_ptr<GNet> makeRand(std::size_t nGates,
+std::shared_ptr<GNet> makeRand(std::size_t nGates,
                                std::size_t nSubnets) {
   assert(nGates >= 2);
-  auto net = std::make_unique<GNet>();
+  auto net = std::make_shared<GNet>();
 
   // Create subnets.
   for (std::size_t i = 0; i < nSubnets; i++) {

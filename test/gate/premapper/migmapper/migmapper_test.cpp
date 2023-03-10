@@ -6,6 +6,10 @@
 //
 //===----------------------------------------------------------------------===//
 
+#include "gate/debugger/checker.h"
+#include "gate/model/gnet_test.h"
+#include "gate/premapper/migmapper.h"
+
 #include "gtest/gtest.h"
 
 #include <algorithm>
@@ -20,11 +24,11 @@ using Link = eda::gate::model::Gate::Link;
 using MigMapper = eda::gate::premapper::MigMapper;
 
 // gate(x1, ..., xN).
-static std::unique_ptr<GNet> makeNet(GateSymbol gate,
+static std::shared_ptr<GNet> makeNet(GateSymbol gate,
                                      size_t N,
                                      Gate::SignalList &inputs,
                                      Gate::Id &outputId) {
-  auto net = std::make_unique<GNet>();
+  auto net = std::make_shared<GNet>();
 
   for (size_t i = 0; i < N; i++) {
     const Gate::Id inputId = net->newGate();
@@ -39,11 +43,11 @@ static std::unique_ptr<GNet> makeNet(GateSymbol gate,
 }
 
 // gate(~x1, ..., ~xN).
-static std::unique_ptr<GNet> makeNetNeg(GateSymbol gate,
+static std::shared_ptr<GNet> makeNetNeg(GateSymbol gate,
                                       size_t N,
                                       Gate::SignalList &inputs,
                                       Gate::Id &outputId) {
-  auto net = std::make_unique<GNet>();
+  auto net = std::make_shared<GNet>();
 
   Gate::SignalList andInputs;
   for (size_t i = 0; i < N; i++) {
@@ -63,13 +67,13 @@ static std::unique_ptr<GNet> makeNetNeg(GateSymbol gate,
 }
 
 // <x1, ..., xN>.
-std::unique_ptr<GNet> makeMaj(size_t N,
+std::shared_ptr<GNet> makeMaj(size_t N,
                               Gate::SignalList &inputs,
                               Gate::Id &outputId) {
   return makeNet(GateSymbol::MAJ, N, inputs, outputId);
 }
 
-bool equivalenceCheck(const std::unique_ptr<GNet> &net,
+bool equivalenceCheck(const std::shared_ptr<GNet> &net,
                  const std::shared_ptr<GNet> &migMapped) {
   Checker checker;
   GateIdMap oldToNewGates;
@@ -115,7 +119,7 @@ void dump(const GNet &net) {
   std::cout << "O=" << net.nTargetLinks() << '\n';
 }
 
-void migMap(const std::unique_ptr<GNet> &net) {
+void migMap(const std::shared_ptr<GNet> &net) {
   dump(*net);
   MigMapper migmapper;
   auto migMapped = migmapper.map(*net);
@@ -144,7 +148,7 @@ TEST(MigMapperTest, MigMapperAndTest) {
   EXPECT_TRUE(net != nullptr);
 }
 
-TEST(MigMapperTest, MigMapperMaj3InputsTest) {
+TEST(MigMapperTest, MigMapperMajOf3Test) {
   Gate::SignalList inputs;
   Gate::Id outputId;
   auto net = makeMaj(3, inputs, outputId);
@@ -152,7 +156,7 @@ TEST(MigMapperTest, MigMapperMaj3InputsTest) {
   EXPECT_TRUE(net != nullptr);
 }
 
-TEST(MigMapperTest, MigMapperMaj5InputsTest) {
+TEST(MigMapperTest, MigMapperMajOf5Test) {
   Gate::SignalList inputs;
   Gate::Id outputId;
   auto net = makeMaj(5, inputs, outputId);
@@ -160,7 +164,7 @@ TEST(MigMapperTest, MigMapperMaj5InputsTest) {
   EXPECT_TRUE(net != nullptr);
 }
 
-TEST(MigMapperTest, MigMapperMaj7InputsTest) {
+TEST(MigMapperTest, MigMapperMajOf7Test) {
   Gate::SignalList inputs;
   Gate::Id outputId;
   auto net = makeMaj(7, inputs, outputId);
@@ -168,7 +172,7 @@ TEST(MigMapperTest, MigMapperMaj7InputsTest) {
   EXPECT_TRUE(net != nullptr);
 }
 
-TEST(MigMapperTest, MigMapperMaj9InputsTest) {
+TEST(MigMapperTest, MigMapperMajOf9Test) {
   Gate::SignalList inputs;
   Gate::Id outputId;
   auto net = makeMaj(9, inputs, outputId);
@@ -176,7 +180,7 @@ TEST(MigMapperTest, MigMapperMaj9InputsTest) {
   EXPECT_TRUE(net != nullptr);
 }
 
-TEST(MigMapperTest, MigMapperMaj11InputsTest) {
+TEST(MigMapperTest, MigMapperMajOf11Test) {
   Gate::SignalList inputs;
   Gate::Id outputId;
   auto net = makeMaj(11, inputs, outputId);
@@ -184,7 +188,7 @@ TEST(MigMapperTest, MigMapperMaj11InputsTest) {
   EXPECT_TRUE(net != nullptr);
 }
 
-TEST(MigMapperTest, MigMapperMaj17InputsTest) {
+TEST(MigMapperTest, MigMapperMajOf17Test) {
   Gate::SignalList inputs;
   Gate::Id outputId;
   auto net = makeMaj(17, inputs, outputId);
