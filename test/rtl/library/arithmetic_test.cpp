@@ -36,7 +36,7 @@ GNet::GateIdList addInputs(const size_t quantity,
 // Add the links to the passed list
 void addLinks(const GNet::GateIdList &ids,
               GNet::LinkList &links) {
-  for (size_t i = 0; i < ids.size(); i++ ) {
+  for (size_t i = 0; i < ids.size(); i++) {
     links.push_back(GNet::Link(ids[i]));
   }
 }
@@ -50,13 +50,14 @@ uint64_t generateInput(const size_t inputReg,
                        BV &input) {
   const size_t begin{input.size()};
   uint64_t number{0};
-  for (size_t i = 0; i < inputReg; i++) {
-    if (i < maxReg) {
-      input.push_back(rand() % 2);
-    } else {
-      input.push_back(0);
-    }
+  size_t i{0};
+  for (i = 0; (i < inputReg) && (i < maxReg); i++) {
+    input.push_back(rand() % 2);
     number += input[begin + i] * (1ull << i);
+  }
+  while (i < inputReg) { 
+    input.push_back(0);
+    i++;
   }
   return number;
 }
@@ -75,48 +76,48 @@ bool arithmeticTest(FuncSymbol func,
                     const size_t ySize,
                     const size_t outSize) {
   GNet net;
-  GNet::GateIdList x = addInputs(xSize, net);
-  GNet::GateIdList y = addInputs(ySize, net);
+  GNet::GateIdList xIds = addInputs(xSize, net);
+  GNet::GateIdList yIds = addInputs(ySize, net);
 
-  GNet::In inputs = {x, y};
+  GNet::In inputIds = {xIds, yIds};
   FLibrary &library = ArithmeticLibrary::get();
-  GNet::GateIdList outputs = library.synth(outSize, func, inputs, net);
+  GNet::GateIdList outputIds = library.synth(outSize, func, inputIds, net);
   net.sortTopologically();
 
-  GNet::LinkList in;
-  addLinks(x, in);
-  addLinks(y, in);
-  GNet::LinkList out;
-  addLinks(outputs, out);
+  GNet::LinkList inputLinks;
+  addLinks(xIds, inputLinks);
+  addLinks(yIds, inputLinks);
+  GNet::LinkList outputLinks;
+  addLinks(outputIds, outputLinks);
 
   Simulator simulator;
-  auto compiled = simulator.compile(net, in, out);
+  auto compiled = simulator.compile(net, inputLinks, outputLinks);
 
-  BV i;
+  BV in;
   uint64_t first{0};
   uint64_t second{0};
   switch (func) {
   case FuncSymbol::ADD:
-    first = generateInput(xSize, outSize - 1, i);
-    second = generateInput(ySize, outSize - 1, i); 
+    first = generateInput(xSize, outSize - 1, in);
+    second = generateInput(ySize, outSize - 1, in); 
     break;
   case FuncSymbol::SUB:
     do {
-      first = generateInput(xSize, outSize, i);
-      second = generateInput(ySize, outSize, i);
+      first = generateInput(xSize, outSize, in);
+      second = generateInput(ySize, outSize, in);
       if (second > first) {
-        i.resize(0);
+        in.resize(0);
       }
-    } while (i.size()==0);
+    } while (in.size() == 0);
     break; 
   default:
     assert(false);
   }
-  BV o(outSize);
+  BV out(outSize);
 
-  compiled.simulate(o, i);
+  compiled.simulate(out, in);
 
-  uint64_t result{convertToInteger(o)};
+  uint64_t result{convertToInteger(out)};
   switch (func) {
   case FuncSymbol::ADD:
     return(result == first + second);
@@ -128,14 +129,14 @@ bool arithmeticTest(FuncSymbol func,
   }
 }
 
-// Randomly generate a register from 1 to 64
-size_t reg() {
+// Randomly generate a digit from 1 to 64
+size_t getDigit() {
   return 1 + rand() % 64;
 }
 
 TEST(arithmeticTest, addTest) {
   for (size_t i = 0; i < 100; i++) {
-    assert(arithmeticTest(FuncSymbol::ADD, reg(), reg(), reg()));
+    assert(arithmeticTest(FuncSymbol::ADD, getDigit(), getDigit(), getDigit()));
   }
   EXPECT_TRUE(true);
 }

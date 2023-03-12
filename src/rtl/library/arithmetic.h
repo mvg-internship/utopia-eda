@@ -24,6 +24,10 @@ using FuncSymbol = eda::rtl::model::FuncSymbol;
 
 namespace eda::rtl::library {
 
+/**
+ * \brief Library for arithmetic operations.
+ * \author <a href="mailto:alexei.yagzhov@yandex.ru">Alexey Yagzhov</a>
+ */
 class ArithmeticLibrary final : public FLibrary {
 public:
   using GateIdKey = std::pair<size_t, int>;
