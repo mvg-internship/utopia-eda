@@ -1,22 +1,25 @@
 #include <iostream>
 #include "passes/techmap/libparse.h"
 #include <kernel/yosys.h>
+#include <kernel/celltypes.h>
 #include "gate/model/gate.h"
 #include "gate/model/gnet.h"
 #include "base/model/signal.h"
 #include "gate/simulator/simulator.h"
 #include <map>
-#include<string>
+#include <string>
 using namespace eda::gate::model;
 int root;
+
+
 void print_modules(const int ind, std::ostream &out){
     for (const auto &it1 : Yosys::RTLIL::IdString::global_id_index_){
         if (it1.second == ind){
             out << it1.first << " - module of index: " << it1.second << "\n";
-        }
-    }
+    //    std::cout << <<" "<< ID($pos).index_<<" "<< ID($neg).index_<<" "<<ID($reduce_and).index_<<" "<< ID($reduce_or).index_<<" "<< ID($reduce_xor).index_<<" "<< ID($reduce_xnor).index_<<" "<< ID($reduce_bool).index_<<" "<<ID($logic_not).index_<<" "<< ID($slice).index_<<" "<< ID($lut).index_<<" "<< ID($sop).index_<<"\n";
+      //     std::cout << ID($and).index_<<" "<< ID($or).index_<<" "<< ID($xor).index_<<" "<< ID($xnor).index_<<" "<<ID($shl).index_<<" "<< ID($shr).index_<<" "<< ID($sshl).index_<<" "<< ID($sshr).index_<<" "<< ID($shift).index_<<" "<< ID($shiftx).index_<<" "<<ID($lt).index_<<" "<< ID($le).index_<<" "<< ID($eq).index_<<" "<< ID($ne).index_<<" "<< ID($eqx).index_<<" "<< ID($nex).index_<<" "<< ID($ge).index_<<" "<< ID($gt).index_<<" "<<ID($add).index_<<" "<< ID($sub).index_<<" "<< ID($mul).index_<<" "<< ID($div).index_<<" "<< ID($mod).index_<<" "<< ID($divfloor).index_<<" "<< ID($modfloor).index_<<" "<< ID($pow).index_<<" "<<ID($logic_and).index_<<" "<< ID($logic_or).index_<<" "<< ID($concat).index_<<" "<< ID($macc).index_<<"\n";
 }
-
+}}
 void print_wires(const Yosys::hashlib::dict<Yosys::RTLIL::IdString, Yosys::RTLIL::Wire*> &wires, std::ostream &out, eda::gate::model::GNet &net,std::map<unsigned, Gate::Id> &inputs,std::map<unsigned, Gate::Id> &outputs){
     out << "Wires:" << "\n";
     for (auto it1=wires.begin(); it1 != wires.end(); ++it1){
@@ -51,25 +54,26 @@ void print_wires(const Yosys::hashlib::dict<Yosys::RTLIL::IdString, Yosys::RTLIL
 }
 GateSymbol function(size_t type){
     GateSymbol func;
-    if (type==355){
+    func=GateSymbol::XXX;
+    if (type==ID($_NOT_).index_){
         func=GateSymbol::NOT;
     }
-    if (type==356){
+    if (type==ID($_AND_).index_){
         func=GateSymbol::AND;
     }
-    if (type==358){
+    if (type==ID($_OR_).index_){
         func=GateSymbol::OR;
     }
-    if (type==360){
+    if (type==ID($_XOR_).index_){
         func=GateSymbol::XOR;
     }
-    if (type==380){
+    if (type==ID($_DFF_P_).index_){
         func=GateSymbol::DFF;
     }
-    if (type==486){
+    if (type==ID($_DLATCH_P_).index_){
         func=GateSymbol::LATCH;
     }
-    if (type==428){
+    if (type==ID($_DFFSR_PPP_).index_){
         func=GateSymbol::DFFrs;
     }
     return func;
@@ -77,6 +81,12 @@ GateSymbol function(size_t type){
 Gate::Id buildNet(int root,eda::gate::model::GNet &net,std::map<int,GateSymbol> typeFunc,std::map<int, std::pair<int, int>> &cell,std::map<unsigned, Gate::Id> &inputs){
     for (auto it: cell){
         if (it.second.first==root){
+            if (typeFunc.find(it.first)->second==GateSymbol::XXX){
+                Gate::SignalList inputs1;
+                inputs1.push_back(Gate::Signal::always(inputs.find(cell.find(root)->second.first)->second));
+                inputs1.push_back(Gate::Signal::always(inputs.find(cell.find(root)->second.second)->second));
+                return net.addGate(typeFunc.find(root)->second,inputs1);
+            }
             if (typeFunc.find(it.first)->second==GateSymbol::LATCH){
                 return net.addLatch(inputs.find(it.first)->second,inputs.find(it.second.second)->second);
             }
@@ -153,6 +163,7 @@ void print_cells(const Yosys::hashlib::dict<Yosys::RTLIL::IdString, Yosys::RTLIL
             i++;
             if (i==1){
                 a=it3->second.as_wire()->name.index_;
+                std::cout<<it1->second->type.c_str()<<"\n";
                 f=function(it1->second->type.index_);
                 typeFunc.emplace(a,f);
                 if (f==GateSymbol::NOT){
@@ -286,6 +297,7 @@ void print_parsed(const Yosys::RTLIL::Design &des, std::ostream &out){
     }
 }
 int main(int argc, char* argv[]){
+
     std::ostream& out = std::cout;
     Yosys::yosys_setup();
     for (size_t o=1;o<argc;++o){
@@ -293,5 +305,6 @@ int main(int argc, char* argv[]){
         Yosys::run_frontend(argv[o], "liberty", &design, nullptr);
         print_parsed(design, out);
     }
+    std::cout << ID($_LATCH_).index_<< " "<< ID($_AND_).index_<<" "<<ID($_OR_).index_<<" "<<ID($_XOR_).index_<<"\n";
     Yosys::yosys_shutdown();
 }
