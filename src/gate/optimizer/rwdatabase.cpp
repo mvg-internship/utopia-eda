@@ -125,7 +125,7 @@ void ARWDatabase::linkDB(const std::string &path) {
     throw "Can't use db.";
   }
   if (_selectResult.empty()) {
-    sql = "CREATE TABLE RWDatabase (ValueVector BIGINT PRIMARY KEY,"\
+    sql = "CREATE TABLE RWDatabase (TruthTable BIGINT PRIMARY KEY,"\
           " BGNet BLOB);";
 
     _rc = sqlite3_exec(_db, sql.c_str(), dummySQLCallback, 0, &_zErrMsg);
@@ -157,13 +157,13 @@ void ARWDatabase::closeDB() {
   _isOpened = false;
 }
 
-bool ARWDatabase::find(const ValueVector &key) {
+bool ARWDatabase::find(const TruthTable &key) {
   if (_storage.find(key) != _storage.end()) {
     return true;
   }
   if (_isOpened) {
     _selectResult.clear();
-    std::string sql = "SELECT * FROM RWDatabase WHERE ValueVector = '"
+    std::string sql = "SELECT * FROM RWDatabase WHERE TruthTable = '"
         + std::to_string(key) + "';";
     _rc = sqlite3_exec(_db, sql.c_str(), selectSQLCallback,
                         (void*)(&_selectResult), &_zErrMsg);
@@ -175,13 +175,13 @@ bool ARWDatabase::find(const ValueVector &key) {
   return false;
 }
 
-BindedGNetList ARWDatabase::get(const ValueVector &key) {
+BindedGNetList ARWDatabase::get(const TruthTable &key) {
   if (_storage.find(key) != _storage.end()) {
     return _storage[key];
   }
   if (_isOpened) {
     _selectResult.clear();
-    std::string sql = "SELECT * FROM RWDatabase WHERE ValueVector = "
+    std::string sql = "SELECT * FROM RWDatabase WHERE TruthTable = "
         + std::to_string(key) + ";";
     _rc = sqlite3_exec(_db, sql.c_str(), selectSQLCallback,
                         (void*)(&_selectResult), &_zErrMsg);
@@ -197,9 +197,9 @@ BindedGNetList ARWDatabase::get(const ValueVector &key) {
   return BindedGNetList();
 }
 
-void ARWDatabase::insertIntoDB(const ValueVector &key, const BindedGNetList &value) {
+void ARWDatabase::insertIntoDB(const TruthTable &key, const BindedGNetList &value) {
   std::string ser = serialize(value);
-  std::string sql = "INSERT INTO RWDatabase(ValueVector, BGNet) " \
+  std::string sql = "INSERT INTO RWDatabase(TruthTable, BGNet) " \
                     "VALUES (" + std::to_string(key) + ", '" + ser + "');";
   assert(_isOpened);
   _rc = sqlite3_exec(_db, sql.c_str(), dummySQLCallback, 0, &_zErrMsg);
@@ -209,11 +209,11 @@ void ARWDatabase::insertIntoDB(const ValueVector &key, const BindedGNetList &val
   }
 }
 
-void ARWDatabase::updateInDB(const ValueVector &key, const BindedGNetList &value) {
+void ARWDatabase::updateInDB(const TruthTable &key, const BindedGNetList &value) {
   assert(_isOpened);
   std::string ser = serialize(value);
   std::string sql = "UPDATE RWDatabase SET BGNet = '" + ser + "' WHERE "
-                    "ValueVector=" + std::to_string(key) + ";";
+                    "TruthTable=" + std::to_string(key) + ";";
   _rc = sqlite3_exec(_db, sql.c_str(), dummySQLCallback, 0, &_zErrMsg);
   if (_rc != SQLITE_OK) {
     std::cout << _zErrMsg << '\n';
@@ -221,9 +221,9 @@ void ARWDatabase::updateInDB(const ValueVector &key, const BindedGNetList &value
   }
 }
 
-void ARWDatabase::deleteFromDB(const ValueVector &key) {
+void ARWDatabase::deleteFromDB(const TruthTable &key) {
   assert(_isOpened);
-  std::string sql = "DELETE FROM RWDatabase WHERE ValueVector=" +
+  std::string sql = "DELETE FROM RWDatabase WHERE TruthTable=" +
                     std::to_string(key) + ";";
   _rc = sqlite3_exec(_db, sql.c_str(), dummySQLCallback, 0, &_zErrMsg);
   if (_rc != SQLITE_OK) {

@@ -92,13 +92,13 @@ bool basicTest() {
 
   std::shared_ptr<GNet> dummy = std::make_shared<GNet>();
   RWDatabase::GateBindings bindings = {{0, 1}, {1, 3}};
-  RWDatabase::ValueVector valueVector = 8;
+  RWDatabase::TruthTable truthTable = 8;
 
-  rwdb.set(valueVector, {{dummy, bindings}});
-  result = result && ((rwdb.get(valueVector)[0].net == dummy) && (rwdb.get(valueVector)[0].bindings == bindings));
+  rwdb.set(truthTable, {{dummy, bindings}});
+  result = result && ((rwdb.get(truthTable)[0].net == dummy) && (rwdb.get(truthTable)[0].bindings == bindings));
 
   result = result && !rwdb.empty();
-  rwdb.erase(valueVector);
+  rwdb.erase(truthTable);
   result = result && rwdb.empty();
 
   return result;
@@ -113,7 +113,7 @@ bool insertGetARWDBTest() {
     arwdb.linkDB(dbPath);
     arwdb.openDB();
 
-    RWDatabase::ValueVector valueVector = 1;
+    RWDatabase::TruthTable truthTable = 1;
 
     Gate::SignalList inputs1; Gate::Id outputId1; GateList varList1;
     std::shared_ptr<GNet> dummy1 = std::make_shared<GNet>(*makeAnd2(inputs1, outputId1, varList1));
@@ -128,9 +128,9 @@ bool insertGetARWDBTest() {
 
     RWDatabase::BindedGNetList bgl = {{dummy1, bindings1}, {dummy2, bindings2}};
 
-    arwdb.insertIntoDB(valueVector, bgl);
+    arwdb.insertIntoDB(truthTable, bgl);
 
-    auto newBgl = arwdb.get(valueVector);
+    auto newBgl = arwdb.get(truthTable);
 
     result = isEquivalent(bgl[0], newBgl[0]) && isEquivalent(bgl[1], newBgl[1]);
 
@@ -151,7 +151,7 @@ bool updateARWDBTest() {
     arwdb.linkDB(dbPath);
     arwdb.openDB();
 
-    RWDatabase::ValueVector valueVector = 1;
+    RWDatabase::TruthTable truthTable = 1;
 
     Gate::SignalList inputs1; Gate::Id outputId1; GateList varList1;
     std::shared_ptr<GNet> dummy1 = std::make_shared<GNet>(*makeAnd2(inputs1, outputId1, varList1));
@@ -167,11 +167,11 @@ bool updateARWDBTest() {
     RWDatabase::BindedGNetList bgl = {{dummy1, bindings1}};
     RWDatabase::BindedGNetList newBgl = {{dummy2, bindings2}};
 
-    arwdb.insertIntoDB(valueVector, bgl);
+    arwdb.insertIntoDB(truthTable, bgl);
 
-    arwdb.updateInDB(valueVector, {{dummy2, bindings2}});
+    arwdb.updateInDB(truthTable, {{dummy2, bindings2}});
 
-    auto gottenBgl = arwdb.get(valueVector);
+    auto gottenBgl = arwdb.get(truthTable);
 
     result = isEquivalent(gottenBgl[0], newBgl[0]);
 
@@ -192,7 +192,7 @@ bool deleteARWDBTest() {
     arwdb.linkDB(dbPath);
     arwdb.openDB();
 
-    RWDatabase::ValueVector valueVector = 1;
+    RWDatabase::TruthTable truthTable = 1;
 
     Gate::SignalList inputs1; Gate::Id outputId1; GateList varList1;
     std::shared_ptr<GNet> dummy1 = std::make_shared<GNet>(*makeAnd2(inputs1, outputId1, varList1));
@@ -207,10 +207,10 @@ bool deleteARWDBTest() {
 
     RWDatabase::BindedGNetList bgl = {{dummy1, bindings1}, {dummy2, bindings2}};
 
-    arwdb.insertIntoDB(valueVector, bgl);
-    arwdb.deleteFromDB(valueVector);
+    arwdb.insertIntoDB(truthTable, bgl);
+    arwdb.deleteFromDB(truthTable);
 
-    result = !arwdb.find(valueVector);
+    result = !arwdb.find(truthTable);
 
     arwdb.closeDB();
   } catch (const char* msg) {

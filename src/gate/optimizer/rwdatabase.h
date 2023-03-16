@@ -37,7 +37,7 @@ public:
   using InputId = uint32_t;
   // Contain value vector of boolean function.
   // Represents boolean function of 6 variables.
-  using ValueVector = uint64_t;
+  using TruthTable = uint64_t;
 
   // Binds "virtual" input ids to real primary input ids of GNet.
   using GateBindings = std::unordered_map<InputId, Gate::Id>;
@@ -51,22 +51,22 @@ public:
   using BindedGNetList = std::vector<BindedGNet>;
 
   // Basic interface.
-  virtual bool find(const ValueVector &key) {
+  virtual bool find(const TruthTable &key) {
     return (_storage.find(key) != _storage.end());
   }
 
-  virtual BindedGNetList get(const ValueVector &key) {
+  virtual BindedGNetList get(const TruthTable &key) {
     if (!find(key)) {
       return BindedGNetList();
     }
     return _storage[key];
   }
 
-  virtual void set(const ValueVector &key, const BindedGNetList &value) {
+  virtual void set(const TruthTable &key, const BindedGNetList &value) {
     _storage[key] = value;
   }
 
-  virtual void erase(const ValueVector &key) {
+  virtual void erase(const TruthTable &key) {
     _storage.erase(key);
   }
 
@@ -75,7 +75,7 @@ public:
   }
 
 protected:
-  std::unordered_map<ValueVector, BindedGNetList> _storage;
+  std::unordered_map<TruthTable, BindedGNetList> _storage;
 
 };
 
@@ -104,21 +104,21 @@ public:
   // Basic interface
 
   // Find for the key in the local storage and in the database.
-  virtual bool find(const ValueVector &key);
+  virtual bool find(const TruthTable &key);
 
   // Get element from the local storage or from the database.
-  virtual BindedGNetList get(const ValueVector &key);
+  virtual BindedGNetList get(const TruthTable &key);
 
   // Database interface.
 
   // Inserts new value into db.
-  void insertIntoDB(const ValueVector &key, const BindedGNetList &value);
+  void insertIntoDB(const TruthTable &key, const BindedGNetList &value);
 
   // Update value in db.
-  void updateInDB(const ValueVector &key, const BindedGNetList &value);
+  void updateInDB(const TruthTable &key, const BindedGNetList &value);
 
   // Delete value from db.
-  void deleteFromDB(const ValueVector &key);
+  void deleteFromDB(const TruthTable &key);
 
 private:
 
