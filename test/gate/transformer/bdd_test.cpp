@@ -20,9 +20,9 @@ using GNet = eda::gate::model::GNet;
 using GNetBDDConverter = eda::gate::transformer::GNetBDDConverter;
 
 // x0 & x1
-static std::unique_ptr<GNet> makeAnd2(Gate::SignalList 
-                                      &inputs, 
-                                      Gate::Id &outputId, 
+static std::unique_ptr<GNet> makeAnd2(Gate::SignalList
+                                      &inputs,
+                                      Gate::Id &outputId,
                                       GateList &varList) {
   auto net = std::make_unique<GNet>();
 
@@ -40,13 +40,13 @@ static std::unique_ptr<GNet> makeAnd2(Gate::SignalList
 }
 
 // x0 | x1
-static std::unique_ptr<GNet> makeOr2(Gate::SignalList &inputs, 
-                                     Gate::Id &outputId, 
+static std::unique_ptr<GNet> makeOr2(Gate::SignalList &inputs,
+                                     Gate::Id &outputId,
                                      GateList &varList) {
   auto net = std::make_unique<GNet>();
 
   Gate::Id x0Id = net->newGate(), x1Id = net->newGate();
-  Gate::SignalList or0Inputs = {Gate::Signal::always(x0Id), 
+  Gate::SignalList or0Inputs = {Gate::Signal::always(x0Id),
                                 Gate::Signal::always(x1Id)};
 
   inputs = or0Inputs;
@@ -59,8 +59,8 @@ static std::unique_ptr<GNet> makeOr2(Gate::SignalList &inputs,
 }
 
 // x0 ^ x1
-static std::unique_ptr<GNet> makeXor2(Gate::SignalList &inputs, 
-                                      Gate::Id &outputId, 
+static std::unique_ptr<GNet> makeXor2(Gate::SignalList &inputs,
+                                      Gate::Id &outputId,
                                       GateList &varList) {
   auto net = std::make_unique<GNet>();
 
@@ -87,7 +87,7 @@ bool transformerAndTest() {
   for (int i = 0; i < 2; i++) {
     varMap[inputs[i].node()] = x[i];
   }
-  
+
   BDD netBDD = GNetBDDConverter::convert(*net, outputId, varMap, manager);
   BDD andBDD = x[0] & x[1];
 
@@ -104,7 +104,7 @@ bool transformerOrTest() {
   for (int i = 0; i < 2; i++) {
     varMap[inputs[i].node()] = x[i];
   }
-  
+
   BDD netBDD = GNetBDDConverter::convert(*net, outputId, varMap, manager);
   BDD xorBDD = x[0] ^ x[1];
 
@@ -122,13 +122,13 @@ bool transformerNorTest() {
     varMap[inputs[i].node()] = x[i];
   }
 
-  Gate::Id outputId2 = net->addGate(GateSymbol::NOT, 
+  Gate::Id outputId2 = net->addGate(GateSymbol::NOT,
                                     {Gate::Signal::always(outputId1)});
 
   BDDList result;
 
   net->sortTopologically();
-  GNetBDDConverter::convertList(*net, {outputId1, outputId2}, 
+  GNetBDDConverter::convertList(*net, {outputId1, outputId2},
                                 result, varMap, manager);
   BDD orBDD = x[0] | x[1];
   BDD norBDD = !(orBDD);
