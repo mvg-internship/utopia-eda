@@ -33,36 +33,36 @@ public:
   using GateSymbol = eda::gate::model::GateSymbol;
   using GNet = eda::gate::model::GNet;
 
-  // "Virtual" input gate id.
+  // "Virtual" input gate ID.
   using InputId = uint32_t;
   // Contain value vector of boolean function.
   // Represents boolean function of 6 variables.
   using TruthTable = uint64_t;
 
-  // Binds "virtual" input ids to real primary input ids of GNet.
+  // Binds "virtual" input IDs to real primary input IDs of GNet.
   using GateBindings = std::unordered_map<InputId, Gate::Id>;
   using ReversedGateBindings = std::unordered_map<Gate::Id, InputId>;
 
-  struct BindedGNet {
+  struct BoundGNet {
     std::shared_ptr<GNet> net;
     GateBindings bindings;
   };
 
-  using BindedGNetList = std::vector<BindedGNet>;
+  using BoundGNetList = std::vector<BoundGNet>;
 
   // Basic interface.
-  virtual bool find(const TruthTable &key) {
+  virtual bool contains(const TruthTable &key) {
     return (_storage.find(key) != _storage.end());
   }
 
-  virtual BindedGNetList get(const TruthTable &key) {
-    if (!find(key)) {
-      return BindedGNetList();
+  virtual BoundGNetList get(const TruthTable &key) {
+    if (!contains(key)) {
+      return BoundGNetList();
     }
     return _storage[key];
   }
 
-  virtual void set(const TruthTable &key, const BindedGNetList &value) {
+  virtual void set(const TruthTable &key, const BoundGNetList &value) {
     _storage[key] = value;
   }
 
@@ -75,7 +75,7 @@ public:
   }
 
 protected:
-  std::unordered_map<TruthTable, BindedGNetList> _storage;
+  std::unordered_map<TruthTable, BoundGNetList> _storage;
 
 };
 
@@ -85,39 +85,39 @@ protected:
 */
 class ARWDatabase : public RWDatabase {
 public:
-  // Serializes BindedGNetList object to string.
-  static std::string serialize(const BindedGNetList &list);
+  // Serializes BoundGNetList object to string.
+  static std::string serialize(const BoundGNetList &list);
 
-  // Deserializes BindedGNetList object from string.
-  static BindedGNetList deserialize(const std::string &str);
+  // Deserializes BoundGNetList object from string.
+  static BoundGNetList deserialize(const std::string &str);
 
-  // Checks whether you can open db that located in path. If you can it creates
-  // RWDatabase table in the db. And saves the path as default path to db.
+  // Checks whether you can open DB that located in path. If you can it creates
+  // RWDatabase table in the DB. And saves the path as default path to DB.
   void linkDB(const std::string &path);
 
-  // Opens connection to db. You must call it before you use ARWDatabase.
+  // Opens connection to DB. You must call it before you use ARWDatabase.
   void openDB();
 
-  // Closes connection to db. You must call it after using ARWDatabase.
+  // Closes connection to DB. You must call it after using ARWDatabase.
   void closeDB();
 
   // Basic interface
 
   // Find for the key in the local storage and in the database.
-  virtual bool find(const TruthTable &key);
+  virtual bool contains(const TruthTable &key);
 
   // Get element from the local storage or from the database.
-  virtual BindedGNetList get(const TruthTable &key);
+  virtual BoundGNetList get(const TruthTable &key);
 
   // Database interface.
 
-  // Inserts new value into db.
-  void insertIntoDB(const TruthTable &key, const BindedGNetList &value);
+  // Inserts new value into DB.
+  void insertIntoDB(const TruthTable &key, const BoundGNetList &value);
 
-  // Update value in db.
-  void updateInDB(const TruthTable &key, const BindedGNetList &value);
+  // Update value in DB.
+  void updateInDB(const TruthTable &key, const BoundGNetList &value);
 
-  // Delete value from db.
+  // Delete value from DB.
   void deleteFromDB(const TruthTable &key);
 
 private:

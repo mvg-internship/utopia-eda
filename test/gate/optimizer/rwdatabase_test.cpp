@@ -63,7 +63,7 @@ static std::unique_ptr<GNet> makeOr2(Gate::SignalList &inputs,
   return net;
 }
 
-bool isEquivalent(RWDatabase::BindedGNet bgnet1, RWDatabase::BindedGNet bgnet2) {
+bool areEquivalent(RWDatabase::BoundGNet bgnet1, RWDatabase::BoundGNet bgnet2) {
   Cudd manager(0, 0);
   BDDList x = { manager.bddVar(), manager.bddVar() };
   GateBDDMap varMap1, varMap2;
@@ -115,24 +115,28 @@ bool insertGetARWDBTest() {
 
     RWDatabase::TruthTable truthTable = 1;
 
-    Gate::SignalList inputs1; Gate::Id outputId1; GateList varList1;
+    Gate::SignalList inputs1;
+    Gate::Id outputId1;
+    GateList varList1;
     std::shared_ptr<GNet> dummy1 = std::make_shared<GNet>(*makeAnd2(inputs1, outputId1, varList1));
     RWDatabase::GateBindings bindings1 = {{0, inputs1[0].node()}, {1, inputs1[1].node()}};
 
-    Gate::SignalList inputs2; Gate::Id outputId2; GateList varList2;
+    Gate::SignalList inputs2;
+    Gate::Id outputId2;
+    GateList varList2;
     std::shared_ptr<GNet> dummy2 = std::make_shared<GNet>(*makeOr2(inputs2, outputId2, varList2));
     RWDatabase::GateBindings bindings2 = {{0, inputs2[0].node()}, {1, inputs2[1].node()}};
 
     dummy1->sortTopologically();
     dummy2->sortTopologically();
 
-    RWDatabase::BindedGNetList bgl = {{dummy1, bindings1}, {dummy2, bindings2}};
+    RWDatabase::BoundGNetList bgl = {{dummy1, bindings1}, {dummy2, bindings2}};
 
     arwdb.insertIntoDB(truthTable, bgl);
 
     auto newBgl = arwdb.get(truthTable);
 
-    result = isEquivalent(bgl[0], newBgl[0]) && isEquivalent(bgl[1], newBgl[1]);
+    result = areEquivalent(bgl[0], newBgl[0]) && areEquivalent(bgl[1], newBgl[1]);
 
     arwdb.closeDB();
   } catch (const char* msg) {
@@ -153,19 +157,23 @@ bool updateARWDBTest() {
 
     RWDatabase::TruthTable truthTable = 1;
 
-    Gate::SignalList inputs1; Gate::Id outputId1; GateList varList1;
+    Gate::SignalList inputs1;
+    Gate::Id outputId1;
+    GateList varList1;
     std::shared_ptr<GNet> dummy1 = std::make_shared<GNet>(*makeAnd2(inputs1, outputId1, varList1));
     RWDatabase::GateBindings bindings1 = {{0, inputs1[0].node()}, {1, inputs1[1].node()}};
 
-    Gate::SignalList inputs2; Gate::Id outputId2; GateList varList2;
+    Gate::SignalList inputs2;
+    Gate::Id outputId2;
+    GateList varList2;
     std::shared_ptr<GNet> dummy2 = std::make_shared<GNet>(*makeOr2(inputs2, outputId2, varList2));
     RWDatabase::GateBindings bindings2 = {{0, inputs2[0].node()}, {1, inputs2[1].node()}};
 
     dummy1->sortTopologically();
     dummy2->sortTopologically();
 
-    RWDatabase::BindedGNetList bgl = {{dummy1, bindings1}};
-    RWDatabase::BindedGNetList newBgl = {{dummy2, bindings2}};
+    RWDatabase::BoundGNetList bgl = {{dummy1, bindings1}};
+    RWDatabase::BoundGNetList newBgl = {{dummy2, bindings2}};
 
     arwdb.insertIntoDB(truthTable, bgl);
 
@@ -173,7 +181,7 @@ bool updateARWDBTest() {
 
     auto gottenBgl = arwdb.get(truthTable);
 
-    result = isEquivalent(gottenBgl[0], newBgl[0]);
+    result = areEquivalent(gottenBgl[0], newBgl[0]);
 
     arwdb.closeDB();
   } catch (const char* msg) {
@@ -194,23 +202,27 @@ bool deleteARWDBTest() {
 
     RWDatabase::TruthTable truthTable = 1;
 
-    Gate::SignalList inputs1; Gate::Id outputId1; GateList varList1;
+    Gate::SignalList inputs1;
+    Gate::Id outputId1;
+    GateList varList1;
     std::shared_ptr<GNet> dummy1 = std::make_shared<GNet>(*makeAnd2(inputs1, outputId1, varList1));
     RWDatabase::GateBindings bindings1 = {{0, inputs1[0].node()}, {1, inputs1[1].node()}};
 
-    Gate::SignalList inputs2; Gate::Id outputId2; GateList varList2;
+    Gate::SignalList inputs2;
+    Gate::Id outputId2;
+    GateList varList2;
     std::shared_ptr<GNet> dummy2 = std::make_shared<GNet>(*makeOr2(inputs2, outputId2, varList2));
     RWDatabase::GateBindings bindings2 = {{0, inputs2[0].node()}, {1, inputs2[1].node()}};
 
     dummy1->sortTopologically();
     dummy2->sortTopologically();
 
-    RWDatabase::BindedGNetList bgl = {{dummy1, bindings1}, {dummy2, bindings2}};
+    RWDatabase::BoundGNetList bgl = {{dummy1, bindings1}, {dummy2, bindings2}};
 
     arwdb.insertIntoDB(truthTable, bgl);
     arwdb.deleteFromDB(truthTable);
 
-    result = !arwdb.find(truthTable);
+    result = !arwdb.contains(truthTable);
 
     arwdb.closeDB();
   } catch (const char* msg) {

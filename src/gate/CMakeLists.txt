@@ -14,12 +14,6 @@ add_library(Gate OBJECT
 )
 add_library(Utopia::Gate ALIAS Gate)
 
-add_library(sqlite3 optimizer/sqlite/sqlite3.c)
-
-set_target_properties(sqlite3 PROPERTIES
-  INTERFACE_INCLUDE_DIRECTORIES
-  ${PROJECT_SOURCE_DIR}/src/gate/optimizer/sqlite)
-
 target_include_directories(Gate PUBLIC ${PROJECT_SOURCE_DIR}/src)
 target_link_libraries(Gate
   PUBLIC

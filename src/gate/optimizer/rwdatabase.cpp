@@ -13,8 +13,8 @@
 #include <vector>
 
 using ARWDatabase = eda::gate::optimizer::ARWDatabase;
-using BindedGNet = eda::gate::optimizer::RWDatabase::BindedGNet;
-using BindedGNetList = eda::gate::optimizer::RWDatabase::BindedGNetList;
+using BoundGNet = eda::gate::optimizer::RWDatabase::BoundGNet;
+using BoundGNetList = eda::gate::optimizer::RWDatabase::BoundGNetList;
 using Gate = eda::gate::model::Gate;
 using GateList = std::vector<Gate::Id>;
 using GateSymbol = eda::gate::model::GateSymbol;
@@ -23,13 +23,13 @@ using RWDatabase = eda::gate::optimizer::RWDatabase;
 
 namespace eda::gate::optimizer {
 
-std::string ARWDatabase::serialize(const BindedGNetList &list) {
+std::string ARWDatabase::serialize(const BoundGNetList &list) {
   std::stringstream ss;
   ss << list.size() << ' ';
   for (auto &bGNet : list) {
     auto bindings = bGNet.bindings;
     auto net = bGNet.net;
-    if(!net->isSorted()) {
+    if (!net->isSorted()) {
       throw "Net isn't topologically sorted.";
     }
 
@@ -50,54 +50,63 @@ std::string ARWDatabase::serialize(const BindedGNetList &list) {
   return ss.str();
 }
 
-BindedGNetList ARWDatabase::deserialize(const std::string &str) {
+BoundGNetList ARWDatabase::deserialize(const std::string &str) {
   std::stringstream ss;
   ss.str(str);
-  BindedGNetList result;
-  size_t size; ss >> size;
-  for (size_t i = 0;i < size;i++) {
-    BindedGNet bGNet;
+  BoundGNetList result;
+  size_t size;
+  ss >> size;
+  for (size_t i = 0; i < size; i++) {
+    BoundGNet bGNet;
 
-    size_t bindingsSize; ss >> bindingsSize;
+    size_t bindingsSize;
+    ss >> bindingsSize;
+
     bGNet.bindings = GateBindings();
     auto reversedBindings = ReversedGateBindings();
 
-    for (size_t j = 0;j < bindingsSize;j++) {
-      InputId key; Gate::Id value;
+    for (size_t j = 0; j < bindingsSize; j++) {
+      InputId key;
+      Gate::Id value;
+
       ss >> key >> value;
       bGNet.bindings.insert(std::make_pair<InputId, Gate::Id>
                             (std::forward<InputId>(key),
-                            std::forward<Gate::Id>(value)));
+                             std::forward<Gate::Id>(value)));
       reversedBindings.insert(std::make_pair<Gate::Id, InputId>
-                            (std::forward<Gate::Id>(value),
-                            std::forward<InputId>(key)));
+                              (std::forward<Gate::Id>(value),
+                              std::forward<InputId>(key)));
     }
 
-    size_t gateCount; ss >> gateCount;
+    size_t gateCount;
+    ss >> gateCount;
     std::shared_ptr<GNet> net = std::make_shared<GNet>();
 
     GateMap oldNewMap;
 
-    for (size_t j = 0;j < gateCount;j++) {
-      GateSymbol::Value func; Gate::Id id;
-      size_t inputCount; Gate::SignalList inputs;
-
+    for (size_t j = 0; j < gateCount; j++) {
+      GateSymbol::Value func;
+      Gate::Id id;
+      size_t inputCount;
+      Gate::SignalList inputs;
       uint16_t intFunc;
+
       ss >> intFunc >> id >> inputCount;
       func = (GateSymbol::Value)intFunc;
 
-      if (inputCount == 0) {
-        Gate::Id newId = net->addGate(func, inputs);
-        oldNewMap[id] = newId;
-        bGNet.bindings[reversedBindings[id]] = newId;
-      } else {
-        for (size_t k = 0;k < inputCount;k++) {
-          Gate::Id inputId; ss >> inputId;
+      if (inputCount) {
+        for (size_t k = 0; k < inputCount; k++) {
+          Gate::Id inputId;
+          ss >> inputId;
           Gate::Id newInputId = oldNewMap[inputId];
           inputs.push_back(Gate::Signal::always(newInputId));
         }
         Gate::Id newId = net->addGate(func, inputs);
         oldNewMap[id] = newId;
+      } else {
+        Gate::Id newId = net->addGate(func, inputs);
+        oldNewMap[id] = newId;
+        bGNet.bindings[reversedBindings[id]] = newId;
       }
     }
     bGNet.net = net;
@@ -157,7 +166,7 @@ void ARWDatabase::closeDB() {
   _isOpened = false;
 }
 
-bool ARWDatabase::find(const TruthTable &key) {
+bool ARWDatabase::contains(const TruthTable &key) {
   if (_storage.find(key) != _storage.end()) {
     return true;
   }
@@ -175,7 +184,7 @@ bool ARWDatabase::find(const TruthTable &key) {
   return false;
 }
 
-BindedGNetList ARWDatabase::get(const TruthTable &key) {
+BoundGNetList ARWDatabase::get(const TruthTable &key) {
   if (_storage.find(key) != _storage.end()) {
     return _storage[key];
   }
@@ -189,19 +198,19 @@ BindedGNetList ARWDatabase::get(const TruthTable &key) {
       throw "Can't select from db";
     }
     if (!_selectResult.empty()) {
-      BindedGNetList deser = deserialize(_selectResult[0].second);
+      BoundGNetList deser = deserialize(_selectResult[0].second);
       set(key, deser);
       return deser;
     }
   }
-  return BindedGNetList();
+  return BoundGNetList();
 }
 
-void ARWDatabase::insertIntoDB(const TruthTable &key, const BindedGNetList &value) {
+void ARWDatabase::insertIntoDB(const TruthTable &key, const BoundGNetList &value) {
+  assert(_isOpened);
   std::string ser = serialize(value);
   std::string sql = "INSERT INTO RWDatabase(TruthTable, BGNet) " \
                     "VALUES (" + std::to_string(key) + ", '" + ser + "');";
-  assert(_isOpened);
   _rc = sqlite3_exec(_db, sql.c_str(), dummySQLCallback, 0, &_zErrMsg);
   if (_rc != SQLITE_OK) {
     std::cout << _zErrMsg << '\n';
@@ -209,7 +218,7 @@ void ARWDatabase::insertIntoDB(const TruthTable &key, const BindedGNetList &valu
   }
 }
 
-void ARWDatabase::updateInDB(const TruthTable &key, const BindedGNetList &value) {
+void ARWDatabase::updateInDB(const TruthTable &key, const BoundGNetList &value) {
   assert(_isOpened);
   std::string ser = serialize(value);
   std::string sql = "UPDATE RWDatabase SET BGNet = '" + ser + "' WHERE "
