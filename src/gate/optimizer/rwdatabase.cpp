@@ -218,7 +218,8 @@ BoundGNetList SQLiteRWDatabase::get(const TruthTable &key) {
   return BoundGNetList();
 }
 
-void SQLiteRWDatabase::insertIntoDB(const TruthTable &key, const BoundGNetList &value) {
+void SQLiteRWDatabase::insertIntoDB(const TruthTable &key,
+                                    const BoundGNetList &value) {
   assert(_isOpened);
   std::string ser = serialize(value);
 
@@ -234,7 +235,8 @@ void SQLiteRWDatabase::insertIntoDB(const TruthTable &key, const BoundGNetList &
   }
 }
 
-void SQLiteRWDatabase::updateInDB(const TruthTable &key, const BoundGNetList &value) {
+void SQLiteRWDatabase::updateInDB(const TruthTable &key,
+                                  const BoundGNetList &value) {
   assert(_isOpened);
   std::string ser = serialize(value);
   std::string sql = "UPDATE RWDatabase SET BGNet=? WHERE " \
