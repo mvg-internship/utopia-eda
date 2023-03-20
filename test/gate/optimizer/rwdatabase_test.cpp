@@ -11,7 +11,7 @@
 
 #include "gtest/gtest.h"
 
-using ARWDatabase = eda::gate::optimizer::ARWDatabase;
+using SQLiteRWDatabase = eda::gate::optimizer::SQLiteRWDatabase;
 using BDDList = eda::gate::transformer::GNetBDDConverter::BDDList;
 using Gate = eda::gate::model::Gate;
 using GateBDDMap = eda::gate::transformer::GNetBDDConverter::GateBDDMap;
@@ -105,7 +105,7 @@ bool basicTest() {
 }
 
 bool insertGetARWDBTest() {
-  ARWDatabase arwdb;
+  SQLiteRWDatabase arwdb;
   std::string dbPath = "rwtest.db";
   bool result;
 
@@ -147,7 +147,7 @@ bool insertGetARWDBTest() {
 }
 
 bool updateARWDBTest() {
-  ARWDatabase arwdb;
+  SQLiteRWDatabase arwdb;
   std::string dbPath = "rwtest.db";
   bool result;
 
@@ -192,7 +192,7 @@ bool updateARWDBTest() {
 }
 
 bool deleteARWDBTest() {
-  ARWDatabase arwdb;
+  SQLiteRWDatabase arwdb;
   std::string dbPath = "rwtest.db";
   bool result;
 

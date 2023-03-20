@@ -11,6 +11,7 @@
 #include "gate/model/gate.h"
 #include "gate/model/gnet.h"
 
+#include "sqlite3-bind.h"
 #include "sqlite3.h"
 
 #include <memory>
@@ -83,7 +84,7 @@ protected:
 * \brief Implements storage that contains GNets for rewriting using sqlite3.
 * \author <a href="mailto:mrpepelulka@gmail.com">Rustamkhan Ramaldanov</a>
 */
-class ARWDatabase : public RWDatabase {
+class SQLiteRWDatabase : public RWDatabase {
 public:
   // Serializes BoundGNetList object to string.
   static std::string serialize(const BoundGNetList &list);
@@ -95,10 +96,10 @@ public:
   // RWDatabase table in the DB. And saves the path as default path to DB.
   void linkDB(const std::string &path);
 
-  // Opens connection to DB. You must call it before you use ARWDatabase.
+  // Opens connection to DB. You must call it before you use SQLiteRWDatabase.
   void openDB();
 
-  // Closes connection to DB. You must call it after using ARWDatabase.
+  // Closes connection to DB. You must call it after using SQLiteRWDatabase.
   void closeDB();
 
   // Basic interface
@@ -122,9 +123,7 @@ public:
 
 private:
 
-  static int dummySQLCallback(void *NotUsed, int argc, char **argv, char **azColName) {
-    return 0;
-  }
+  bool dbContainsRWTable();
 
   static int selectSQLCallback(void *selectResultPointer,
                                int argc,

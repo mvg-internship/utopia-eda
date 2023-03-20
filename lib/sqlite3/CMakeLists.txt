@@ -1,4 +1,4 @@
-add_library(sqlite3 sqlite3.c)
+add_library(sqlite3 sqlite3.c sqlite3-bind.c)
 
 set_target_properties(sqlite3 PROPERTIES
   INTERFACE_INCLUDE_DIRECTORIES

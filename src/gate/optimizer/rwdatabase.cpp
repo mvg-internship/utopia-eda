@@ -10,9 +10,10 @@
 
 #include <map>
 #include <memory>
+#include <string>
 #include <vector>
 
-using ARWDatabase = eda::gate::optimizer::ARWDatabase;
+using SQLiteRWDatabase = eda::gate::optimizer::SQLiteRWDatabase;
 using BoundGNet = eda::gate::optimizer::RWDatabase::BoundGNet;
 using BoundGNetList = eda::gate::optimizer::RWDatabase::BoundGNetList;
 using Gate = eda::gate::model::Gate;
@@ -23,7 +24,7 @@ using RWDatabase = eda::gate::optimizer::RWDatabase;
 
 namespace eda::gate::optimizer {
 
-std::string ARWDatabase::serialize(const BoundGNetList &list) {
+std::string SQLiteRWDatabase::serialize(const BoundGNetList &list) {
   std::stringstream ss;
   ss << list.size() << ' ';
   for (auto &bGNet : list) {
@@ -50,7 +51,7 @@ std::string ARWDatabase::serialize(const BoundGNetList &list) {
   return ss.str();
 }
 
-BoundGNetList ARWDatabase::deserialize(const std::string &str) {
+BoundGNetList SQLiteRWDatabase::deserialize(const std::string &str) {
   std::stringstream ss;
   ss.str(str);
   BoundGNetList result;
@@ -118,28 +119,33 @@ BoundGNetList ARWDatabase::deserialize(const std::string &str) {
   return result;
 }
 
-void ARWDatabase::linkDB(const std::string &path) {
+bool SQLiteRWDatabase::dbContainsRWTable() {
+  assert(_isOpened);
+  _selectResult.clear();
+  std::string sql = "SELECT name FROM sqlite_master WHERE " \
+                    "type='table' AND name='RWDatabase';";
+  _rc = sqlite3_exec(_db, sql.c_str(), selectSQLCallback,
+                     (void*)(&_selectResult), &_zErrMsg);
+  if (_rc != SQLITE_OK) {
+    throw "Can't use db.";
+  }
+  return !_selectResult.empty();
+}
+
+void SQLiteRWDatabase::linkDB(const std::string &path) {
   _rc = sqlite3_open(path.c_str(), &_db);
 
   if (_rc != SQLITE_OK) {
     throw "Can't open database.";
   }
+  _isOpened = true;
 
-  _selectResult.clear();
-  std::string sql = "SELECT name FROM sqlite_master WHERE " \
-                    "type='table' AND name='RWDatabase';";
-  _rc = sqlite3_exec(_db, sql.c_str(), selectSQLCallback,
-                      (void*)(&_selectResult), &_zErrMsg);
-  if (_rc != SQLITE_OK) {
-    throw "Can't use db.";
-  }
-  if (_selectResult.empty()) {
-    sql = "CREATE TABLE RWDatabase (TruthTable BIGINT PRIMARY KEY,"\
-          " BGNet BLOB);";
-
-    _rc = sqlite3_exec(_db, sql.c_str(), dummySQLCallback, 0, &_zErrMsg);
-
+  if (!dbContainsRWTable()) {
+    std::string sqlCreate = "CREATE TABLE RWDatabase (TruthTable BIGINT" \
+                            " PRIMARY KEY, BGNet TEXT)";
+    _rc = sqlite3_exec(_db, sqlCreate.c_str(), nullptr, 0, &_zErrMsg);
     if (_rc != SQLITE_OK) {
+      std::cout << sqlite3_errmsg(_db) << '\n';
       throw "Can't create table.";
     }
   }
@@ -147,9 +153,10 @@ void ARWDatabase::linkDB(const std::string &path) {
   _pathDB = path;
   _isLinked = true;
   sqlite3_close(_db);
+  _isOpened = false;
 }
 
-void ARWDatabase::openDB() {
+void SQLiteRWDatabase::openDB() {
   if (!_isLinked) {
     throw "No database was linked.";
   }
@@ -160,42 +167,47 @@ void ARWDatabase::openDB() {
   _isOpened = true;
 }
 
-void ARWDatabase::closeDB() {
+void SQLiteRWDatabase::closeDB() {
   assert(_isLinked);
   sqlite3_close(_db);
   _isOpened = false;
 }
 
-bool ARWDatabase::contains(const TruthTable &key) {
+bool SQLiteRWDatabase::contains(const TruthTable &key) {
   if (_storage.find(key) != _storage.end()) {
     return true;
   }
   if (_isOpened) {
     _selectResult.clear();
-    std::string sql = "SELECT * FROM RWDatabase WHERE TruthTable = '"
-        + std::to_string(key) + "';";
-    _rc = sqlite3_exec(_db, sql.c_str(), selectSQLCallback,
-                        (void*)(&_selectResult), &_zErrMsg);
+    std::string sql = "SELECT * FROM RWDatabase " \
+                      "WHERE TruthTable=?";
+    _rc = sqlite3_bind_exec(_db, sql.c_str(), selectSQLCallback,
+                            (void*)(&_selectResult),
+                            SQLITE_BIND_INT64(key),
+                            SQLITE_BIND_END);
     if (_rc != SQLITE_OK) {
-      throw "Can't select from db";
+      std::cout << sqlite3_errmsg(_db) << '\n';
+      throw "Can't select.";
     }
-    return !(_selectResult.empty());
+    return !_selectResult.empty();
   }
   return false;
 }
 
-BoundGNetList ARWDatabase::get(const TruthTable &key) {
+BoundGNetList SQLiteRWDatabase::get(const TruthTable &key) {
   if (_storage.find(key) != _storage.end()) {
     return _storage[key];
   }
   if (_isOpened) {
     _selectResult.clear();
-    std::string sql = "SELECT * FROM RWDatabase WHERE TruthTable = "
-        + std::to_string(key) + ";";
-    _rc = sqlite3_exec(_db, sql.c_str(), selectSQLCallback,
-                        (void*)(&_selectResult), &_zErrMsg);
+    std::string sql = "SELECT * FROM RWDatabase WHERE TruthTable=?";
+    _rc = sqlite3_bind_exec(_db, sql.c_str(), selectSQLCallback,
+                            (void*)(&_selectResult),
+                            SQLITE_BIND_INT64(key),
+                            SQLITE_BIND_END);
     if (_rc != SQLITE_OK) {
-      throw "Can't select from db";
+      std::cout << sqlite3_errmsg(_db) << '\n';
+      throw "Can't select.";
     }
     if (!_selectResult.empty()) {
       BoundGNetList deser = deserialize(_selectResult[0].second);
@@ -206,37 +218,46 @@ BoundGNetList ARWDatabase::get(const TruthTable &key) {
   return BoundGNetList();
 }
 
-void ARWDatabase::insertIntoDB(const TruthTable &key, const BoundGNetList &value) {
+void SQLiteRWDatabase::insertIntoDB(const TruthTable &key, const BoundGNetList &value) {
   assert(_isOpened);
   std::string ser = serialize(value);
-  std::string sql = "INSERT INTO RWDatabase(TruthTable, BGNet) " \
-                    "VALUES (" + std::to_string(key) + ", '" + ser + "');";
-  _rc = sqlite3_exec(_db, sql.c_str(), dummySQLCallback, 0, &_zErrMsg);
+
+  std::string sql = "INSERT INTO RWDatabase (TruthTable, BGNet) " \
+                    "VALUES (?,?)";
+  _rc = sqlite3_bind_exec(_db, sql.c_str(), nullptr, nullptr,
+                            SQLITE_BIND_INT64(key),
+                            SQLITE_BIND_TEXT(ser.c_str()),
+                            SQLITE_BIND_END);
   if (_rc != SQLITE_OK) {
-    std::cout << _zErrMsg << '\n';
-    throw "Can't insert value into db.";
+    std::cout << sqlite3_errmsg(_db) << '\n';
+    throw "Can't insert.";
   }
 }
 
-void ARWDatabase::updateInDB(const TruthTable &key, const BoundGNetList &value) {
+void SQLiteRWDatabase::updateInDB(const TruthTable &key, const BoundGNetList &value) {
   assert(_isOpened);
   std::string ser = serialize(value);
-  std::string sql = "UPDATE RWDatabase SET BGNet = '" + ser + "' WHERE "
-                    "TruthTable=" + std::to_string(key) + ";";
-  _rc = sqlite3_exec(_db, sql.c_str(), dummySQLCallback, 0, &_zErrMsg);
+  std::string sql = "UPDATE RWDatabase SET BGNet=? WHERE " \
+                    "TruthTable=?";
+  _rc = sqlite3_bind_exec(_db, sql.c_str(), nullptr, nullptr,
+                          SQLITE_BIND_TEXT(ser.c_str()),
+                          SQLITE_BIND_INT64(key),
+                          SQLITE_BIND_END);
   if (_rc != SQLITE_OK) {
-    std::cout << _zErrMsg << '\n';
-    throw "Can't update value.";
+    std::cout << sqlite3_errmsg(_db) << '\n';
+    throw "Can't update.";
   }
 }
 
-void ARWDatabase::deleteFromDB(const TruthTable &key) {
+void SQLiteRWDatabase::deleteFromDB(const TruthTable &key) {
   assert(_isOpened);
-  std::string sql = "DELETE FROM RWDatabase WHERE TruthTable=" +
-                    std::to_string(key) + ";";
-  _rc = sqlite3_exec(_db, sql.c_str(), dummySQLCallback, 0, &_zErrMsg);
+  std::string sql = "DELETE FROM RWDatabase WHERE TruthTable=?";
+  _rc = sqlite3_bind_exec(_db, sql.c_str(), nullptr, nullptr,
+                          SQLITE_BIND_INT64(key),
+                          SQLITE_BIND_END);
   if (_rc != SQLITE_OK) {
-    throw "Can't delete value.";
+    std::cout << sqlite3_errmsg(_db) << '\n';
+    throw "Can't delete.";
   }
 }
 
