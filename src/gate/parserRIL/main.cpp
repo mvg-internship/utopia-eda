@@ -7,7 +7,8 @@
 #include "base/model/signal.h"
 #include "gate/simulator/simulator.h"
 #include <map>
-#include<string>
+#include <string>
+#include <algorithm>
 
 using namespace eda::gate::model;
 
@@ -22,7 +23,8 @@ void print_modules(const int ind, std::ostream &out, std::ofstream &fout){
 
 std::map<int, std::string> INPUTS;
 std::map<int, std::string> OUTPUTS;
-std::map<int,std::string > typpfunc;
+std::map<int, std::string > typpfunc;
+std::vector<int> WIRES;
 
 void print_wires(const Yosys::hashlib::dict<Yosys::RTLIL::IdString, Yosys::RTLIL::Wire*> &wires, std::ostream &out, std::ofstream &fout, eda::gate::model::GNet &net,std::map<unsigned, Gate::Id> &inputs,std::map<unsigned, Gate::Id> &outputs){
     out << "Wires:" << "\n";
@@ -51,7 +53,7 @@ void print_wires(const Yosys::hashlib::dict<Yosys::RTLIL::IdString, Yosys::RTLIL
             Gate::Id inputId = net.addIn();
             inputs.emplace(index, inputId);
             temp.erase(0, 1);
-            fout << "inputs " << width << " " << temp << ";\n";
+            fout << "input " << width << " " << temp << ";\n";
             INPUTS.emplace(index, temp);
         }
         out << "    port_output: " << it1->second->port_output << "\n";
@@ -59,8 +61,11 @@ void print_wires(const Yosys::hashlib::dict<Yosys::RTLIL::IdString, Yosys::RTLIL
             Gate::Id outputId;
             outputs.emplace(index, outputId);
             temp.erase(0, 1);
-            fout << "outputs " << width << " " << temp << ";\n";
+            fout << "output " << width << " " << temp << ";\n";
             OUTPUTS.emplace(index, temp);
+        }
+        if (it1->second->port_output==0 && it1->second->port_input==0){
+            WIRES.push_back(index);
         }
         out << "    upto: " << it1->second->upto << "\n";
         out << "\n";
@@ -69,37 +74,15 @@ void print_wires(const Yosys::hashlib::dict<Yosys::RTLIL::IdString, Yosys::RTLIL
 std::string function(size_t type){
     std::string func;
 
-    if (type==276){
+    if (type==ID($and).index_){
         func = "&";
     }
-    if (type==264){
+    if (type==ID($not).index_){
         func = "~";
     }
-    if (type==277){
+    if (type==ID($or).index_){
         func = "|";
     }
-//    if (type==355){
-//        func=GateSymbol::NOT;
-//    }
-//    if (type==356){
-//        func=GateSymbol::AND;
-//    }
-//    if (type==358){
-//        func=GateSymbol::OR;
-//    }
-//    if (type==360){
-//        func=GateSymbol::XOR;
-//    }
-//    if (type==380){
-//        func=GateSymbol::DFF;
-//    }
-//    if (type==486){
-//        func=GateSymbol::LATCH;
-//    }
-//    if (type==428){
-//        func=GateSymbol::DFFrs;
-//    }
-//    func = GateSymbol::XXX;
     return func;
 }
 
@@ -259,15 +242,12 @@ void print_connections(const std::vector<std::pair<Yosys::RTLIL::SigSpec, Yosys:
         if(inputs.find(it1->second.as_wire()->name.index_)==inputs.end()){
             root=it1->second.as_wire()->name.index_;
             fout << "@(*) {\n";
-            fout << OUTPUTS.find(it1->first.as_wire()->name.index_)->second << "=" << buildRIL(root) << ";\n";
+            fout << "   " << OUTPUTS.find(it1->first.as_wire()->name.index_)->second << " = " << buildRIL(root) << ";\n";
             fout << "}\n";
-            //auto output=buildNet(root,net,typeFunc,cell,inputs);
-            //outputs.find(it1->first.as_wire()->name.index_)->second=net.addOut(output);
-            //std::cout << net;
         }
         else{
             fout << "@(*) {\n";
-            fout << OUTPUTS.find(it1->first.as_wire()->name.index_)->second << "=" << INPUTS.find(it1->second.as_wire()->name.index_)->second << ";\n";
+            fout << "   " << OUTPUTS.find(it1->first.as_wire()->name.index_)->second << " = " << INPUTS.find(it1->second.as_wire()->name.index_)->second << ";\n";
             fout << "}\n";
 //            Gate::SignalList inputs1;
 //            inputs1.push_back(Gate::Signal::always(inputs.find(it1->second.as_wire()->name.index_)->second));
@@ -280,7 +260,9 @@ void print_connections(const std::vector<std::pair<Yosys::RTLIL::SigSpec, Yosys:
 
 void print_memory(const Yosys::hashlib::dict<Yosys::RTLIL::IdString, Yosys::RTLIL::Memory*> &memories, std::ostream &out, std::ofstream &fout){
     out << "Memory count: " << memories.size() << "\n";
+
     for (auto it1 = memories.begin(); it1 != memories.end(); ++it1){
+
         out << "  memory " << it1->second << "\n";
         out << "  name: " << it1->second->name.index_ << "\n";
         out << "  width: " << it1->second->width << "\n";
@@ -289,9 +271,44 @@ void print_memory(const Yosys::hashlib::dict<Yosys::RTLIL::IdString, Yosys::RTLI
         out << "\n";
     }
 }
+
+std::vector<int> seq;
+std::vector<int> clk;
+
 void print_actions(const std::vector< Yosys::RTLIL::SigSig > &actions, std::ostream &out, std::ofstream &fout){
+    int z=0;
     for (auto &it : actions){
-        out << "    " << (*it.first.as_chunk().wire).name.index_ << "\n";
+        z++;
+        out << z <<"\n";
+        out << "    ch" << (it.first.is_wire())<< " "<<(it.second.is_wire())<< "\n";
+        if (it.first.is_wire() && it.second.is_wire()){
+            out << "    nech" << (it.first.as_wire()->name.index_)<< " "<<(it.second.as_wire()->name.index_)<< "\n";
+            if (OUTPUTS.find((it.first.as_wire()->name.index_)) != OUTPUTS.end()){
+                seq.insert(seq.begin(), (it.first.as_wire()->name.index_));
+            }
+            else{
+                seq.push_back((it.first.as_wire()->name.index_));
+                seq.push_back((it.second.as_wire()->name.index_));
+            }
+
+        }
+        out << "    ch" << (it.first.is_chunk())<< " "<<(it.second.is_chunk())<< "\n";
+        if (it.first.is_chunk() && it.second.is_chunk()){
+            out << "    nech" << (it.first.as_chunk().wire)->name.index_<< " "<<(it.second.as_chunk().wire)->name.index_<< "\n";
+        }
+        out << "    ch" << (it.first.is_fully_const()) <<" "<<(it.second.is_fully_const()) << "\n";
+//        if (it.first.is_fully_const() && it.second.is_fully_const()){
+//            out << "    nech" << (it.first.as_fully_const())<< " "<<(it.second.as_fully_const())<< "\n";
+//        }
+        out << "    ch" << (it.first.is_fully_def()) <<" "<<(it.second.is_fully_def()) << "\n";
+//        if (it.first.is_fully_def() && it.second.is_fully_def()){
+//            out << "    nech" << (it.first.as_fully_def())<< " "<<(it.second.as_fully_def())<< "\n";
+//        }
+        out << "    ch" << (it.first.is_fully_undef()) <<" "<<(it.second.is_fully_undef()) << "\n";
+//        if (it.first.is_fully_undef() && it.second.is_fully_undef()){
+//            out << "    nech" << (it.first.as_fully_undef())<< " "<<(it.second.as_fully_undef())<< "\n";
+//        }
+
     }
 }
 void print_syncs(const std::vector<Yosys::RTLIL::SyncRule *> &syncs, std::ostream &out, std::ofstream &fout){
@@ -301,16 +318,25 @@ void print_syncs(const std::vector<Yosys::RTLIL::SyncRule *> &syncs, std::ostrea
         out << "  signal\n";
         out << "    size " << (*it1)->signal.size() << "\n";
         out << "    as_wire index " << (*it1)->signal.as_wire()->name.index_ << "\n";
+        clk.push_back((*it1)->signal.as_wire()->name.index_);
         out << "  actions\n";
         print_actions((*it1)->actions, out, fout);
     }
+    out <<"zzzzzzzzzzss" <<INPUTS.size();
+    fout << "\n@(*) if (" << INPUTS.find(clk[0])->second << ") {\n    " << OUTPUTS.find(seq[0])->second << " = " << INPUTS.find(seq[2])->second << ";\n}\n";
 }
 
+std::vector<int> LEFT, RIGHT;
 
 void print_processes(const Yosys::hashlib::dict<Yosys::RTLIL::IdString, Yosys::RTLIL::Process*> &processes, std::ostream &out, std::ofstream &fout){
     out << "Processes count: " << processes.size() << "\n";
     for (auto it1 = processes.begin(); it1 != processes.end(); ++it1){
         out << "  name " << it1->second->name.index_ << "\n";
+        out << "  root_case: \n";
+        print_actions((it1->second->root_case).actions, out, fout);
+        for (auto &it2 : (it1->second->root_case).switches){
+            out << "    " << (it2->signal.as_chunk().wire)->name.index_ << "\n";
+        }
         print_syncs(it1->second->syncs, out, fout);
         out << "\n";
     }
