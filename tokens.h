@@ -14,12 +14,3 @@ enum token_t{
     COMMA,
     STRING
 };
-
-enum error_types
-{
-    SUCCESS = 1,
-    FAILURE_FILE_READING,
-    FAILURE_PARSE_ID,
-    FAILURE_IOSTREAM_PARENTHESIS,
-    FAILURE_ID_PARENTHESIS,
-};
