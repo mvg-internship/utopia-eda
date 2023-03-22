@@ -11,15 +11,13 @@
 using namespace eda::gate::model;
 int root;
 
-
 void print_modules(const int ind, std::ostream &out){
     for (const auto &it1 : Yosys::RTLIL::IdString::global_id_index_){
         if (it1.second == ind){
             out << it1.first << " - module of index: " << it1.second << "\n";
-    //    std::cout << <<" "<< ID($pos).index_<<" "<< ID($neg).index_<<" "<<ID($reduce_and).index_<<" "<< ID($reduce_or).index_<<" "<< ID($reduce_xor).index_<<" "<< ID($reduce_xnor).index_<<" "<< ID($reduce_bool).index_<<" "<<ID($logic_not).index_<<" "<< ID($slice).index_<<" "<< ID($lut).index_<<" "<< ID($sop).index_<<"\n";
-      //     std::cout << ID($and).index_<<" "<< ID($or).index_<<" "<< ID($xor).index_<<" "<< ID($xnor).index_<<" "<<ID($shl).index_<<" "<< ID($shr).index_<<" "<< ID($sshl).index_<<" "<< ID($sshr).index_<<" "<< ID($shift).index_<<" "<< ID($shiftx).index_<<" "<<ID($lt).index_<<" "<< ID($le).index_<<" "<< ID($eq).index_<<" "<< ID($ne).index_<<" "<< ID($eqx).index_<<" "<< ID($nex).index_<<" "<< ID($ge).index_<<" "<< ID($gt).index_<<" "<<ID($add).index_<<" "<< ID($sub).index_<<" "<< ID($mul).index_<<" "<< ID($div).index_<<" "<< ID($mod).index_<<" "<< ID($divfloor).index_<<" "<< ID($modfloor).index_<<" "<< ID($pow).index_<<" "<<ID($logic_and).index_<<" "<< ID($logic_or).index_<<" "<< ID($concat).index_<<" "<< ID($macc).index_<<"\n";
+        }
+    }
 }
-}}
 void print_wires(const Yosys::hashlib::dict<Yosys::RTLIL::IdString, Yosys::RTLIL::Wire*> &wires, std::ostream &out, eda::gate::model::GNet &net,std::map<unsigned, Gate::Id> &inputs,std::map<unsigned, Gate::Id> &outputs){
     out << "Wires:" << "\n";
     for (auto it1=wires.begin(); it1 != wires.end(); ++it1){
@@ -52,7 +50,7 @@ void print_wires(const Yosys::hashlib::dict<Yosys::RTLIL::IdString, Yosys::RTLIL
         out << "\n";
     }
 }
-GateSymbol function(size_t type){
+GateSymbol function(size_t type,std::map<int,std::string> &typeRTLIL, int a){
     GateSymbol func;
     func=GateSymbol::XXX;
     if (type==ID($_NOT_).index_){
@@ -69,18 +67,60 @@ GateSymbol function(size_t type){
     }
     if (type==ID($_DFF_P_).index_){
         func=GateSymbol::DFF;
+        typeRTLIL.emplace(a,"_DFF_P_");
+    }
+    if (type==ID($_DFF_N_).index_){
+        func=GateSymbol::DFF;
+        typeRTLIL.emplace(a,"_DFF_N_");
     }
     if (type==ID($_DLATCH_P_).index_){
         func=GateSymbol::LATCH;
+        typeRTLIL.emplace(a,"_DLATCH_P_");
+    }
+    if (type==ID($_DLATCH_N_).index_){
+        func=GateSymbol::LATCH;
+        typeRTLIL.emplace(a,"_DLATCH_N_");
     }
     if (type==ID($_DFFSR_PPP_).index_){
         func=GateSymbol::DFFrs;
+        typeRTLIL.emplace(a,"_DFFSR_PPP_");
+    }
+    if (type==ID($_DFFSR_PPN_).index_){
+        func=GateSymbol::DFFrs;
+        typeRTLIL.emplace(a,"_DFFSR_PPN_");
+    }
+    if (type==ID($_DFFSR_PNP_).index_){
+        func=GateSymbol::DFFrs;
+        typeRTLIL.emplace(a,"_DFFSR_PNP_");
+    }
+    if (type==ID($_DFFSR_PNN_).index_){
+        func=GateSymbol::DFFrs;
+        typeRTLIL.emplace(a,"_DFFSR_PNN_");
+    }
+    if (type==ID($_DFFSR_NPP_).index_){
+        func=GateSymbol::DFFrs;
+        typeRTLIL.emplace(a,"_DFFSR_NPP_");
+    }
+    if (type==ID($_DFFSR_NPN_).index_){
+        func=GateSymbol::DFFrs;
+        typeRTLIL.emplace(a,"_DFFSR_NPN_");
+    }
+    if (type==ID($_DFFSR_NNP_).index_){
+        func=GateSymbol::DFFrs;
+        typeRTLIL.emplace(a,"_DFFSR_NNP_");
+    }
+    if (type==ID($_DFFSR_NNN_).index_){
+        func=GateSymbol::DFFrs;
+        typeRTLIL.emplace(a,"_DFFSR_NNN_");
     }
     return func;
 }
-Gate::Id buildNet(int root,eda::gate::model::GNet &net,std::map<int,GateSymbol> typeFunc,std::map<int, std::pair<int, int>> &cell,std::map<unsigned, Gate::Id> &inputs){
+
+Gate::Id buildNet(int root,eda::gate::model::GNet &net,std::map<int,GateSymbol> &typeFunc,std::map<int, std::pair<int, int>> &cell,std::map<unsigned, Gate::Id> &inputs, std::map<int,std::string> &typeRTLIL){
+
     for (auto it: cell){
         if (it.second.first==root){
+
             if (typeFunc.find(it.first)->second==GateSymbol::XXX){
                 Gate::SignalList inputs1;
                 inputs1.push_back(Gate::Signal::always(inputs.find(cell.find(root)->second.first)->second));
@@ -88,20 +128,148 @@ Gate::Id buildNet(int root,eda::gate::model::GNet &net,std::map<int,GateSymbol> 
                 return net.addGate(typeFunc.find(root)->second,inputs1);
             }
             if (typeFunc.find(it.first)->second==GateSymbol::LATCH){
-                return net.addLatch(inputs.find(it.first)->second,inputs.find(it.second.second)->second);
+                if(typeRTLIL.find(it.first)->second=="_DLATCH_P_"){
+                    return net.addLatch(inputs.find(it.first)->second,inputs.find(it.second.second)->second);
+                }
+                else{
+                    Gate::SignalList inputs1;
+                    inputs1.push_back(Gate::Signal::always(inputs.find(it.second.second)->second));
+                    auto gate=net.addGate(GateSymbol::NOT,inputs1);
+                    return net.addLatch(inputs.find(it.first)->second,gate);
+                }
             }
             if (typeFunc.find(it.first)->second==GateSymbol::DFF){
-                return net.addDff(inputs.find(it.first)->second,inputs.find(it.second.second)->second);
-            }
-            if(typeFunc.find(it.first)->second==GateSymbol::DFFrs){
-                int key;
-                for(auto it1: cell){
-                    if (it1.second.second==it.first){
-                        key=it1.first;
-                    }
+                if(typeRTLIL.find(it.first)->second=="_DFF_P_"){
+                    return net.addDff(inputs.find(it.second.second)->second,inputs.find(it.first)->second);
                 }
-                return net.addDffrs(inputs.find(it.first)->second,inputs.find(cell.find(it.first)->second.second)->second,inputs.find(cell.find(key)->second.first)->second,inputs.find(cell.find(key)->first)->second );
+                else{
+                    Gate::SignalList inputs1;
+                    inputs1.push_back(Gate::Signal::always(inputs.find(it.second.second)->second));
+                    auto gate=net.addGate(GateSymbol::NOT,inputs1);
+                    return net.addDff(inputs.find(it.first)->second,gate);
+                }
             }
+
+            if(typeFunc.find(it.first)->second==GateSymbol::DFFrs){
+
+
+                if(typeRTLIL.find(it.first)->second=="_DFFSR_PPP_"){
+                    int key;
+                    for(auto it1: cell){
+                        if (it1.second.second==it.first){
+                            key=it1.first;
+                        }
+                    }
+                    return net.addDffrs(inputs.find(it.first)->second,inputs.find(cell.find(it.first)->second.second)->second,inputs.find(cell.find(key)->second.first)->second,inputs.find(cell.find(key)->first)->second);
+                }
+                if(typeRTLIL.find(it.first)->second=="_DFFSR_PPN_"){
+                    int key;
+                    for(auto it1: cell){
+                        if (it1.second.second==it.first){
+                            key=it1.first;
+                        }
+                    }
+                    Gate::SignalList inputs1;
+                    inputs1.push_back(Gate::Signal::always(inputs.find(cell.find(key)->first)->second));
+                    auto gate=net.addGate(GateSymbol::NOT,inputs1);
+                    return net.addDffrs(inputs.find(it.first)->second,inputs.find(cell.find(it.first)->second.second)->second,inputs.find(cell.find(key)->second.first)->second,gate);
+                }
+                if(typeRTLIL.find(it.first)->second=="_DFFSR_PNP_"){
+                    int key;
+                    for(auto it1: cell){
+                        if (it1.second.second==it.first){
+                            key=it1.first;
+                        }
+                    }
+                    Gate::SignalList inputs1;
+                    inputs1.push_back(Gate::Signal::always(inputs.find(cell.find(key)->second.first)->second));
+                    auto gate=net.addGate(GateSymbol::NOT,inputs1);
+                    return net.addDffrs(inputs.find(it.first)->second,inputs.find(cell.find(it.first)->second.second)->second,gate,inputs.find(cell.find(key)->first)->second);
+                }
+                if(typeRTLIL.find(it.first)->second=="_DFFSR_PNN_"){
+                    int key;
+                    for(auto it1: cell){
+                        if (it1.second.second==it.first){
+                            key=it1.first;
+                        }
+                    }
+                    Gate::SignalList inputs1;
+                    inputs1.push_back(Gate::Signal::always(inputs.find(cell.find(key)->second.first)->second));
+                    auto gate1=net.addGate(GateSymbol::NOT,inputs1);
+                    Gate::SignalList inputs2;
+                    inputs2.push_back(Gate::Signal::always(inputs.find(cell.find(key)->first)->second));
+                    auto gate2=net.addGate(GateSymbol::NOT,inputs2);
+                    return net.addDffrs(inputs.find(it.first)->second, inputs.find(cell.find(it.first)->second.second)->second, gate1, gate2);
+                }
+                if(typeRTLIL.find(it.first)->second=="_DFFSR_NPP_"){
+                    int key;
+                    for(auto it1: cell){
+                        if (it1.second.second==it.first){
+                            key=it1.first;
+                            break;
+                        }
+                    }
+
+                    Gate::SignalList inputs1;
+                    inputs1.push_back(Gate::Signal::always(inputs.find(cell.find(it.first)->second.second)->second));
+                    auto gate=net.addGate(GateSymbol::NOT,inputs1);
+                    return net.addDffrs(inputs.find(it.first)->second,gate,inputs.find(cell.find(key)->second.first)->second,inputs.find(cell.find(key)->first)->second);
+                }
+                if(typeRTLIL.find(it.first)->second=="_DFFSR_NPN_"){
+                    int key;
+                    for(auto it1: cell){
+                        if (it1.second.second==it.first){
+                            key=it1.first;
+                            break;
+                        }
+                    }
+                    Gate::SignalList inputs1;
+                    inputs1.push_back(Gate::Signal::always(inputs.find(cell.find(it.first)->second.second)->second));
+                    auto gate1=net.addGate(GateSymbol::NOT,inputs1);
+                    Gate::SignalList inputs2;
+                    inputs2.push_back(Gate::Signal::always(inputs.find(cell.find(key)->first)->second));
+                    auto gate2=net.addGate(GateSymbol::NOT,inputs2);
+                    return net.addDffrs(inputs.find(it.first)->second,gate1,inputs.find(cell.find(key)->second.first)->second,gate2);
+                }
+
+
+                if(typeRTLIL.find(it.first)->second=="_DFFSR_NNP_"){
+                    int key;
+                    for(auto it1: cell){
+                        if (it1.second.second==it.first){
+                            key=it1.first;
+                            break;
+                        }
+                    }
+                    Gate::SignalList inputs1;
+                    inputs1.push_back(Gate::Signal::always(inputs.find(cell.find(it.first)->second.second)->second));
+                    auto gate1=net.addGate(GateSymbol::NOT,inputs1);
+                    Gate::SignalList inputs2;
+                    inputs2.push_back(Gate::Signal::always(inputs.find(cell.find(key)->second.first)->second));
+                    auto gate2=net.addGate(GateSymbol::NOT,inputs2);
+                    return net.addDffrs(inputs.find(it.first)->second,gate1,gate2,inputs.find(cell.find(key)->first)->second);
+                }
+                if(typeRTLIL.find(it.first)->second=="_DFFSR_NNN_"){
+                    int key;
+                    for(auto it1: cell){
+                        if (it1.second.second==it.first){
+                            key=it1.first;
+                            break;
+                        }
+                    }
+                    Gate::SignalList inputs0;
+                    inputs0.push_back(Gate::Signal::always(inputs.find(cell.find(it.first)->second.second)->second));
+                    auto gate0=net.addGate(GateSymbol::NOT,inputs0);
+                    Gate::SignalList inputs1;
+                    inputs1.push_back(Gate::Signal::always(inputs.find(cell.find(key)->second.first)->second));
+                    auto gate1=net.addGate(GateSymbol::NOT,inputs1);
+                    Gate::SignalList inputs2;
+                    inputs2.push_back(Gate::Signal::always(inputs.find(cell.find(key)->first)->second));
+                    auto gate2=net.addGate(GateSymbol::NOT,inputs2);
+                    return net.addDffrs(inputs.find(it.first)->second, gate0, gate1, gate2);
+                }
+            }
+
         }
     }
     bool flag1=0,flag2=0;
@@ -125,29 +293,29 @@ Gate::Id buildNet(int root,eda::gate::model::GNet &net,std::map<int,GateSymbol> 
     if (flag1==0&&flag2==0){
         Gate::SignalList inputs1;
         if (cell.find(root)->second.first!=cell.find(root)->second.second){
-            inputs1.push_back(Gate::Signal::always(buildNet(cell.find(root)->second.first,net,typeFunc,cell,inputs)));
-            inputs1.push_back(Gate::Signal::always(buildNet(cell.find(root)->second.second,net,typeFunc,cell,inputs)));
+            inputs1.push_back(Gate::Signal::always(buildNet(cell.find(root)->second.first, net, typeFunc, cell, inputs, typeRTLIL)));
+            inputs1.push_back(Gate::Signal::always(buildNet(cell.find(root)->second.second, net, typeFunc, cell, inputs, typeRTLIL)));
         }
         else{
-            inputs1.push_back(Gate::Signal::always(buildNet(cell.find(root)->second.first,net,typeFunc,cell,inputs)));
+            inputs1.push_back(Gate::Signal::always(buildNet(cell.find(root)->second.first, net, typeFunc, cell, inputs, typeRTLIL)));
         }
         return net.addGate(typeFunc.find(root)->second,inputs1);
     }
     if (flag1==0&&flag2==1){
         Gate::SignalList inputs1;
-        inputs1.push_back(Gate::Signal::always(buildNet(cell.find(root)->second.first,net,typeFunc,cell,inputs)));
+        inputs1.push_back(Gate::Signal::always(buildNet(cell.find(root)->second.first, net, typeFunc, cell, inputs, typeRTLIL)));
         inputs1.push_back(Gate::Signal::always(inputs.find(cell.find(root)->second.second)->second));
         return net.addGate(typeFunc.find(root)->second,inputs1);
     }
     if (flag1==1&&flag2==0){
         Gate::SignalList inputs1;
         inputs1.push_back(Gate::Signal::always(inputs.find(cell.find(root)->second.first)->second));
-        inputs1.push_back(Gate::Signal::always(buildNet(cell.find(root)->second.second,net,typeFunc,cell,inputs)));
+        inputs1.push_back(Gate::Signal::always(buildNet(cell.find(root)->second.second, net, typeFunc, cell, inputs, typeRTLIL)));
         return net.addGate(typeFunc.find(root)->second,inputs1);
     }
 }
 
-void print_cells(const Yosys::hashlib::dict<Yosys::RTLIL::IdString, Yosys::RTLIL::Cell*> &cells, std::ostream &out, eda::gate::model::GNet &net, std::map<int,GateSymbol> &typeFunc,std::map<int, std::pair<int, int>> &cell){
+void print_cells(const Yosys::hashlib::dict<Yosys::RTLIL::IdString, Yosys::RTLIL::Cell*> &cells, std::ostream &out, eda::gate::model::GNet &net, std::map<int,GateSymbol> &typeFunc,std::map<int, std::pair<int, int>> &cell, std::map<int,std::string> &typeRTLIL){
     out << "Cells:" << "\n";
     for (auto it1=cells.begin(); it1 != cells.end(); ++it1){
         for (const auto &it2 : Yosys::RTLIL::IdString::global_id_index_){
@@ -164,7 +332,7 @@ void print_cells(const Yosys::hashlib::dict<Yosys::RTLIL::IdString, Yosys::RTLIL
             if (i==1){
                 a=it3->second.as_wire()->name.index_;
                 std::cout<<it1->second->type.c_str()<<"\n";
-                f=function(it1->second->type.index_);
+                f=function(it1->second->type.index_,typeRTLIL, a);
                 typeFunc.emplace(a,f);
                 if (f==GateSymbol::NOT){
                     flag=1;
@@ -191,20 +359,22 @@ void print_cells(const Yosys::hashlib::dict<Yosys::RTLIL::IdString, Yosys::RTLIL
             if (i==5){
                 b=it3->second.as_wire()->name.index_;
                 cell.emplace(c,std::make_pair(a,b));
+                f=function(it1->second->type.index_,typeRTLIL, c);
                 typeFunc.emplace(c,f);
             }
             out << "    Connections: " << it3->first.index_ << "\n";
             out << "      name: " << it3->second.as_wire()->name.index_ << "\n";
+
         }
     }
 }
-void print_connections(const std::vector<std::pair<Yosys::RTLIL::SigSpec, Yosys::RTLIL::SigSpec> > &connections, std::ostream &out,eda::gate::model::GNet &net,std::map<int,GateSymbol> typeFunc,std::map<int, std::pair<int, int>> &cell,std::map<unsigned, Gate::Id> &inputs,std::map<unsigned, Gate::Id> &outputs){
+void print_connections(const std::vector<std::pair<Yosys::RTLIL::SigSpec, Yosys::RTLIL::SigSpec> > &connections, std::ostream &out,eda::gate::model::GNet &net,std::map<int,GateSymbol> typeFunc,std::map<int, std::pair<int, int>> &cell,std::map<unsigned, Gate::Id> &inputs,std::map<unsigned, Gate::Id> &outputs, std::map<int,std::string> typeRTLIL){
     out << "Connections count: " << connections.size() << "\n";
     for (auto it1 = connections.begin(); it1 != connections.end(); ++it1){
         out<<"    Wire " << it1->first.as_wire()->name.index_ << " connects with " << it1->second.as_wire()->name.index_ << "\n";
         if(inputs.find(it1->second.as_wire()->name.index_)==inputs.end()){
             root=it1->second.as_wire()->name.index_;
-            auto output=buildNet(root,net,typeFunc,cell,inputs);
+            auto output=buildNet(root, net, typeFunc, cell, inputs, typeRTLIL);
             outputs.find(it1->first.as_wire()->name.index_)->second=net.addOut(output);
             std::cout << net;
         }
@@ -269,13 +439,14 @@ void print_params(const std::pair<Yosys::RTLIL::IdString, Yosys::RTLIL::Module*>
     std::map<unsigned, Gate::Id> inputs;
     std::map<int, std::pair<int, int>> cell;
     std::map<int,GateSymbol> typeFunc;
+    std::map<int,std::string> typeRTLIL;
     print_modules(m.first.index_, out);
     out << "\n";
-    print_wires(m.second->wires_, out,net,inputs,outputs);
+    print_wires(m.second->wires_, out, net, inputs, outputs);
     out << "\n";
-    print_cells(m.second->cells_, out,net,typeFunc,cell);
+    print_cells(m.second->cells_, out, net, typeFunc, cell, typeRTLIL);
     out << "\n" ;
-    print_connections(m.second->connections_, out,net,typeFunc,cell,inputs,outputs);
+    print_connections(m.second->connections_, out, net, typeFunc, cell, inputs, outputs, typeRTLIL);
     out << "\n";
     print_memory(m.second->memories, out);
     out << "\n";
@@ -305,6 +476,5 @@ int main(int argc, char* argv[]){
         Yosys::run_frontend(argv[o], "liberty", &design, nullptr);
         print_parsed(design, out);
     }
-    std::cout << ID($_LATCH_).index_<< " "<< ID($_AND_).index_<<" "<<ID($_OR_).index_<<" "<<ID($_XOR_).index_<<"\n";
     Yosys::yosys_shutdown();
 }
