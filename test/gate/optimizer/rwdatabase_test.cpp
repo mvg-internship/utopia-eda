@@ -87,7 +87,6 @@ bool areEquivalent(RWDatabase::BoundGNet bgnet1, RWDatabase::BoundGNet bgnet2) {
   return bdd1 == bdd2;
 }
 
-
 bool basicTest() {
   RWDatabase rwdb;
   bool result = true;

@@ -73,7 +73,7 @@ BoundGNetList SQLiteRWDatabase::deserialize(const std::string &str) {
       ss >> key >> value;
       bGNet.bindings.insert(std::make_pair<InputId, Gate::Id>
                             (std::forward<InputId>(key),
-                             std::forward<Gate::Id>(value)));
+                            std::forward<Gate::Id>(value)));
       reversedBindings.insert(std::make_pair<Gate::Id, InputId>
                               (std::forward<Gate::Id>(value),
                               std::forward<InputId>(key)));
@@ -123,9 +123,11 @@ bool SQLiteRWDatabase::dbContainsRWTable() {
   assert(_isOpened);
   _selectResult.clear();
   std::string sql = "SELECT name FROM sqlite_master WHERE " \
-                    "type='table' AND name='RWDatabase';";
-  _rc = sqlite3_exec(_db, sql.c_str(), selectSQLCallback,
-                     (void*)(&_selectResult), &_zErrMsg);
+                    "type='table' AND name=?;";
+  _rc = sqlite3_bind_exec(_db, sql.c_str(), selectSQLCallback,
+                          (void*)(&_selectResult),
+                          SQLITE_BIND_TEXT(_dbTableName.c_str()),
+                          SQLITE_BIND_END);
   if (_rc != SQLITE_OK) {
     throw "Can't use db.";
   }
@@ -141,9 +143,9 @@ void SQLiteRWDatabase::linkDB(const std::string &path) {
   _isOpened = true;
 
   if (!dbContainsRWTable()) {
-    std::string sqlCreate = "CREATE TABLE RWDatabase (TruthTable BIGINT" \
-                            " PRIMARY KEY, BGNet TEXT)";
-    _rc = sqlite3_exec(_db, sqlCreate.c_str(), nullptr, 0, &_zErrMsg);
+    std::string sql = "CREATE TABLE " + _dbTableName + " (TruthTable BIGINT" \
+                      " PRIMARY KEY, BGNet TEXT)";
+    _rc = sqlite3_exec(_db, sql.c_str(), nullptr, 0, &_zErrMsg);
     if (_rc != SQLITE_OK) {
       std::cout << sqlite3_errmsg(_db) << '\n';
       throw "Can't create table.";
@@ -226,9 +228,9 @@ void SQLiteRWDatabase::insertIntoDB(const TruthTable &key,
   std::string sql = "INSERT INTO RWDatabase (TruthTable, BGNet) " \
                     "VALUES (?,?)";
   _rc = sqlite3_bind_exec(_db, sql.c_str(), nullptr, nullptr,
-                            SQLITE_BIND_INT64(key),
-                            SQLITE_BIND_TEXT(ser.c_str()),
-                            SQLITE_BIND_END);
+                          SQLITE_BIND_INT64(key),
+                          SQLITE_BIND_TEXT(ser.c_str()),
+                          SQLITE_BIND_END);
   if (_rc != SQLITE_OK) {
     std::cout << sqlite3_errmsg(_db) << '\n';
     throw "Can't insert.";

@@ -136,6 +136,12 @@ private:
     return 0;
   }
 
+  std::string _dbTableName = "RWDatabase";
+  std::string _dbKeyName = "TruthTable";
+  std::string _dbValueName = "BGNetList";
+  std::string _dbKeyType = "BIGINT";
+  std::string _dbValueType = "TEXT";
+
   bool _isLinked = false;
   bool _isOpened = false;
   std::string _pathDB;
