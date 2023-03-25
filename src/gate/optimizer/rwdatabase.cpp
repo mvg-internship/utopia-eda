@@ -143,8 +143,9 @@ void SQLiteRWDatabase::linkDB(const std::string &path) {
   _isOpened = true;
 
   if (!dbContainsRWTable()) {
-    std::string sql = "CREATE TABLE " + _dbTableName + " (TruthTable BIGINT" \
-                      " PRIMARY KEY, BGNet TEXT)";
+    std::string sql = "CREATE TABLE " + _dbTableName + " (" + _dbKeyName + " "
+                      + _dbKeyType + " PRIMARY KEY, " + _dbValueName + " " +
+                      _dbValueType + ")";
     _rc = sqlite3_exec(_db, sql.c_str(), nullptr, 0, &_zErrMsg);
     if (_rc != SQLITE_OK) {
       std::cout << sqlite3_errmsg(_db) << '\n';
@@ -181,8 +182,8 @@ bool SQLiteRWDatabase::contains(const TruthTable &key) {
   }
   if (_isOpened) {
     _selectResult.clear();
-    std::string sql = "SELECT * FROM RWDatabase " \
-                      "WHERE TruthTable=?";
+    std::string sql = "SELECT * FROM " + _dbTableName + " " \
+                      "WHERE " + _dbKeyName + "=?";
     _rc = sqlite3_bind_exec(_db, sql.c_str(), selectSQLCallback,
                             (void*)(&_selectResult),
                             SQLITE_BIND_INT64(key),
@@ -202,7 +203,8 @@ BoundGNetList SQLiteRWDatabase::get(const TruthTable &key) {
   }
   if (_isOpened) {
     _selectResult.clear();
-    std::string sql = "SELECT * FROM RWDatabase WHERE TruthTable=?";
+    std::string sql = "SELECT * FROM " + _dbTableName + " WHERE " +
+                      _dbKeyName + "=?";
     _rc = sqlite3_bind_exec(_db, sql.c_str(), selectSQLCallback,
                             (void*)(&_selectResult),
                             SQLITE_BIND_INT64(key),
@@ -225,7 +227,8 @@ void SQLiteRWDatabase::insertIntoDB(const TruthTable &key,
   assert(_isOpened);
   std::string ser = serialize(value);
 
-  std::string sql = "INSERT INTO RWDatabase (TruthTable, BGNet) " \
+  std::string sql = "INSERT INTO " + _dbTableName + " (" +
+                    _dbKeyName + ", " + _dbValueName + ") " +
                     "VALUES (?,?)";
   _rc = sqlite3_bind_exec(_db, sql.c_str(), nullptr, nullptr,
                           SQLITE_BIND_INT64(key),
@@ -241,8 +244,8 @@ void SQLiteRWDatabase::updateInDB(const TruthTable &key,
                                   const BoundGNetList &value) {
   assert(_isOpened);
   std::string ser = serialize(value);
-  std::string sql = "UPDATE RWDatabase SET BGNet=? WHERE " \
-                    "TruthTable=?";
+  std::string sql = "UPDATE " + _dbTableName + " SET " + _dbValueName +
+                    "=? WHERE " + _dbKeyName + "=?";
   _rc = sqlite3_bind_exec(_db, sql.c_str(), nullptr, nullptr,
                           SQLITE_BIND_TEXT(ser.c_str()),
                           SQLITE_BIND_INT64(key),
@@ -255,7 +258,7 @@ void SQLiteRWDatabase::updateInDB(const TruthTable &key,
 
 void SQLiteRWDatabase::deleteFromDB(const TruthTable &key) {
   assert(_isOpened);
-  std::string sql = "DELETE FROM RWDatabase WHERE TruthTable=?";
+  std::string sql = "DELETE FROM " + _dbTableName + " WHERE " + _dbKeyName + "=?";
   _rc = sqlite3_bind_exec(_db, sql.c_str(), nullptr, nullptr,
                           SQLITE_BIND_INT64(key),
                           SQLITE_BIND_END);
