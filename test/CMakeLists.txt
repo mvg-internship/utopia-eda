@@ -23,6 +23,7 @@ enable_testing()
 
 add_executable(utest
   gate/debugger/checker_test.cpp
+  gate/debugger/miter_test.cpp
   gate/model/gnet_test.cpp
   gate/simulator/simulator_test.cpp
   gate/transformer/bdd_test.cpp
