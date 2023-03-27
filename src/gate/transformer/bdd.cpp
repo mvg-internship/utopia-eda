@@ -18,7 +18,7 @@
 
 namespace eda::gate::transformer {
 
-BDD GNetBDDConverter::applyGateFunc(const GateSymbol::Value func, 
+BDD GNetBDDConverter::applyGateFunc(const GateSymbol::Value func,
                                     const BDDList &inputList,
                                     const Cudd &manager) {
   BDD result;
@@ -33,45 +33,53 @@ BDD GNetBDDConverter::applyGateFunc(const GateSymbol::Value func,
     assert(inputList.size() == 1);
     result = inputList[0];
     break;
+  case GateSymbol::IN:
+    assert(inputList.size() == 1);
+    result = inputList[0];
+    break;
+  case GateSymbol::OUT:
+    assert(inputList.size() == 1);
+    result = inputList[0];
+    break;
   case GateSymbol::NOT:
     assert(inputList.size() == 1);
     result = !inputList[0];
     break;
   case GateSymbol::AND:
     result = inputList[0];
-    for (size_t i = 1; i < inputList.size(); i++) { 
+    for (size_t i = 1; i < inputList.size(); i++) {
       result = result & inputList[i];
     }
     break;
   case GateSymbol::OR:
     result = inputList[0];
-    for (size_t i = 1; i < inputList.size(); i++) { 
+    for (size_t i = 1; i < inputList.size(); i++) {
       result = result | inputList[i];
     }
     break;
   case GateSymbol::XOR:
     result = inputList[0];
-    for (size_t i = 1; i < inputList.size(); i++) { 
+    for (size_t i = 1; i < inputList.size(); i++) {
       result = result ^ inputList[i];
     }
     break;
   case GateSymbol::NAND:
     result = inputList[0];
-    for (size_t i = 1; i < inputList.size(); i++) { 
+    for (size_t i = 1; i < inputList.size(); i++) {
       result = result & inputList[i];
     }
     result = !result;
     break;
   case GateSymbol::NOR:
     result = inputList[0];
-    for (size_t i = 1; i < inputList.size(); i++) { 
+    for (size_t i = 1; i < inputList.size(); i++) {
       result = result | inputList[i];
     }
     result = !result;
     break;
   case GateSymbol::XNOR:
     result = inputList[0];
-    for (size_t i = 1; i < inputList.size(); i++) { 
+    for (size_t i = 1; i < inputList.size(); i++) {
       result = result ^ inputList[i];
     }
     result = !result;
@@ -84,9 +92,9 @@ BDD GNetBDDConverter::applyGateFunc(const GateSymbol::Value func,
 }
 
 void GNetBDDConverter::convertList(const GNet &net,
-                                   const GateList &gateList, 
-                                   BDDList &outputBDDList, 
-                                   GateBDDMap &varMap, 
+                                   const GateList &gateList,
+                                   BDDList &outputBDDList,
+                                   GateBDDMap &varMap,
                                    const Cudd &manager) {
   BDDList result = BDDList(gateList.size());
   assert(net.isSorted());
@@ -98,7 +106,7 @@ void GNetBDDConverter::convertList(const GNet &net,
 
   GateBDDMap gateMap;
   for (auto *gate : net.gates()) {
-    Gate::Id gateId = gate->id(); 
+    Gate::Id gateId = gate->id();
 
     BDD resultBDD;
     if (gate->isSource()) {
@@ -123,9 +131,9 @@ void GNetBDDConverter::convertList(const GNet &net,
   outputBDDList = result;
 }
 
-BDD GNetBDDConverter::convert(const GNet &net, 
-                              const Gate::Id gateId, 
-                              GateBDDMap &varMap, 
+BDD GNetBDDConverter::convert(const GNet &net,
+                              const Gate::Id gateId,
+                              GateBDDMap &varMap,
                               const Cudd &manager) {
   BDDList resultList;
   convertList(net, {gateId}, resultList, varMap, manager);
