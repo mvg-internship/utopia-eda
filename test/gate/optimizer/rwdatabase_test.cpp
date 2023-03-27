@@ -11,7 +11,6 @@
 
 #include "gtest/gtest.h"
 
-using SQLiteRWDatabase = eda::gate::optimizer::SQLiteRWDatabase;
 using BDDList = eda::gate::transformer::GNetBDDConverter::BDDList;
 using Gate = eda::gate::model::Gate;
 using GateBDDMap = eda::gate::transformer::GNetBDDConverter::GateBDDMap;
@@ -21,6 +20,7 @@ using GateUintMap = eda::gate::transformer::GNetBDDConverter::GateUintMap;
 using GNet = eda::gate::model::GNet;
 using GNetBDDConverter = eda::gate::transformer::GNetBDDConverter;
 using RWDatabase = eda::gate::optimizer::RWDatabase;
+using SQLiteRWDatabase = eda::gate::optimizer::SQLiteRWDatabase;
 
 static std::unique_ptr<GNet> makeAnd2(Gate::SignalList
                                       &inputs,

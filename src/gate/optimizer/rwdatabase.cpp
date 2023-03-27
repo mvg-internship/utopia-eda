@@ -13,7 +13,6 @@
 #include <string>
 #include <vector>
 
-using SQLiteRWDatabase = eda::gate::optimizer::SQLiteRWDatabase;
 using BoundGNet = eda::gate::optimizer::RWDatabase::BoundGNet;
 using BoundGNetList = eda::gate::optimizer::RWDatabase::BoundGNetList;
 using Gate = eda::gate::model::Gate;
@@ -21,6 +20,7 @@ using GateList = std::vector<Gate::Id>;
 using GateSymbol = eda::gate::model::GateSymbol;
 using GNet = eda::gate::model::GNet;
 using RWDatabase = eda::gate::optimizer::RWDatabase;
+using SQLiteRWDatabase = eda::gate::optimizer::SQLiteRWDatabase;
 
 namespace eda::gate::optimizer {
 
@@ -73,10 +73,10 @@ BoundGNetList SQLiteRWDatabase::deserialize(const std::string &str) {
       ss >> key >> value;
       bGNet.bindings.insert(std::make_pair<InputId, Gate::Id>
                             (std::forward<InputId>(key),
-                            std::forward<Gate::Id>(value)));
+                             std::forward<Gate::Id>(value)));
       reversedBindings.insert(std::make_pair<Gate::Id, InputId>
                               (std::forward<Gate::Id>(value),
-                              std::forward<InputId>(key)));
+                               std::forward<InputId>(key)));
     }
 
     size_t gateCount;
