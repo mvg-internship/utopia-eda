@@ -27,7 +27,7 @@ namespace eda::gate::optimizer {
 std::string SQLiteRWDatabase::serialize(const BoundGNetList &list) {
   std::stringstream ss;
   ss << list.size() << ' ';
-  for (auto &bGNet : list) {
+  for (const auto &bGNet : list) {
     auto bindings = bGNet.bindings;
     auto net = bGNet.net;
     if (!net->isSorted()) {
