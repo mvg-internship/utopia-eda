@@ -149,9 +149,9 @@ kind_of_error parse_expr(token_t &tok)
   ASSERT_NEXT_TOKEN(tok, STRING, FAILURE_IN_EXPR);
   ASSERT_NEXT_TOKEN(tok, LBRACE, FAILURE_IN_EXPR);
   line += 1;
-
+  DEBUGTOKEN(tok, "Parse expr begin");
   rc = parse_arg(tok);
-  DEBUGTOKEN(tok, "Parse expr");
+  DEBUGTOKEN(tok, "Parse expr end");
   return rc;
 }
 
@@ -216,7 +216,31 @@ kind_of_error parse_arg(token_t &tok)
     tok = get_next_token();
     DEBUGTOKEN(tok, "ARG  loop");
 
-    switch (tok)
+    if(tok == LBRACKET){
+      ASSERT_NEXT_TOKEN(tok, NUM, FAILURE_IN_ARG);
+      store.push_back(tok);
+      ASSERT_NEXT_TOKEN(tok, RBRACKET, FAILURE_IN_ARG);
+      tok = get_next_token();
+      switch (tok)
+      {
+      case COMMA:
+        
+        break;
+      case RBRACE:
+        
+        break;
+
+      default:
+      rc = FAILURE_IN_ARG;
+        break;
+      }
+      //ASSERT_NEXT_TOKEN(tok, COMMA, FAILURE_IN_ARG);
+      
+    }else if(tok != COMMA && tok != RBRACE){
+      rc = FAILURE_IN_ARG; 
+    }
+
+   /* switch (tok)
     {
     case LBRACKET:
     ASSERT_NEXT_TOKEN(tok, NUM, FAILURE_IN_ARG);
@@ -231,8 +255,9 @@ kind_of_error parse_arg(token_t &tok)
       rc = FAILURE_IN_ARG;
       break;
     }
+    */
   }
-  ASSERT_NEXT_TOKEN(tok, SEMICOLON, FAILURE_IN_ARG);
+  ASSERT_NEXT_TOKEN(tok, SEMICOLON, FAILURE_IN_MODULE_INCAPTULATION);
   tok = get_next_token();
   return rc;
 }
