@@ -20,12 +20,16 @@ static std::vector<token_t> store;
 
 token_t get_next_token();
 kind_of_error parse_gatelevel_verilog();
-kind_of_error parse_module();
+kind_of_error parse_module(token_t&);
 kind_of_error parse_decl(token_t&);
 kind_of_error parse_expr(token_t&);
+kind_of_error parse_assign_parts(token_t&);
 kind_of_error parse_assign(token_t&);
 kind_of_error parse_arg(token_t&);
 kind_of_error parse_name_list(token_t&, token_t);
+
+#define DEBUGTOKEN(tok, msg)\
+printf("%s:%d: %s: token '%s' (%d)\n", __FILE__, __LINE__, (msg), yytext, (tok)) \
 
 #define ASSERT_NEXT_TOKEN(var, tok, err) \
   do                                     \
@@ -33,8 +37,8 @@ kind_of_error parse_name_list(token_t&, token_t);
     var = get_next_token();              \
     if ((var) != (tok))                  \
     {                                     \
-      std::cout<<__FILE__ <<__LINE__ <<yytext <<"tok =" << tok << std::endl;                       \
-      std::cout<<"Error = " << (err) << std::endl;   \
+      std::cout<<__FILE__ <<__LINE__ << yytext <<" tok = " << tok << std::endl;                       \
+      std::cout<<"Error (in Assert) = " << (err) << std::endl;   \
       return (err);                      \
     }                                    \
   } while (0)
@@ -54,14 +58,20 @@ kind_of_error parse_gatelevel_verilog()
 {
   token_t tok;
   kind_of_error rc = SUCCESS;
-  ASSERT_NEXT_TOKEN(tok, MODULE, FAILURE_IN_GATE_LEVEL_VERILOG);
-  rc = parse_module();
+  while (tok != EOF_TOKEN)
+  {
+   DEBUGTOKEN(tok, "Verilog loop");
+    ASSERT_NEXT_TOKEN(tok, MODULE, FAILURE_IN_GATE_LEVEL_VERILOG);
+    rc = parse_module(tok);
+  }
+  
+  
   std::cout << "Error! "<< "type = "<< rc << std::endl;
+  return rc;
 }
 
-kind_of_error parse_module()
+kind_of_error parse_module(token_t &tok)
 {
-  token_t tok;
   kind_of_error rc = SUCCESS;
 
   ASSERT_NEXT_TOKEN(tok, STRING, FAILURE_IN_MODULE_NAME);
@@ -71,10 +81,10 @@ kind_of_error parse_module()
   line += 1;
   ASSERT_NEXT_TOKEN(tok, SEMICOLON, FAILURE_IN_MODULE_NAME);
   tok = get_next_token();
-          //std::cout<<__FILE__ <<__LINE__ <<yytext <<"tok =" << tok << std::endl;
+          //std::cout<<__FILE__ <<__LINE__ <<yytext <<" tok = " << tok << std::endl;
   while (rc == SUCCESS && tok != ENDMODULE)
   {
-    std::cout<< "ttt"<< std::endl;
+    DEBUGTOKEN(tok, "Module loop");
           //std::cout<<__FILE__ <<__LINE__ <<yytext <<"tok =" << tok << std::endl;
     switch (tok)
     {
@@ -88,12 +98,15 @@ kind_of_error parse_module()
       break;
     case STRING:
       rc = parse_expr(tok);
+      DEBUGTOKEN(tok, "After expr");
+      std::cout<<rc;
       break;   
     default:
       rc = FAILURE_IN_MODULE_INCAPTULATION;
       break;
     }
   }
+
   return rc;
 }
 
@@ -134,11 +147,40 @@ kind_of_error parse_expr(token_t &tok)
   kind_of_error rc = SUCCESS;
 
   ASSERT_NEXT_TOKEN(tok, STRING, FAILURE_IN_EXPR);
-  ASSERT_NEXT_TOKEN(tok, STRING, FAILURE_IN_EXPR);
   ASSERT_NEXT_TOKEN(tok, LBRACE, FAILURE_IN_EXPR);
   line += 1;
 
   rc = parse_arg(tok);
+  DEBUGTOKEN(tok, "Parse expr");
+  return rc;
+}
+
+kind_of_error parse_assign_parts(token_t &tok)
+{
+kind_of_error rc = SUCCESS;
+ASSERT_NEXT_TOKEN(tok, STRING, FAILURE_IN_ASSIGN);
+tok = get_next_token();
+switch (tok)
+    {
+    case LBRACKET:
+    std::cout<<"aa"<< std::endl;
+      ASSERT_NEXT_TOKEN(tok, NUM, FAILURE_IN_ASSIGN);
+      ASSERT_NEXT_TOKEN(tok, COLON, FAILURE_IN_ASSIGN);
+      ASSERT_NEXT_TOKEN(tok, NUM, FAILURE_IN_ASSIGN);
+      ASSERT_NEXT_TOKEN(tok, RBRACKET, FAILURE_IN_ASSIGN);
+      ASSERT_NEXT_TOKEN(tok, EQUALS, FAILURE_IN_ASSIGN);
+      ASSERT_NEXT_TOKEN(tok, LFIGURNAYA, FAILURE_IN_ASSIGN);
+      ASSERT_NEXT_TOKEN(tok, STRING, FAILURE_IN_ASSIGN);
+      rc = parse_name_list(tok, RFIGURNAYA);
+      std::cout<<__FILE__ <<__LINE__ <<yytext <<" end of lbracket case " <<"tok =" << tok << std::endl;
+      break;
+    case EQUALS:
+      ASSERT_NEXT_TOKEN(tok, STRING, FAILURE_IN_ASSIGN);     
+      std::cout<<__FILE__ <<__LINE__ <<yytext <<"end of equals case" <<"tok =" << tok << std::endl;
+      break;
+    default:
+      break;
+    }
 
   return rc;
 }
@@ -147,107 +189,51 @@ kind_of_error parse_assign(token_t &tok)
 {
   std::cout<< "fff"<< std::endl;
   kind_of_error rc = SUCCESS;
-  ASSERT_NEXT_TOKEN(tok, STRING, FAILURE_IN_ASSIGN);
-  tok = get_next_token();
+  
+  
   while (tok != SEMICOLON)
   {
-    std::cout<<__FILE__ <<__LINE__ <<yytext <<"end of assign" <<"tok =" << tok << std::endl;
-    switch (tok)
-    {
-    case LBRACKET:
-      ASSERT_NEXT_TOKEN(tok, NUM, FAILURE_IN_ASSIGN);
-      ASSERT_NEXT_TOKEN(tok, COLON, FAILURE_IN_ASSIGN);
-      ASSERT_NEXT_TOKEN(tok, NUM, FAILURE_IN_ASSIGN);
-      ASSERT_NEXT_TOKEN(tok, RBRACKET, FAILURE_IN_ASSIGN);
-      ASSERT_NEXT_TOKEN(tok, EQUALS, FAILURE_IN_ASSIGN);
-      ASSERT_NEXT_TOKEN(tok, LFIGURNAYA, FAILURE_IN_ASSIGN);
-      ASSERT_NEXT_TOKEN(tok, STRING, FAILURE_IN_ASSIGN);
-      rc = parse_name_list(tok, LFIGURNAYA);
-      if ((tok = get_next_token()) != COMMA){
-        if (tok != SEMICOLON){
-          rc = FAILURE_IN_ASSIGN;
-          break;
-        }else{
-          std::cout<<__FILE__ <<__LINE__ <<yytext <<"end of assign" <<"tok =" << tok << std::endl;
-          line += 1;
-          break;
-        }
-      }
-      line += 1;
-      std::cout<<__FILE__ <<__LINE__ <<yytext <<"end of lbracket case" <<"tok =" << tok << std::endl;
-      ASSERT_NEXT_TOKEN(tok, STRING, FAILURE_IN_ASSIGN);
-      tok = get_next_token();
-      break;
-    case EQUALS:
-      ASSERT_NEXT_TOKEN(tok, STRING, FAILURE_IN_ASSIGN);
-      if ((tok = get_next_token()) != COMMA){
-        if (tok != SEMICOLON){
-          rc = FAILURE_IN_ASSIGN;
-          break;
-        }else{
-          std::cout<<__FILE__ <<__LINE__ <<yytext <<"end of assign" <<"tok =" << tok << std::endl;
-          break;
-        }
-      }
-      line += 1;
-      std::cout<<__FILE__ <<__LINE__ <<yytext <<"end of equals case" <<"tok =" << tok << std::endl;
-      ASSERT_NEXT_TOKEN(tok, STRING, FAILURE_IN_ASSIGN);
-      tok = get_next_token();
-      break;
-  
-    default:
-      break;
-    }
+    rc = parse_assign_parts(tok);
+    tok = get_next_token();  
+    if (tok != COMMA && tok != SEMICOLON){
+        rc = FAILURE_IN_ASSIGN;
+    }   
+    line += 1;
   }
-  
   tok = get_next_token();
-  return rc;
+return rc;
 }
 
 kind_of_error parse_arg(token_t &tok)
 {
   kind_of_error rc = SUCCESS;
-
+  
   while (tok != RBRACE && rc == SUCCESS)
   {
-    if (tok != STRING)
-    {
-      rc = FAILURE_IN_ARG;
-      break;
-    }
-    else
-    {
+    ASSERT_NEXT_TOKEN(tok, STRING, FAILURE_IN_ARG);
       store.push_back(tok);
-    }
 
     tok = get_next_token();
+    DEBUGTOKEN(tok, "ARG  loop");
 
     switch (tok)
     {
     case LBRACKET:
-      if ((tok = get_next_token()) != NUM)
-      {
-        rc = FAILURE_IN_ARG;
-        break;
-      }
-      else
-      {
-        store.push_back(tok);
-      }
-
-      if ((tok = get_next_token()) != RBRACKET)
-        rc = FAILURE_IN_ARG;
+    ASSERT_NEXT_TOKEN(tok, NUM, FAILURE_IN_ARG);
+      store.push_back(tok);
+    ASSERT_NEXT_TOKEN(tok, RBRACKET, FAILURE_IN_ARG);
       break;
     case COMMA:
-      tok = get_next_token();
+      break;
+    case RBRACE:
       break;
     default:
       rc = FAILURE_IN_ARG;
       break;
     }
   }
-  if ((tok = get_next_token()) != SEMICOLON)
-    rc = FAILURE_IN_ARG;
+  ASSERT_NEXT_TOKEN(tok, SEMICOLON, FAILURE_IN_ARG);
+  tok = get_next_token();
   return rc;
 }
 
