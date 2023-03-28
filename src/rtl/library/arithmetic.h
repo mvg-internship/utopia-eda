@@ -20,9 +20,44 @@
 
 using GNet = eda::gate::model::GNet;
 using GateId = GNet::GateId;
+using GateIdList = eda::rtl::library::FLibrary::GateIdList;
 using FuncSymbol = eda::rtl::model::FuncSymbol;
 
 namespace eda::rtl::library {
+
+// Complete GateIdList with zeros up to the passed size:
+// 111 -> 000111
+void fillingWithZeros(const size_t size,
+                      GateIdList &in,
+                      GNet &net);
+
+// Make inputs equal to each other,
+// but no longer than outSize
+inline void makeInputsEqual(const size_t outSize,
+                            GateIdList &x,
+                            GateIdList &y,
+                            GNet &net);
+
+// Form GateIdList of outputs for the operation
+// applied to pairs of input identifiers
+GateIdList formGateIdList(const size_t size,
+                          GateSymbol func,
+                          const GateIdList &x,
+                          const GateIdList &y,
+                          GNet &net);
+
+// Divide one GateIdList into two GateIdLists:
+// 111000 -> 11 and 1000
+void getPartsOfGateIdList(const GateIdList &x,
+                          GateIdList &x1,
+                          GateIdList &x0, 
+                          size_t firstPartSize);
+
+// Make left shift for GateIdList:
+// 111 -> 111000
+GateIdList leftShiftForGateIdList(const GateIdList &x, 
+                                  size_t shift, 
+                                  GNet &net);
 
 /**
  * \brief Library for arithmetic operations.
@@ -74,10 +109,24 @@ private:
                       const In &in, 
                       GNet &net);
 
-  static Out synthAdder(size_t outSize, 
-                        const In &in, 
-                        bool plusOne, 
-                        GNet &net);
+  static Out synthLadnerFisherAdder(size_t outSize, 
+                                    const In &in, 
+                                    bool plusOne, 
+                                    GNet &net);
+
+  static Out synthKaratsubaMultiplier(size_t outSize,
+                                      const In &in,
+                                      size_t digit,
+                                      GNet &net);
+
+  static Out synthColumnMultiplier(size_t outSize,
+                                   const In &in,
+                                   GNet &net);
+
+  static Out synthMultiplierByOneDigit(size_t outSize,
+                                       const GateIdList &x,
+                                       const GateId &y,
+                                       GNet &net);
 
   FLibrary &supportLibrary;
 };

@@ -10,9 +10,9 @@
 #include "rtl/library/arithmetic.h"
 #include "rtl/model/fsymbol.h"
 
+#include <algorithm>
 #include <cassert>
 #include <cmath>
-#include <iostream>
 
 using GNet = eda::gate::model::GNet;
 using GateId = GNet::GateId;
@@ -22,28 +22,8 @@ using FuncSymbol = eda::rtl::model::FuncSymbol;
 
 namespace eda::rtl::library {
 
-// Complete GateIdList with zeros up to the passed size
-void fillingWithZeros(const size_t size,
-                      FLibrary::GateIdList &in,
-                      GNet &net);
-
-// Make inputs equal to each other,
-// but no longer than outSize
-inline void makeInputsEqual(const size_t outSize,
-                            FLibrary::GateIdList &x,
-                            FLibrary::GateIdList &y,
-                            GNet &net);
-
-// Form GateIdList of outputs for the operation
-// applied to pairs of input identifiers
-GateIdList formGateIdList(const size_t size,
-                          GateSymbol func,
-                          const GateIdList &x,
-                          const GateIdList &y,
-                          GNet &net);
-
-//TODO In the future, ArithmeticLibrary will be responsible only
-//for arithmetic operations
+// TODO: In the future, ArithmeticLibrary will be responsible only
+// TODO: for arithmetic operations
 bool ArithmeticLibrary::supports(FuncSymbol func) const {
   return true;
 }
@@ -69,6 +49,8 @@ FLibrary::Out ArithmeticLibrary::synth(size_t outSize,
     return synthAdd(outSize, in, net);
   case FuncSymbol::SUB:
     return synthSub(outSize, in, net);
+  case FuncSymbol::MUL:
+    return synthKaratsubaMultiplier(outSize, in, 3, net);
   default:
     return supportLibrary.synth(outSize, func, in, net);
   }
@@ -94,7 +76,7 @@ FLibrary::Out ArithmeticLibrary::synthAdd(size_t outSize,
 
   makeInputsEqual(outSize, x, y, net);
 
-  return synthAdder(outSize, {x, y}, false, net);
+  return synthLadnerFisherAdder(outSize, {x, y}, false, net);
 }
 
 FLibrary::Out ArithmeticLibrary::synthSub(size_t outSize,
@@ -110,10 +92,10 @@ FLibrary::Out ArithmeticLibrary::synthSub(size_t outSize,
     temp[i] = net.addGate(GateSymbol::NOT, y[i]);
   }
 
-  return synthAdder(outSize, {x, temp}, true, net);
+  return synthLadnerFisherAdder(outSize, {x, temp}, true, net);
 }
 
-//                            LADNER-FISHER'S ADDER
+//                            LADNER-FISHER ADDER
 //
 //  G - gates for generated carry
 //  P - gates for propagated carry
@@ -175,10 +157,10 @@ FLibrary::Out ArithmeticLibrary::synthSub(size_t outSize,
 //       cell ( i ):
 //         S[i] =  P[i] xor G[i,-1]
 //
-FLibrary::Out ArithmeticLibrary::synthAdder(size_t outSize,
-                                            const In &in,
-                                            bool plusOne,
-                                            GNet &net) {
+FLibrary::Out ArithmeticLibrary::synthLadnerFisherAdder(size_t outSize,
+                                                        const In &in,
+                                                        bool plusOne,
+                                                        GNet &net) {
   const auto &x = in[0];
   const auto &y = in[1];
 
@@ -292,6 +274,109 @@ FLibrary::Out ArithmeticLibrary::synthAdder(size_t outSize,
 
 }
 
+FLibrary::Out ArithmeticLibrary::synthKaratsubaMultiplier(size_t outSize,
+                                                          const In &in,
+                                                          size_t depth,
+                                                          GNet &net){
+  const auto &x = in[0];
+  const auto &y = in[1];
+
+  // Use other metod if size of one from inputs is less then passed depth
+  if (x.size() <= depth || y.size() <= depth) {
+    return synthColumnMultiplier(outSize, {x, y}, net);
+  } else {
+    const size_t firstPartSize = std::min(x.size(), y.size())/2;
+
+    // Getting x1, x0 and y1, y0
+    GateIdList x1, x0;
+    getPartsOfGateIdList(x, x1, x0, firstPartSize);
+    GateIdList y1, y0;
+    getPartsOfGateIdList(y, y1, y0, firstPartSize);
+
+    In terms;
+    // First term:
+    // x0 * y0
+    size_t size = std::min(x0.size() + y0.size(), outSize);
+    terms.push_back(synthKaratsubaMultiplier(size, {x0, y0}, 3, net));
+ 
+    // Second term:
+    // [(x1 * x0) * (y1 + y0) - (x1 * y1) - (x0 * y0)] * (2^firstPartSize)
+    size_t significant = outSize - firstPartSize;
+    if (significant) {
+      // (x1 + x0) * (y1 + y0)
+      size = std::min(x1.size() + 1, significant);
+      auto sumPartsX = synthAdd(size, {x1, x0}, net);
+      size = std::min(y1.size() + 1, significant);
+      auto sumPartsY = synthAdd(size, {y1, y0}, net);
+      size = std::min(sumPartsX.size() + sumPartsY.size(), significant);
+      auto productOfSums = synthKaratsubaMultiplier(size, {sumPartsX, sumPartsY}, 3, net);
+      
+      // x1 * y1
+      size = std::min(x1.size() + y1.size(), significant);
+      auto productOfSecondParts = synthKaratsubaMultiplier(size, {x1, y1}, 3, net);
+
+      // [(x1 + x0) * (y1 + y0) - (x1 * y1) - (x0 * y0)] * (2^firstPartSize)
+      auto temp = synthSub(productOfSums.size(), {productOfSums, productOfSecondParts}, net);
+      temp = synthSub(productOfSums.size(), {temp, terms[0]}, net);
+
+      terms.push_back(leftShiftForGateIdList(temp, firstPartSize, net));
+
+      // Third term:
+      // (x1 * y1)*(2^(2*firstPartSize))
+      // (x1 * y1)
+      significant = outSize - 2*firstPartSize;
+      if (significant) {
+        terms.push_back(leftShiftForGateIdList(productOfSecondParts, 2*firstPartSize, net));
+      }
+    }
+
+    // Form result:
+    // (x0 * y0) + [(x1 + x0) * (y1 + y0) - (x1 * y1) - (x0 * y0)]*(2^firstPartSize) + [x1 * y1]*(2^(2*firstPartSize))
+    Out out = terms[0];
+    for(size_t i = 1; i < terms.size(); i++) {
+      size_t size = std::min(terms[i].size() + 1, outSize);
+      out = synthAdd(size, {out, terms[i]}, net);
+    }
+ 
+    fillingWithZeros(outSize, {out}, net);
+
+    return out;
+  }
+}
+
+FLibrary::Out ArithmeticLibrary::synthColumnMultiplier(size_t outSize,
+                                                       const In &in,
+                                                       GNet &net) {
+  const auto &x = in[0];
+  const auto &y = in[1];
+
+  size_t min1 = std::min(y.size(), outSize);
+  size_t min2 = std::min(x.size(), outSize);
+
+  auto out = synthMultiplierByOneDigit(min2, x, y[0], net);
+  for (size_t i = 1; i < min1; i++) {
+    min2 = std::min((x.size() + i), outSize);
+    auto temp1 = synthMultiplierByOneDigit(min2 - i, x, y[i], net);
+    GateIdList temp2 = leftShiftForGateIdList(temp1, i, net);
+    size_t min3 = std::min((temp2.size() + 1), outSize);
+    out = synthAdd(min3, {temp2, out}, net);
+  }
+  fillingWithZeros(outSize, {out}, net);
+  return out;
+}
+
+FLibrary::Out ArithmeticLibrary::synthMultiplierByOneDigit(size_t outSize,
+                                                           const GateIdList &x,
+                                                           const GateId &y,
+                                                           GNet &net) {
+  Out out;
+  for (size_t i = 0; i < outSize && i < x.size(); i++) {
+    out.push_back(net.addGate(GateSymbol::AND, x[i], y));
+  }
+  fillingWithZeros(outSize, {out}, net);
+  return out;
+}
+
 void fillingWithZeros(const size_t size,
                       FLibrary::GateIdList &in,
                       GNet &net) {
@@ -325,6 +410,33 @@ GateIdList formGateIdList(const size_t size,
   GateIdList list(size);
   for (size_t i = 0; i < size; i++) {
     list[i] = net.addGate(func, x[i], y[i]);
+  }
+  return list;
+}
+
+void getPartsOfGateIdList(const GateIdList &x,
+                          GateIdList &x1,
+                          GateIdList &x0, 
+                          size_t firstPartSize) {
+  size_t i{0};
+  for(i = 0; i < firstPartSize; i++) {
+    x0.push_back(x[i]);
+  }
+  for(;i < x.size(); i++) {
+    x1.push_back(x[i]);
+  }
+}
+
+GateIdList leftShiftForGateIdList(const GateIdList &x, 
+                                  size_t shift, 
+                                  GNet &net) {
+  GateIdList list(x.size() + shift);
+  size_t i;
+  for (i = 0; i < shift; i++) {
+    list[i] = net.addZero();
+  }
+  for (; i < list.size(); i++) {
+    list[i] = x[i - shift];
   }
   return list;
 }

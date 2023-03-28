@@ -42,33 +42,25 @@ void addLinks(const GNet::GateIdList &ids,
 }
 
 // Generate number for BV and convert it to uint64_t
-// inputReg - required number register
-// maxReg - max register for significant figures
-// (it is necessary to not overflow output register)
-uint64_t generateInput(const size_t inputReg,
-                       const size_t maxReg,
+uint64_t generateInput(const size_t inputDigit,
                        BV &input) {
   const size_t begin{input.size()};
   uint64_t number{0};
-  size_t i{0};
-  for (i = 0; (i < inputReg) && (i < maxReg); i++) {
-    input.push_back(rand() % 2);
+  for (size_t i = 0; i < inputDigit; i++) {
+    input.push_back(1/*rand() % 2*/);
     number += input[begin + i] * (1ull << i);
-  }
-  while (i < inputReg) { 
-    input.push_back(0);
-    i++;
   }
   return number;
 }
 
-// Convert from BV to uint64_t
-uint64_t convertToInteger(const BV &vector) {
-  uint64_t number{0};
-  for (size_t i = 0; i < vector.size(); i++) {
-    number += vector[i] * (1ull << i);
-  }
-  return number;
+// Convert from integer to BV
+BV convertToBV(uint64_t number) {
+  BV vector;
+  do {
+    vector.push_back(number % 2);
+    number = number / 2;
+  } while(number != 0);
+  return vector;
 }
 
 bool arithmeticTest(FuncSymbol func,
@@ -83,7 +75,6 @@ bool arithmeticTest(FuncSymbol func,
   FLibrary &library = ArithmeticLibrary::get();
   GNet::GateIdList outputIds = library.synth(outSize, func, inputIds, net);
   net.sortTopologically();
-
   GNet::LinkList inputLinks;
   addLinks(xIds, inputLinks);
   addLinks(yIds, inputLinks);
@@ -96,37 +87,38 @@ bool arithmeticTest(FuncSymbol func,
   BV in;
   uint64_t first{0};
   uint64_t second{0};
-  switch (func) {
-  case FuncSymbol::ADD:
-    first = generateInput(xSize, outSize - 1, in);
-    second = generateInput(ySize, outSize - 1, in); 
-    break;
-  case FuncSymbol::SUB:
-    do {
-      first = generateInput(xSize, outSize, in);
-      second = generateInput(ySize, outSize, in);
-      if (second > first) {
-        in.resize(0);
-      }
-    } while (in.size() == 0);
-    break; 
-  default:
-    assert(false);
-  }
-  BV out(outSize);
+  do {
+    first = generateInput(xSize, in);
+    second = generateInput(ySize, in);
+    if ((second > first) && (func == FuncSymbol::SUB)) {
+      in.resize(0);
+    }
+  } while (in.size() == 0);
 
+  BV out(outSize);
   compiled.simulate(out, in);
 
-  uint64_t result{convertToInteger(out)};
+  BV result; 
   switch (func) {
   case FuncSymbol::ADD:
-    return(result == first + second);
+    result = convertToBV(first + second);
+    break;
   case FuncSymbol::SUB:
-    return(result == first - second);
+    result = convertToBV(first - second);
+    break;
+  case FuncSymbol::MUL:
+    result = convertToBV(first * second);
+    break;
   default:
     assert(false);
   return {};
   }
+  bool flag = true;
+  size_t checkSize = out.size() <= result.size() ? out.size() : result.size();
+  for(size_t i = 0; i < checkSize; i++) {
+    flag *= (out[i] == result[i]);
+  }
+  return flag;
 }
 
 // Randomly generate a digit from 1 to 64
@@ -144,6 +136,14 @@ TEST(arithmeticTest, addTest) {
 TEST(arithmeticTest, subTest) {
   for (size_t i = 0; i < 10; i++) {
     assert(arithmeticTest(FuncSymbol::SUB, 10, 10, 11));
+  }
+  EXPECT_TRUE(true);
+}
+
+
+TEST(arithmeticTest, mulTest) {
+  for (size_t i = 0; i < 100; i++) {
+    assert(arithmeticTest(FuncSymbol::MUL, getDigit(), getDigit(), getDigit()));
   }
   EXPECT_TRUE(true);
 }
