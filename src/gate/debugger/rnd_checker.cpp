@@ -6,30 +6,21 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "gate/model/gnet.h"
-#include "gate/simulator/simulator.h"
-#include "rtl/library/flibrary.h"
-#include <cassert>
-#include <cmath>
+#include "gate/debugger/rnd_checker.h"
 
 using GNet = eda::gate::model::GNet;
 
-enum Result {
-  ERROR = -2,
-  UNKNOW = -1,
-  EQUAL = 0,
-  NOTEQUAL = 1,
-};
+namespace eda::gate::debugger {
 
-Result Generator(const GNet &net, const unsigned int tries, bool flag = false) {
+Result Generator(const GNet* miter, const unsigned int tries, bool flag = true) {
 
   //check the number of output
-  assert(net.nTargetLinks() == 1);
+  assert(miter->nTargetLinks() == 1);
 
   std::uint64_t count = 0;
 
-  // counting the arity of inputs
-  for (auto x : net.sourceLinks()) {
+  // counting the summury arity of inputs
+  for (auto x : miter->sourceLinks()) {
     count += Gate::get(x.source)->arity();
   }
 
@@ -44,33 +35,34 @@ Result Generator(const GNet &net, const unsigned int tries, bool flag = false) {
   }
 
   eda::gate::simulator::Simulator simulator;
-  auto compiled = simulator.compile(net, in, out);
-
+  auto compiled = simulator.compile(*miter, in, out);
 
   std::uint64_t o;
   if (!flag) {
+  // UNexhaustive check
     for (std::uint64_t t = 0; t < tries; t++) {
       for (std::uint64_t i = 0; i < count; i++) {
-        compiled.simulate(o, (i + count * t));
+        std::uint64_t in = rand();
+        compiled.simulate(o, in);
         if (o == 1) {
           return  Result::NOTEQUAL;
         }
       }
     }
-  return Result::UNKNOW;
+    return Result::UNKNOWN;
   }
 
   if (flag) {
-    for (std::uint64_t t = 0; t < std::pow(2, net.nSourceLinks()); t++) {
-      for (std::uint64_t i = 0; i < count; i++) {
-        compiled.simulate(o, (i + count * t));
-        if (o == 1) {
-          return  Result::NOTEQUAL;
-        }
+  // exhaustive check
+    for (std::uint64_t t = 0; t < std::pow(2, count); t++) {
+      compiled.simulate(o, t);
+      if (o == 1) {
+        return  Result::NOTEQUAL;
       }
     }
-  return Result::EQUAL;
+    return Result::EQUAL;
   }
 
   return Result::ERROR;
 }
+} // namespace eda::gate::debugger
