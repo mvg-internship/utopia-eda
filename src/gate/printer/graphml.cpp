@@ -1,8 +1,5 @@
 #include "graphml.h"
 
-using GNet = eda::gate::model::GNet;
-using Gate = eda::gate::model::Gate;
-using Link = Gate::Link;
 
 std::string linkDescription(const Link &link) {
 	return std::to_string(link.source) + "_" + std::to_string(link.target);
