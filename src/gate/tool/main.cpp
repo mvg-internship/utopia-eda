@@ -34,17 +34,20 @@ int main(){
     }
     auto gateId = net.addGate(GateSymbol::OR, inputs);
     outputId = net.addOut(gateId);
+   // auto gate = net.addGate(GateSymbol::NOT, gateId);
+ //   outputId = net.addOut(gate);
     net.sortTopologically();
+    std::cout<<net;
     print_table(net,inputs,outputId);
     std::cout<<"AND op\n";
     eda::gate::model::GNet net1(0);
     Gate::SignalList inputs1;
     Gate::Id outputId1;
-    for (unsigned i = 0; i < 2; ++i) {
+    for (unsigned i = 0; i < 2; i++) {
         const Gate::Id inputId1 = net1.addIn();
         inputs1.push_back(Gate::Signal::always(inputId1));
     }
-    auto gateId1 = net1.addGate(GateSymbol::AND, inputs1);
+    auto gateId1 = net1.addGate(GateSymbol::NOT, inputs1);
     outputId1 = net1.addOut(gateId1);
     net1.sortTopologically();
     print_table(net1,inputs1,outputId1);

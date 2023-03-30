@@ -17,9 +17,12 @@ add_executable(LibertyParser src/gate/Liberty/main.cpp)
 target_link_libraries(LibertyParser PRIVATE Utopia::Lib Yosys::Yosys)
 add_executable(VerilogParser src/gate/Verilog/main.cpp)
 target_link_libraries(VerilogParser PRIVATE Utopia::Lib Yosys::Yosys)
-add_executable(BlifParser src/gate/Blif/main.cpp)
-target_link_libraries(BlifParser PRIVATE Utopia::Lib Yosys::Yosys)
 add_executable(table src/gate/tool/main.cpp)
 target_link_libraries(table PRIVATE Utopia::Lib Yosys::Yosys)
 add_executable(gnet0 src/gate/parserGnet/main.cpp)
 target_link_libraries(gnet0 PRIVATE Utopia::Lib Yosys::Yosys)
+add_executable(gnetFINAL src/gate/parserGnet/testGnet.cpp src/gate/parserGnet/parserGnet.cpp)
+target_link_libraries(gnetFINAL PRIVATE Utopia::Lib Yosys::Yosys)
+
+
+
