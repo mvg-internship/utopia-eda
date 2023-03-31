@@ -3,6 +3,7 @@
 
 #include "gtest/gtest.h"
 
+
 TEST(toGraphMlTest,all) {
   GNet test = *makeRand(100, 100);
   std::cout << test;

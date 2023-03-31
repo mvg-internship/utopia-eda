@@ -1,15 +1,20 @@
 #include "graphml.h"
 
 
+
 std::string linkDescription(const Link &link) {
 	return std::to_string(link.source) + "_" + std::to_string(link.target);
+}
+
+std::string linkDescriptionReverse(const Link &link) {
+	return std::to_string(link.target) + "_" + std::to_string(link.source);
 }
 
 bool linkDontDraw(std::set<std::string> &linksDraw, const Link &link) {
 	if (linksDraw.find(linkDescription(link)) == linksDraw.end() &&
 			linksDraw.find(linkDescription(link)) == linksDraw.end()) {
 		linksDraw.insert(linkDescription(link));
-		linksDraw.insert(linkDescription(link));
+		linksDraw.insert(linkDescriptionReverse(link));
 		return true;
 	}
 	return false;
