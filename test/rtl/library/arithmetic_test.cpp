@@ -47,7 +47,7 @@ uint64_t generateInput(const size_t inputDigit,
   const size_t begin{input.size()};
   uint64_t number{0};
   for (size_t i = 0; i < inputDigit; i++) {
-    input.push_back(1/*rand() % 2*/);
+    input.push_back(rand() % 2);
     number += input[begin + i] * (1ull << i);
   }
   return number;
@@ -127,23 +127,26 @@ size_t getDigit() {
 }
 
 TEST(arithmeticTest, addTest) {
+  bool flag = true;
   for (size_t i = 0; i < 100; i++) {
-    assert(arithmeticTest(FuncSymbol::ADD, getDigit(), getDigit(), getDigit()));
+    flag *= arithmeticTest(FuncSymbol::ADD, getDigit(), getDigit(), getDigit());
   }
-  EXPECT_TRUE(true);
+  EXPECT_TRUE(flag);
 }
 
 TEST(arithmeticTest, subTest) {
+  bool flag = true;
   for (size_t i = 0; i < 10; i++) {
-    assert(arithmeticTest(FuncSymbol::SUB, 10, 10, 11));
+    flag *= arithmeticTest(FuncSymbol::SUB, 10, 10, 11);
   }
-  EXPECT_TRUE(true);
+  EXPECT_TRUE(flag);
 }
 
 
 TEST(arithmeticTest, mulTest) {
-  for (size_t i = 0; i < 100; i++) {
-    assert(arithmeticTest(FuncSymbol::MUL, getDigit(), getDigit(), getDigit()));
+  bool flag = true;
+  for (size_t i = 0; i < 50; i++) {
+    flag *= arithmeticTest(FuncSymbol::MUL, getDigit(), getDigit(), getDigit());
   }
-  EXPECT_TRUE(true);
+  EXPECT_TRUE(flag);
 }

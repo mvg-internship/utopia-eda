@@ -47,16 +47,16 @@ GateIdList formGateIdList(const size_t size,
                           GNet &net);
 
 // Divide one GateIdList into two GateIdLists:
-// 111000 -> 11 and 1000
+// 111000 -> 111 and 000 (for firstPartSize = 3)
 void getPartsOfGateIdList(const GateIdList &x,
                           GateIdList &x1,
                           GateIdList &x0, 
-                          size_t firstPartSize);
+                          const size_t firstPartSize);
 
 // Make left shift for GateIdList:
-// 111 -> 111000
+// 111 -> 111000 (for shift = 3)
 GateIdList leftShiftForGateIdList(const GateIdList &x, 
-                                  size_t shift, 
+                                  const size_t shift, 
                                   GNet &net);
 
 /**
@@ -109,21 +109,21 @@ private:
                       const In &in, 
                       GNet &net);
 
-  static Out synthLadnerFisherAdder(size_t outSize, 
+  static Out synthLadnerFisherAdder(const size_t outSize, 
                                     const In &in, 
-                                    bool plusOne, 
+                                    const bool plusOne, 
                                     GNet &net);
 
-  static Out synthKaratsubaMultiplier(size_t outSize,
+  static Out synthKaratsubaMultiplier(const size_t outSize,
                                       const In &in,
-                                      size_t digit,
+                                      const size_t depth,
                                       GNet &net);
 
-  static Out synthColumnMultiplier(size_t outSize,
+  static Out synthColumnMultiplier(const size_t outSize,
                                    const In &in,
                                    GNet &net);
 
-  static Out synthMultiplierByOneDigit(size_t outSize,
+  static Out synthMultiplierByOneDigit(const size_t outSize,
                                        const GateIdList &x,
                                        const GateId &y,
                                        GNet &net);
