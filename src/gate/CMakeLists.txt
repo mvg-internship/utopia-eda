@@ -6,6 +6,7 @@ add_library(Gate OBJECT
   model/gnet.cpp
   model/gsymbol.cpp
   optimizer/rwdatabase.cpp
+  optimizer/ttbuilder.cpp
   premapper/aigmapper.cpp
   premapper/premapper.cpp
   simulator/simulator.cpp
