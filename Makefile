@@ -28,6 +28,9 @@ ifneq (clean, $(MAKECMDGOALS))
 -include .deps.mk
 endif
 
-.deps.mk: $(SOURCE)
-	$(CXX) -MM $^ > $@
-	
+.deps.mk: $(SOURCE) Makefile
+	$(CXX) -MM -MG $^ > $@
+
+
+
+
