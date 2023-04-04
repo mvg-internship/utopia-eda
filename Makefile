@@ -30,3 +30,4 @@ endif
 
 .deps.mk: $(SOURCE)
 	$(CXX) -MM $^ > $@
+	
