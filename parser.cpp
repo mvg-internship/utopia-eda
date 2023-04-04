@@ -35,20 +35,21 @@ static std::size_t line = 0;
 
 void ASSERT_NEXT_ID(token_t expected_token, char* error_string, token_t type) {
     token_t token = get_next_token(); 
-    std::cout << "YYTEXTT" << yytext << std::endl;
-    char* text = yytext;
-    std::cout << "TEXT" << text << std::endl;
     if (type == INPUT) {
-        token_map map {text, 1, 0}; 
+        token_map map {yytext, 1, 0}; 
+        std::cout << "input map.name=" << map.name << std::endl;
         maps.push_back(map); 
     } else if (type == OUTPUT) {
-        token_map map {text, 1, 1}; 
+        token_map map {yytext, 1, 1}; 
+        std::cout << "output map.name=" << map.name << std::endl;
         maps.push_back(map); 
     } else if (type == DFF) { 
-        token_map map {text, 0, 2};
+        token_map map {yytext, 0, 2};
+        std::cout << "dff map.name=" << map.name << std::endl;
         maps.push_back(map); 
     } else if (type == NOT) { 
-        token_map map {text, 0, 2}; 
+        token_map map {yytext, 0, 2};
+        std::cout << "not map.name=" << map.name << std::endl;
         maps.push_back(map); 
     } 
     if ( token != expected_token ) { 
@@ -58,7 +59,7 @@ void ASSERT_NEXT_ID(token_t expected_token, char* error_string, token_t type) {
 
 token_t get_next_token() { 
     token_t val = static_cast<token_t>(scan_token());
-    std::cout << " token: " << val << "\t" << yytext << "\tline: " << line << " \tplace: " << place << std::endl;
+    //std::cout << " token: " << val << "\t" << yytext << "\tline: " << line << " \tplace: " << place << std::endl;
     place += 1;
     return val;
 }
