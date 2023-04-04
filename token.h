@@ -20,7 +20,8 @@ enum token_t
   EQUALS,
   ASSIGN,
   LFIGURNAYA,
-  RFIGURNAYA
+  RFIGURNAYA,
+  START
   
 };
 

@@ -6,7 +6,8 @@
 %}
 
 
-%option noyywrap
+
+%option noyywrap yylineno
 %x IN_COMMENT
  
 NUM     [0-9]
@@ -15,7 +16,7 @@ STRING  [a-zA-Z][a-zA-Z0-9]*
         //Rule section
 %%
 
-[ \t\n]+    { yylineno++; }
+\n
 
 <INITIAL>{
 "/*"              BEGIN(IN_COMMENT);
@@ -24,7 +25,7 @@ STRING  [a-zA-Z][a-zA-Z0-9]*
 "*/"      BEGIN(INITIAL);
 [^*\n]+   // eat comment in chunks
 "*"       // eat the lone star
-\n        yylineno++;
+\n
 }
 
 module      { return MODULE; }

@@ -95,16 +95,17 @@ token_t get_next_token()
 
 kind_of_error parse_gatelevel_verilog()
 {
-  token_t tok;
+  
+  token_t tok = START;
   kind_of_error rc = SUCCESS;
   while (tok != EOF_TOKEN)
   {
    DEBUGTOKEN(tok, "Verilog loop");
     ASSERT_NEXT_TOKEN(tok, MODULE, FAILURE_IN_GATE_LEVEL_VERILOG);
     rc = parse_module(tok);
+  
+  
   }
-  
-  
   std::cout << "Error! "<< "type = "<< rc << std::endl;
   return rc;
 }
