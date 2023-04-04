@@ -38,7 +38,7 @@ module Circuit432 (in4, in17, in30, in43, in56, in69, in82, in95, in108,
       PC = out370,
       Chan[3:0] = { out421, out430, out431, out432 };
 	
-  TopLevel432 Ckt432 (E, A, B, C, PA, PB, PC, Chan);
+ 
 
 endmodule /* Circuit432 */
 

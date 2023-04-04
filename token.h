@@ -1,6 +1,7 @@
 #define YY_DECL int scan_token() 
 enum token_t
 {
+  EOF_TOKEN,
   MODULE,
   ENDMODULE,
   INPUT,
@@ -19,8 +20,8 @@ enum token_t
   EQUALS,
   ASSIGN,
   LFIGURNAYA,
-  RFIGURNAYA,
-  EOF_TOKEN
+  RFIGURNAYA
+  
 };
 
     enum kind_of_error
@@ -34,4 +35,12 @@ enum token_t
   FAILURE_IN_ARG,
   FAILURE_IN_ASSIGN,
   FAILURE_IN_GATE_LEVEL_VERILOG
+};
+
+    enum class SymbolType
+{
+  INPUT,
+  OUTPUT,
+  WIRE,
+  VOID
 };

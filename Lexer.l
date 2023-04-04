@@ -15,7 +15,7 @@ STRING  [a-zA-Z][a-zA-Z0-9]*
         //Rule section
 %%
 
-[ \t\n]+
+[ \t\n]+    { yylineno++; }
 
 <INITIAL>{
 "/*"              BEGIN(IN_COMMENT);

@@ -2,6 +2,7 @@
 #include <vector>
 #include <FlexLexer.h>
 #include "lex.yy.c"
+#include <unordered_map>
 
 /*
 some defenicion in Verilog
@@ -28,6 +29,8 @@ kind_of_error parse_assign(token_t&);
 kind_of_error parse_arg(token_t&);
 kind_of_error parse_name_list(token_t&, token_t);
 
+
+
 #define DEBUGTOKEN(tok, msg)\
 printf("%s:%d: %s: token '%s' (%d)\n", __FILE__, __LINE__, (msg), yytext, (tok)) \
 
@@ -46,10 +49,46 @@ printf("%s:%d: %s: token '%s' (%d)\n", __FILE__, __LINE__, (msg), yytext, (tok))
 static std::size_t place = 0;
 static std::size_t line = 0;
 
+//Создание класса для таблицы символов, содержащего методы добавления, удаления и проверки типа идентификатора по его имени
+class SymbolTable{
+  public:
+  SymbolTable() = default;
+  ~SymbolTable()= default;
+
+  void addSymbol(const std::string& name, SymbolType type);
+  void removeSymbol(const std::string& name);
+  SymbolType getSymbolType(const std::string& name);
+
+  private:
+  std::unordered_map<std::string, SymbolType> symbolTable_;
+};
+
+//Описание методов
+void SymbolTable::addSymbol(const std::string& name, SymbolType type) {
+  symbolTable_[name] = type;
+}
+void SymbolTable::removeSymbol(const std::string& name) {
+  symbolTable_.erase(name);
+}
+SymbolType SymbolTable::getSymbolType(const std::string& name) {
+  if (symbolTable_.find(name) != symbolTable_.end()) {
+      return symbolTable_[name];
+  }else {
+    return SymbolType::VOID;
+  }
+}
+
+
+
+
+
+
+
+
 token_t get_next_token()
 { 
   token_t val = static_cast<token_t>( scan_token());
-  std::cout << " type: "<< val << " tok: "<< yytext << " pl: " << place << " ln: " <<  line << std::endl;
+  std::cout << " type: "<< val << " tok: "<< yytext << " pl: " << place << " ln: " <<  yylineno << std::endl;
   place += 1;
   return val;
 }
@@ -221,41 +260,10 @@ kind_of_error parse_arg(token_t &tok)
       store.push_back(tok);
       ASSERT_NEXT_TOKEN(tok, RBRACKET, FAILURE_IN_ARG);
       tok = get_next_token();
-      switch (tok)
-      {
-      case COMMA:
-        
-        break;
-      case RBRACE:
-        
-        break;
-
-      default:
-      rc = FAILURE_IN_ARG;
-        break;
-      }
-      //ASSERT_NEXT_TOKEN(tok, COMMA, FAILURE_IN_ARG);
-      
-    }else if(tok != COMMA && tok != RBRACE){
+    }
+    if(tok != COMMA && tok != RBRACE){
       rc = FAILURE_IN_ARG; 
     }
-
-   /* switch (tok)
-    {
-    case LBRACKET:
-    ASSERT_NEXT_TOKEN(tok, NUM, FAILURE_IN_ARG);
-      store.push_back(tok);
-    ASSERT_NEXT_TOKEN(tok, RBRACKET, FAILURE_IN_ARG);
-      break;
-    case COMMA:
-      break;
-    case RBRACE:
-      break;
-    default:
-      rc = FAILURE_IN_ARG;
-      break;
-    }
-    */
   }
   ASSERT_NEXT_TOKEN(tok, SEMICOLON, FAILURE_IN_MODULE_INCAPTULATION);
   tok = get_next_token();
