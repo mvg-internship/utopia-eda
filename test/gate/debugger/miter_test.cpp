@@ -15,26 +15,45 @@ using namespace eda::gate::debugger;
 using namespace eda::gate::model;
 
 TEST(MiterTest, MiterStructureTest) {
-  auto net = makeRand(75, 50);
+  auto net = new GNet();
+  SignalList inps;
+  for (int i = 0; i<10;i++){
+    GateId z = net->addIn();
+    inps.push_back(Signal::always(z));
+  }
+  GateId y = net->addGate(GateSymbol::AND, inps);
+  GateId outId = net->addOut(y);
+  SignalList inps1;
+  for (int i = 0; i<10;i++){
+    GateId z = net->addIn();
+    inps1.push_back(Signal::always(z));
+  }
+  GateId w = net->addGate(GateSymbol::NOR, inps1);
+  net->addOut(w);
+  w = net->addGate(GateSymbol::OR, inps);
+  for(int i = 0; i<10;i++){
+    outId = net->addOut(w);
+  }
+  net->addOut(w);
   std::unordered_map<Gate::Id, Gate::Id> testMap = {};
-  auto netCloned = net.get()->clone(testMap);
+  auto netCloned = net->clone(testMap);
   
   GateBinding ibind, obind, tbind;
 
   // Input-to-input correspondence.
-  for (auto oldSourceLink : net.get()->sourceLinks()) {
+  for (auto oldSourceLink : net->sourceLinks()) {
     auto newSourceId = testMap[oldSourceLink.target];
     ibind.insert({oldSourceLink, Gate::Link(newSourceId)});
   }
 
   // Output-to-output correspondence.
-  for (auto oldTargetLink : net.get()->targetLinks()) {
+  for (auto oldTargetLink : net->targetLinks()) {
     auto newTargetId = testMap[oldTargetLink.source];
     obind.insert({oldTargetLink, Gate::Link(newTargetId)});
   }
 
   // Trigger-to-trigger correspondence.
-  for (auto oldTriggerId : net.get()->triggers()) {
+  for (auto oldTriggerId : net->triggers()) {
     auto newTriggerId = testMap[oldTriggerId];
     tbind.insert({Gate::Link(oldTriggerId), Gate::Link(newTriggerId)});
   }
@@ -44,8 +63,7 @@ TEST(MiterTest, MiterStructureTest) {
   hints.targetBinding  = std::make_shared<GateBinding>(std::move(obind));
   hints.triggerBinding = std::make_shared<GateBinding>(std::move(tbind));
   
-  GNet* mit = miter(net.get(), netCloned, hints);
-  std::cout << "nTargetLinks:" << mit->nTargetLinks() << std::endl;
+  GNet* mit = miter(net, netCloned, hints);
   EXPECT_TRUE(mit->nTargetLinks() == 1);
   EXPECT_TRUE(mit->nSourceLinks() == netCloned->nSourceLinks());
 }

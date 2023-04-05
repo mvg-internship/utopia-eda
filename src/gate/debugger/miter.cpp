@@ -42,6 +42,7 @@ GNet* miter(GNet* net1, GNet* net2, Hints &hints) {
   GNet* miter = new GNet();
   miter->addNet(*net1);
   miter->addNet(*net2);
+  
   for (auto bind : *hints.sourceBinding.get()) {
     GateId newInputId = miter->addIn();
     if (Gate::get(bind.first.target)->func() == GateSymbol::IN) {
@@ -53,17 +54,19 @@ GNet* miter(GNet* net1, GNet* net2, Hints &hints) {
     }
   }
 
-  for (auto bind : *hints.targetBinding.get()) {
-    GateId newOutId = miter->addXor(bind.first.source, bind.second.source);
+  for (auto bind : *hints.targetBinding.get()) { 
+    GateId newOutId = miter->addGate(GateSymbol::XOR, bind.first.source, bind.second.source);
     xorSignalList.push_back(Signal::always(newOutId));
-    miter->setGate(newOutId, GateSymbol::XOR, bind.first.source);
-    miter->setGate(newOutId, GateSymbol::XOR, bind.second.source);
   }
 
   GateId finalOutId = miter->addOr(xorSignalList);
   miter->addOut(finalOutId);
-  for (auto xorSignal : xorSignalList) {
-    miter->setGate(finalOutId, GateSymbol::OR, xorSignal.node()); 
+  miter->setGate(finalOutId, GateSymbol::OR, xorSignalList);
+  int count = 0;
+  for (auto bind : *hints.targetBinding.get()) {
+    miter->setGate(bind.first.source, GateSymbol::NOP, xorSignalList[count]);
+    miter->setGate(bind.second.source, GateSymbol::NOP, xorSignalList[count]);
+    count += 1;
   }
   return miter;
 } 
