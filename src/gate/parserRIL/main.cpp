@@ -209,23 +209,20 @@ void printConnections(
     std::map<int, std::string> &typeFunc) {
 
   out << "Connections count: " << connections.size() << "\n";
-  int root;
   for (auto it1 = connections.begin(); it1 != connections.end(); ++it1) {
     auto connAsWireInput = it1->second.as_wire()->name.index_;
     auto connAsWireOutput = it1->first.as_wire()->name.index_;
     out << "    Wire " << connAsWireOutput << " connects with "
         << connAsWireInput << "\n";
     if (inputs.find(connAsWireInput) == inputs.end()) {
-      root = connAsWireInput;
       fout << "@(*) {\n";
       fout << "   " << outputs.find(connAsWireOutput)->second
-           << " = " << buildRIL(root, cell, inputs, typeFunc) << ";\n";
+           << " = " << buildRIL(connAsWireInput, cell, inputs, typeFunc) << ";\n";
       fout << "}\n";
     } else {
-      root = connAsWireInput;
       fout << "@(*) {\n";
       fout << "   " << outputs.find(connAsWireOutput)->second
-           << " = " << inputs.find(root)->second << ";\n";
+           << " = " << inputs.find(connAsWireInput)->second << ";\n";
       fout << "}\n";
     }
   }
