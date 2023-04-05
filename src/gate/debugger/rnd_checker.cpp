@@ -1,3 +1,6 @@
+#include <iostream>
+
+
 //===----------------------------------------------------------------------===//
 //
 // Part of the Utopia EDA Project, under the Apache License v2.0
@@ -12,38 +15,54 @@ using GNet = eda::gate::model::GNet;
 
 namespace eda::gate::debugger {
 
-Result Generator(const GNet* miter, const unsigned int tries, bool flag = true) {
+static simulator::Simulator simulator;
+
+Result Generator(GNet &miter, const unsigned int tries, const bool flag = true) {
 
   //check the number of output
-  assert(miter->nTargetLinks() == 1);
+  assert(miter.nTargetLinks() == 1);
 
   std::uint64_t count = 0;
 
   // counting the summury arity of inputs
-  for (auto x : miter->sourceLinks()) {
-    count += Gate::get(x.source)->arity();
+  for (auto x : miter.sourceLinks()) {
+  count += 1;
+  //   count += Gate::get(x.source)->arity();
+  }
+  std::cout << "COUNT =\t" << count << std::endl;
+
+  GNet::In inpu(1);
+  auto &input = inpu[0];
+
+  for (auto x : miter.sourceLinks()) {
+     input.push_back(x.target);
   }
 
-  GNet::SignalList inputs;
-  GNet::GateId output = 0;
-
+  Gate::SignalList inputs;
+  Gate::Id output = 0;
   GNet::LinkList in;
+
+  for (size_t n = 0; n < count; n++) {
+    in.push_back(GNet::Link(input[n]));
+  }
+
   GNet::LinkList out{Gate::Link(output)};
 
-    for (auto input : inputs) {
-    in.push_back(Gate::Link(input.node()));
+  for (auto input : inputs) {
+    in.push_back(GNet::Link(input.node()));
   }
 
-  eda::gate::simulator::Simulator simulator;
-  auto compiled = simulator.compile(*miter, in, out);
-
+  miter.sortTopologically();
+  auto compiled = simulator.compile(miter, in, out);
   std::uint64_t o;
+
   if (!flag) {
   // UNexhaustive check
     for (std::uint64_t t = 0; t < tries; t++) {
       for (std::uint64_t i = 0; i < count; i++) {
         std::uint64_t in = rand();
         compiled.simulate(o, in);
+        std::cout << std::hex << in << " -> " << o << std::endl;
         if (o == 1) {
           return  Result::NOTEQUAL;
         }
@@ -56,6 +75,7 @@ Result Generator(const GNet* miter, const unsigned int tries, bool flag = true) 
   // exhaustive check
     for (std::uint64_t t = 0; t < std::pow(2, count); t++) {
       compiled.simulate(o, t);
+       std::cout << std::hex << t << " -> " << o << std::endl;
       if (o == 1) {
         return  Result::NOTEQUAL;
       }
@@ -65,4 +85,5 @@ Result Generator(const GNet* miter, const unsigned int tries, bool flag = true) 
 
   return Result::ERROR;
 }
-} // namespace eda::gate::debugger
+
+} // namespace eda::gate::debugger*/

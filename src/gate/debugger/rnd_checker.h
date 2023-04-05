@@ -31,5 +31,5 @@ enum Result {
 /* generator gets pointer to miter and makes а checks the specified number of    * times (@param tries) OR all possible values(@param flag)
 * flag = true => exhaustive check (default)
 */
-Result Generator(const GNet* miter, const unsigned int tries, bool flag);
+Result Generator(GNet &miter, const unsigned int tries, const bool flag);
 } // namespace eda::gate::debugger
