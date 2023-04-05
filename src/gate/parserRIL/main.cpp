@@ -32,6 +32,8 @@ void printWires(const YLib::dict<RTlil::IdString, RTlil::Wire *> &ywires,
     std::string temp;
     std::string width = "u:";
     unsigned index;
+    auto portOutput = it1->second->port_output;
+    auto portInput = it1->second->port_input;
     for (const auto &it2 : RTlil::IdString::global_id_index_) {
       if (it2.second == it1->first.index_) {
         out << "  " << it2.first << " - wire of index: " << it2.second << "\n";
@@ -42,26 +44,26 @@ void printWires(const YLib::dict<RTlil::IdString, RTlil::Wire *> &ywires,
     width.append(std::to_string(it1->second->width));
     if (it1->second->width > 1) {
       out << "    type: bus with width " << it1->second->width << "\n";
-      fout << "output u:" << it1->second->width << " " << temp << ";\n";
+      fout << "output " << width << " " << temp << ";\n";
       outputs.emplace(index, temp);
     } else {
       out << "    type: wire" << "\n";
     }
     out << "    start_offset: " << it1->second->start_offset << "\n";
     out << "    port_id: " << it1->second->port_id << "\n";
-    out << "    port_input: " << it1->second->port_input << "\n";
-    if (it1->second->port_input == 1) {
+    out << "    port_input: " << portInput << "\n";
+    if (portInput == 1) {
       temp.erase(0, 1);
       fout << "input " << width << " " << temp << ";\n";
       inputs.emplace(index, temp);
     }
-    out << "    port_output: " << it1->second->port_output << "\n";
-    if (it1->second->port_output == 1) {
+    out << "    port_output: " << portOutput << "\n";
+    if (portOutput == 1) {
       temp.erase(0, 1);
       fout << "output " << width << " " << temp << ";\n";
       outputs.emplace(index, temp);
     }
-    if (it1->second->port_output == 0 && it1->second->port_input == 0) {
+    if (portOutput == 0 && portInput == 0) {
       wires.emplace(index, temp);
       fout << "wire " << width << " " << temp << ";\n";
     }
@@ -94,45 +96,47 @@ std::string buildRIL(int root, std::map<int, std::pair<int, int>> &cell,
                      std::map<int, std::string> &typeFunc) {
 
   bool flag1 = 0, flag2 = 0;
-  if (inputs.find(cell.find(root)->second.first) != inputs.end()) {
+  auto cellPairFirst = cell.find(root)->first;
+  auto cellPairSecond = cell.find(root)->second;
+  if (inputs.find(cellPairSecond.first) != inputs.end()) {
     flag1 = 1;
   }
-  if (inputs.find(cell.find(root)->second.second) != inputs.end()) {
+  if (inputs.find(cellPairSecond.second) != inputs.end()) {
     flag2 = 1;
   }
   if (flag1 == 1 && flag2 == 1) {
-    if (cell.find(root)->second.first != cell.find(root)->second.second) {
-      return inputs.find(cell.find(root)->second.first)->second +
-             typeFunc.find(cell.find(root)->first)->second +
-             inputs.find(cell.find(root)->second.second)->second;
+    if (cellPairSecond.first != cellPairSecond.second) {
+      return inputs.find(cellPairSecond.first)->second +
+             typeFunc.find(cellPairFirst)->second +
+             inputs.find(cellPairSecond.second)->second;
     } else {
-      return typeFunc.find(cell.find(root)->first)->second +
-             inputs.find(cell.find(root)->second.second)->second;
+      return typeFunc.find(cellPairFirst)->second +
+             inputs.find(cellPairSecond.second)->second;
     }
   }
   if (flag1 == 0 && flag2 == 0) {
-    if (cell.find(root)->second.first != cell.find(root)->second.second) {
+    if (cellPairSecond.first != cellPairSecond.second) {
       return "(" +
-             buildRIL(cell.find(root)->second.first, cell, inputs, typeFunc) +
-             typeFunc.find(cell.find(root)->first)->second +
-             buildRIL(cell.find(root)->second.second, cell, inputs, typeFunc) +
+             buildRIL(cellPairSecond.first, cell, inputs, typeFunc) +
+             typeFunc.find(cellPairFirst)->second +
+             buildRIL(cellPairSecond.second, cell, inputs, typeFunc) +
              ")";
     } else {
-      return typeFunc.find(cell.find(root)->first)->second + "(" +
-             buildRIL(cell.find(root)->second.first, cell, inputs, typeFunc) +
+      return typeFunc.find(cellPairFirst)->second + "(" +
+             buildRIL(cellPairSecond.first, cell, inputs, typeFunc) +
              ")";
     }
   }
   if (flag1 == 0 && flag2 == 1) {
     return "(" +
-           buildRIL(cell.find(root)->second.first, cell, inputs, typeFunc) +
-           typeFunc.find(cell.find(root)->first)->second +
-           inputs.find(cell.find(root)->second.second)->second + ")";
+           buildRIL(cellPairSecond.first, cell, inputs, typeFunc) +
+           typeFunc.find(cellPairFirst)->second +
+           inputs.find(cellPairSecond.second)->second + ")";
   }
   if (flag1 == 1 && flag2 == 0) {
-    return "(" + inputs.find(cell.find(root)->second.first)->second +
-           typeFunc.find(cell.find(root)->first)->second +
-           buildRIL(cell.find(root)->second.second, cell, inputs, typeFunc) +
+    return "(" + inputs.find(cellPairSecond.first)->second +
+           typeFunc.find(cellPairFirst)->second +
+           buildRIL(cellPairSecond.second, cell, inputs, typeFunc) +
            ")";
   }
   return "";
@@ -159,8 +163,9 @@ void printCells(const YLib::dict<RTlil::IdString, RTlil::Cell *> &cells,
     for (auto it3 = it1->second->connections_.begin();
          it3 != it1->second->connections_.end(); ++it3) {
       i++;
+      auto connAsWire = it3->second.as_wire()->name.index_;
       if (i == 1) {
-        a = it3->second.as_wire()->name.index_;
+        a = connAsWire;
         symbol = logicFunction(it1->second->type.index_);
         typeFunc.emplace(a, symbol);
         if (symbol == "~") {
@@ -169,28 +174,28 @@ void printCells(const YLib::dict<RTlil::IdString, RTlil::Cell *> &cells,
       }
       if (i == 2) {
         if (!flag) {
-          b = it3->second.as_wire()->name.index_;
+          b = connAsWire;
           flag = 0;
         } else {
-          b = it3->second.as_wire()->name.index_;
+          b = connAsWire;
           c = b;
           cell.emplace(a, std::make_pair(b, c));
         }
       }
       if (i == 3) {
-        c = it3->second.as_wire()->name.index_;
+        c = connAsWire;
         cell.emplace(a, std::make_pair(b, c));
       }
       if (i == 4) {
-        a = it3->second.as_wire()->name.index_;
+        a = connAsWire;
       }
       if (i == 5) {
-        b = it3->second.as_wire()->name.index_;
+        b = connAsWire;
         cell.emplace(c, std::make_pair(a, b));
         typeFunc.emplace(c, symbol);
       }
       out << "    Connections: " << it3->first.index_ << "\n";
-      out << "      name: " << it3->second.as_wire()->name.index_ << "\n";
+      out << "      name: " << connAsWire << "\n";
     }
   }
 
@@ -206,18 +211,20 @@ void printConnections(
   out << "Connections count: " << connections.size() << "\n";
   int root;
   for (auto it1 = connections.begin(); it1 != connections.end(); ++it1) {
-    out << "    Wire " << it1->first.as_wire()->name.index_ << " connects with "
-        << it1->second.as_wire()->name.index_ << "\n";
-    if (inputs.find(it1->second.as_wire()->name.index_) == inputs.end()) {
-      root = it1->second.as_wire()->name.index_;
+    auto connAsWireInput = it1->second.as_wire()->name.index_;
+    auto connAsWireOutput = it1->first.as_wire()->name.index_;
+    out << "    Wire " << connAsWireOutput << " connects with "
+        << connAsWireInput << "\n";
+    if (inputs.find(connAsWireInput) == inputs.end()) {
+      root = connAsWireInput;
       fout << "@(*) {\n";
-      fout << "   " << outputs.find(it1->first.as_wire()->name.index_)->second
+      fout << "   " << outputs.find(connAsWireOutput)->second
            << " = " << buildRIL(root, cell, inputs, typeFunc) << ";\n";
       fout << "}\n";
     } else {
-      root = it1->second.as_wire()->name.index_;
+      root = connAsWireInput;
       fout << "@(*) {\n";
-      fout << "   " << outputs.find(it1->first.as_wire()->name.index_)->second
+      fout << "   " << outputs.find(connAsWireOutput)->second
            << " = " << inputs.find(root)->second << ";\n";
       fout << "}\n";
     }
@@ -244,67 +251,76 @@ void printActions(const std::vector<RTlil::SigSig> &actions,
                   std::ostream &out, std::ofstream &fout,
                   std::map<int, std::string> &inputs,
                   std::map<int, std::string> &outputs,
-                  std::map<int, std::string> wires) {
+                  std::map<int, std::string> &wires) {
 
   int z = 0;
   out << "actions:\n";
   for (auto &it : actions) {
     z++;
     out << z << "\n";
-    out << "    ch" << (it.first.is_wire()) << " " << (it.second.is_wire())
+
+    bool firstIsWire = it.first.is_wire();
+    bool secondIsWire = it.second.is_wire();
+    bool firstIsChunk = it.first.is_chunk();
+    bool secondIsChunk = it.second.is_chunk();
+
+    out << "    ch" << firstIsWire << " " << secondIsWire
         << "\n";
-    if (it.first.is_wire() && it.second.is_wire()) {
-      out << "    nech" << (it.first.as_wire()->name.index_) << " "
-          << (it.second.as_wire()->name.index_) << "\n";
+    if (firstIsWire && !secondIsWire) {
+      out << "    nech" << it.first.as_wire()->name.index_ << "\n";
     }
-    if (it.first.is_wire()) {
-      out << "    nech" << (it.first.as_wire()->name.index_) << "\n";
+    if (!firstIsWire && secondIsWire) {
+      out << "    nech" << it.second.as_wire()->name.index_ << "\n";
     }
-    out << "    ch" << (it.first.is_chunk()) << " " << (it.second.is_chunk())
+    if (firstIsWire && secondIsWire) {
+      out << "    nech" << it.second.as_wire()->name.index_ << " "
+          << it.second.as_wire()->name.index_ << "\n";
+    }
+
+    out << "    ch" << firstIsChunk << " " << secondIsChunk
         << "\n";
-    if (it.first.is_chunk() && it.second.is_chunk()) {
-      out << "    nech" << (it.first.as_chunk().wire)->name.index_ << " "
-          << (it.second.as_chunk().wire)->name.index_ << "\n";
-      if (wires.find(it.first.as_chunk().wire->name.index_) != wires.end()) {
-        fout << wires.find(it.first.as_chunk().wire->name.index_)->second
-             << "=";
-      }
-      if (inputs.find(it.first.as_chunk().wire->name.index_) != inputs.end()) {
-        fout << inputs.find(it.first.as_chunk().wire->name.index_)->second
-             << "=";
-      }
-      if (outputs.find(it.first.as_chunk().wire->name.index_) !=
-          outputs.end()) {
-        fout << outputs.find(it.first.as_chunk().wire->name.index_)->second
-             << "=";
-      }
-      if (wires.find(it.second.as_chunk().wire->name.index_) != wires.end()) {
-        fout << wires.find(it.second.as_chunk().wire->name.index_)->second
-             << "\n";
-      }
-      if (inputs.find(it.second.as_chunk().wire->name.index_) != inputs.end()) {
-        fout << inputs.find(it.second.as_chunk().wire->name.index_)->second
-             << "\n";
-      }
-      if (outputs.find(it.second.as_chunk().wire->name.index_) !=
-          outputs.end()) {
-        fout << outputs.find(it.second.as_chunk().wire->name.index_)->second
-             << "\n";
-      }
-    }
-    if (it.first.is_chunk()) {
+
+    if (firstIsChunk && !secondIsChunk) {
       out << "    nech" << (it.first.as_chunk().wire->name.index_) << "\n";
     }
-    out << "    ch" << (it.first.is_fully_const()) << " "
-        << (it.second.is_fully_const()) << "\n";
-    if (it.first.is_fully_const() && it.second.is_fully_const()) {
-      out << "    nech" << (it.first.as_int()) << " " << (it.second.as_int())
-          << "\n";
+    if (!firstIsChunk && secondIsChunk) {
+      out << "    nech" << (it.second.as_chunk().wire->name.index_) << "\n";
     }
-    out << "    ch" << (it.first.is_fully_def()) << " "
-        << (it.second.is_fully_def()) << "\n";
-    out << "    ch" << (it.first.is_fully_undef()) << " "
-        << (it.second.is_fully_undef()) << "\n";
+    if (firstIsChunk && secondIsChunk) {
+
+      auto firstAsChunk = it.first.as_chunk().wire->name.index_;
+      auto secondAsChunk = it.second.as_chunk().wire->name.index_;
+
+      out << "    nech" << (it.first.as_chunk().wire)->name.index_ << " "
+          << (it.second.as_chunk().wire)->name.index_ << "\n";
+      fout << "  ";
+      if (wires.find(firstAsChunk) != wires.end()) {
+        fout << wires.find(firstAsChunk)->second
+             << " = ";
+      }
+      if (inputs.find(firstAsChunk) != inputs.end()) {
+        fout << inputs.find(firstAsChunk)->second
+             << " = ";
+      }
+      if (outputs.find(firstAsChunk) !=
+          outputs.end()) {
+        fout << outputs.find(firstAsChunk)->second
+             << " = ";
+      }
+      if (wires.find(secondAsChunk) != wires.end()) {
+        fout << wires.find(secondAsChunk)->second
+             << "\n";
+      }
+      if (inputs.find(secondAsChunk) != inputs.end()) {
+        fout << inputs.find(secondAsChunk)->second
+             << "\n";
+      }
+      if (outputs.find(secondAsChunk) !=
+          outputs.end()) {
+        fout << outputs.find(secondAsChunk)->second
+             << "\n";
+      }
+    }
   }
 
 }
@@ -313,8 +329,8 @@ void printSyncs(const std::vector<RTlil::SyncRule *> &syncs,
                 std::ostream &out, std::ofstream &fout,
                 std::map<int, std::string> &inputs,
                 std::map<int, std::string> &outputs,
-                std::map<int, std::string> &wires, std::string state,
-                int temporary) {
+                std::map<int, std::string> &wires, std::string &state,
+                int &temporary) {
 
   out << "  syncs\n";
   for (auto it1 = syncs.begin(); it1 != syncs.end(); ++it1) {
@@ -328,24 +344,27 @@ void printSyncs(const std::vector<RTlil::SyncRule *> &syncs,
         "STa", // always active
         "STi"  // init
     };
-    out << listSensitivity[(*it1)->type] << "\n";
-    if (listSensitivity[(*it1)->type] == "STn") {
+
+    std::string currType = listSensitivity[(*it1)->type];
+
+    out << currType << "\n";
+    if (currType == "STn") {
       state = "negedge";
     }
-    if (listSensitivity[(*it1)->type] == "STp") {
+    if (currType == "STp") {
       state = "posedge";
     }
-    if (listSensitivity[(*it1)->type] == "ST0") {
+    if (currType == "ST0") {
       state = "level0";
     }
-    if (listSensitivity[(*it1)->type] == "ST1") {
+    if (currType == "ST1") {
       state = "level1";
     }
+
+    temporary = (*it1)->signal.as_wire()->name.index_;
     out << "  signal\n";
     out << "    size " << (*it1)->signal.size() << "\n";
-    out << "    as_wire index " << (*it1)->signal.as_wire()->name.index_
-        << "\n";
-    temporary = (*it1)->signal.as_wire()->name.index_;
+    out << "    as_wire index " << temporary << "\n";
     out << "    as_chunk index " << (*it1)->signal.as_chunk().data.size()
         << "\n";
     out << "  actions\n";
@@ -361,26 +380,18 @@ void printSyncs(const std::vector<RTlil::SyncRule *> &syncs,
 void printSigSpec(const std::vector<RTlil::SigSpec> &compare,
                   std::ostream &out, std::map<int, std::string> &inputs,
                   std::map<int, std::string> &outputs,
-                  std::map<int, std::string> wires) {
+                  std::map<int, std::string> &wires) {
 
   out << "compare:\n";
   for (auto &it : compare) {
-    out << "    ch" << (it.is_wire()) << " " << (it.is_wire()) << "\n";
-    if (it.is_wire() && it.is_wire()) {
-      out << "    nech" << (it.as_wire()->name.index_) << " "
-          << (it.as_wire()->name.index_) << "\n";
+    out << "    ch" << it.is_wire() << "\n";
+    if (it.is_wire()) {
+      out << "    nech" << it.as_wire()->name.index_ << "\n";
     }
-    out << "    ch" << (it.is_chunk()) << " " << (it.is_chunk()) << "\n";
-    if (it.is_chunk() && it.is_chunk()) {
-      out << "    nech" << (it.as_chunk().wire)->name.index_ << " "
-          << (it.as_chunk().wire)->name.index_ << "\n";
+    out << "    ch" << it.is_chunk() << "\n";
+    if (it.is_chunk()) {
+      out << "    nech" << it.as_chunk().wire->name.index_ << "\n";
     }
-    out << "    ch" << (it.is_fully_const()) << " " << (it.is_fully_const())
-        << "\n";
-    out << "    ch" << (it.is_fully_def()) << " " << (it.is_fully_def())
-        << "\n";
-    out << "    ch" << (it.is_fully_undef()) << " " << (it.is_fully_undef())
-        << "\n";
   }
 
 }
@@ -401,22 +412,14 @@ void printSwitches(std::vector<RTlil::SwitchRule *> &switches,
   for (auto i : switches) {
     out << "sw:";
     auto it = i->signal;
-    out << "    ch" << (it.is_wire()) << " " << (it.is_wire()) << "\n";
-    if (it.is_wire() && it.is_wire()) {
-      out << "    nech" << (it.as_wire()->name.index_) << " "
-          << (it.as_wire()->name.index_) << "\n";
+    out << "    ch" << it.is_wire() << "\n";
+    if (it.is_wire()) {
+      out << "    nech" << it.as_wire()->name.index_ << "\n";
     }
-    out << "    ch" << (it.is_chunk()) << " " << (it.is_chunk()) << "\n";
-    if (it.is_chunk() && it.is_chunk()) {
-      out << "    nech" << (it.as_chunk().wire)->name.index_ << " "
-          << (it.as_chunk().wire)->name.index_ << "\n";
+    out << "    ch" << it.is_chunk() << "\n";
+    if (it.is_chunk()) {
+      out << "    nech" << it.as_chunk().wire->name.index_ << "\n";
     }
-    out << "    ch" << (it.is_fully_const()) << " " << (it.is_fully_const())
-        << "\n";
-    out << "    ch" << (it.is_fully_def()) << " " << (it.is_fully_def())
-        << "\n";
-    out << "    ch" << (it.is_fully_undef()) << " " << (it.is_fully_undef())
-        << "\n";
     printCaseRule(i->cases, out, fout, inputs, outputs, wires);
   }
 
@@ -428,7 +431,7 @@ void printCaseRule(std::vector<RTlil::CaseRule *> &cases,
                    std::map<int, std::string> &outputs,
                    std::map<int, std::string> &wires) {
 
-  out << "CASERULE:\n";
+  out << "CaseRule:\n";
   for (auto i : cases) {
     printSigSpec(i->compare, out, inputs, outputs, wires);
     printActions(i->actions, out, fout, inputs, outputs, wires);
@@ -451,12 +454,10 @@ void printProcesses(
     int temporary;
     printSyncs(it1->second->syncs, out, fout, inputs, outputs, wires, state, temporary);
     fout << "@(" << state << "(" << inputs.find(temporary)->second << ")) {\n";
-    printSigSpec((it1->second->root_case).compare, out, inputs, outputs,
-                 wires);
-    printActions((it1->second->root_case).actions, out, fout, inputs, outputs,
-                 wires);
-    printSwitches((it1->second->root_case).switches, out, fout, inputs, outputs,
-             wires);
+    auto rootCase = it1->second->root_case;
+    printSigSpec(rootCase.compare, out, inputs, outputs, wires);
+    printActions(rootCase.actions, out, fout, inputs, outputs, wires);
+    printSwitches(rootCase.switches, out, fout, inputs, outputs, wires);
     fout << "}\n";
     out << "\n";
   }
@@ -516,14 +517,22 @@ void printParsed(const RTlil::Design &des, std::ostream &out,
 int main(int argc, char *argv[]) {
 
   std::ostream &out = std::cout;
-  std::ofstream fout("ril_representation.txt");
   Yosys::yosys_setup();
   for (size_t o = 1; o < argc; ++o) {
+    std::string filename = argv[o];
+    std::string extension = ".ril";
+
     RTlil::Design design;
-    Yosys::run_frontend(argv[o], "verilog", &design, nullptr);
+    Yosys::run_frontend(filename, "verilog", &design, nullptr);
+
+    size_t pos = filename.rfind(".");
+    if (pos != std::string::npos) {
+      filename.replace(pos, extension.length(), extension);
+    }
+    std::ofstream fout(filename);
     printParsed(design, out, fout);
+    fout.close();
   }
-  fout.close();
   Yosys::yosys_shutdown();
 
 }
