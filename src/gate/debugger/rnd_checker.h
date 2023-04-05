@@ -11,6 +11,7 @@
 #include "gate/model/gnet.h"
 #include "gate/simulator/simulator.h"
 #include "rtl/library/flibrary.h"
+
 #include <cassert>
 #include <cmath>
 
@@ -28,7 +29,7 @@ enum Result {
   NOTEQUAL = 1,
 };
 
-/* generator gets pointer to miter and makes а checks the specified number of    * times (@param tries) OR all possible values(@param flag)
+/* generator gets miter and makes а checks the specified number of               * times (@param tries) OR all possible values(@param flag)
 * flag = true => exhaustive check (default)
 */
 Result Generator(GNet &miter, const unsigned int tries, const bool flag);

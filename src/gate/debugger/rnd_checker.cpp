@@ -1,6 +1,3 @@
-#include <iostream>
-
-
 //===----------------------------------------------------------------------===//
 //
 // Part of the Utopia EDA Project, under the Apache License v2.0
@@ -62,7 +59,6 @@ Result Generator(GNet &miter, const unsigned int tries, const bool flag = true) 
       for (std::uint64_t i = 0; i < count; i++) {
         std::uint64_t in = rand();
         compiled.simulate(o, in);
-        std::cout << std::hex << in << " -> " << o << std::endl;
         if (o == 1) {
           return  Result::NOTEQUAL;
         }
@@ -75,7 +71,6 @@ Result Generator(GNet &miter, const unsigned int tries, const bool flag = true) 
   // exhaustive check
     for (std::uint64_t t = 0; t < std::pow(2, count); t++) {
       compiled.simulate(o, t);
-       std::cout << std::hex << t << " -> " << o << std::endl;
       if (o == 1) {
         return  Result::NOTEQUAL;
       }
