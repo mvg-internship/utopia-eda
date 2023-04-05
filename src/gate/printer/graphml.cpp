@@ -1,6 +1,6 @@
 #include "graphml.h"
 
-
+namespace eda::printer::graphMl {
 
 std::string linkDescription(const Link &link) {
 	return std::to_string(link.source) + "_" + std::to_string(link.target);
@@ -20,12 +20,15 @@ bool linkDontDraw(std::set<std::string> &linksDraw, const Link &link) {
 	return false;
 }
 
-std::ostream &operator<<(const GNet &model, std::ostream &output) {
+std::ostream &operator<<(std::ostream &output, GNet &model) {
 	output
 			<< R"HEADER(<?xml version="1.0" encoding="UTF-8"?>
-    <graphml xmlns="http://graphml.graphdrawing.org/xmlns">
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns"  
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns 
+     http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd">
     )HEADER"
-			<< "<graph id=\""
+			<< "<graph id=\"G"
 			<< model.id()
 			<< "\" edgedefault=\"directed\">\n";
 	// Document header
@@ -34,7 +37,7 @@ std::ostream &operator<<(const GNet &model, std::ostream &output) {
 	for (size_t numberOfGate = 0; numberOfGate < allGates.size();
 			 numberOfGate++) {
 		output
-				<< "<node id = \""
+				<< "<node id = \"n"
 				<< allGates[numberOfGate]->id()
 				<< "\"/>\n";
 		// describing the nodes
@@ -63,3 +66,5 @@ std::ostream &operator<<(const GNet &model, std::ostream &output) {
 			<< "</graph>\n"
 			<< "</graphml>";
 }
+
+} //namespace eda::printer::graphMl
