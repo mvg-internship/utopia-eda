@@ -10,25 +10,21 @@
 
 namespace eda::gate::debugger {
 
-bool isMiterable(GNet* net1, GNet* net2, Hints &hints){
+bool areMiterable(GNet* net1, GNet* net2, Hints &hints) {
   if (net1->nSourceLinks() != net2->nSourceLinks()) {
-    std::cout << "Incorrect inputs of nets\n";
-    return false;
-  }
-  if (net1->nTargetLinks() != net2->nTargetLinks()) {
-    std::cout << "Incorrect outputs of nets\n";
+    CHECK(false) << "Incorrect inputs of nets\n";
     return false;
   }
 
   for (auto sourceLink : net1->sourceLinks()) {
     if (hints.sourceBinding.get()->find(sourceLink) == hints.sourceBinding.get()->end()) {
-      std::cout << "Incorrect inputs in hints\n";
+      CHECK(false) << "Incorrect inputs in hints\n";
       return false;
     }
   }
   for (auto targetLink : net1->targetLinks()) {
     if (hints.targetBinding.get()->find(targetLink) == hints.sourceBinding.get()->end()) {
-      std::cout << "Incorrect outputs in hints\n";
+      CHECK(false) << "Incorrect outputs in hints\n";
       return false;
     }
   }
@@ -36,45 +32,39 @@ bool isMiterable(GNet* net1, GNet* net2, Hints &hints){
   return true;
 }
 
-GNet* miter(GNet* net1, GNet* net2, Hints &hints){
+GNet* miter(GNet* net1, GNet* net2, Hints &hints) {
  
-  if (not isMiterable(net1, net2, hints)) {
+  if (not areMiterable(net1, net2, hints)) {
     return nullptr;
   }
 
-  SignalList inputs;
-  SignalList xorSignalList;
-  GNet *miter = new GNet();
+  SignalList inputs, xorSignalList;
+  GNet* miter = new GNet();
   miter->addNet(*net1);
   miter->addNet(*net2);
- 
   for (auto bind : *hints.sourceBinding.get()) {
-    for (unsigned i = 0; i < Gate::get(bind.first.source)->arity(); i++) {
-      const GateId inputId = miter->addIn(); 
-      inputs.push_back(Signal::always(inputId));
+    GateId newInputId = miter->addIn();
+    if (Gate::get(bind.first.target)->func() == GateSymbol::IN) {
+      miter->setGate(bind.first.target, GateSymbol::NOP, newInputId);
+      miter->setGate(bind.second.target, GateSymbol::NOP, newInputId);
+    } else {
+      miter->setGate(bind.first.target, Gate::get(bind.first.target)->func(), newInputId);
+      miter->setGate(bind.second.target, Gate::get(bind.second.target)->func(), newInputId);
     }
-    GateId newInputId = miter->addGate(GateSymbol::IN, inputs);
-    miter->setGate(Gate::get(bind.first.source)->id(), GateSymbol::NOP, newInputId);
-    miter->setGate(Gate::get(bind.second.source)->id(), GateSymbol::NOP, newInputId);
   }
 
   for (auto bind : *hints.targetBinding.get()) {
-    GateId newOutId = miter->addGate(GateSymbol::XOR, bind.first.target, bind.second.target);
+    GateId newOutId = miter->addXor(bind.first.source, bind.second.source);
     xorSignalList.push_back(Signal::always(newOutId));
-    miter->setGate(bind.first.target, GateSymbol::NOP, newOutId);
-    miter->setGate(bind.second.target, GateSymbol::NOP, newOutId);
+    miter->setGate(newOutId, GateSymbol::XOR, bind.first.source);
+    miter->setGate(newOutId, GateSymbol::XOR, bind.second.source);
   }
 
-  GateId finalOutId = miter->addGate(GateSymbol::OR, xorSignalList);
+  GateId finalOutId = miter->addOr(xorSignalList);
   miter->addOut(finalOutId);
-
   for (auto xorSignal : xorSignalList) {
-    miter->setGate(xorSignal.node(), GateSymbol::NOP, finalOutId); 
+    miter->setGate(finalOutId, GateSymbol::OR, xorSignal.node()); 
   }
-
   return miter;
 } 
 } // namespace eda::gate::debugger
-
-
- 

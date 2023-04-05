@@ -14,10 +14,11 @@
 using namespace eda::gate::debugger;
 using namespace eda::gate::model;
 
-TEST(MiterTest, MiterOutTest) {
-  auto net = makeRand(7, 5);
+TEST(MiterTest, MiterStructureTest) {
+  auto net = makeRand(75, 50);
   std::unordered_map<Gate::Id, Gate::Id> testMap = {};
   auto netCloned = net.get()->clone(testMap);
+  
   GateBinding ibind, obind, tbind;
 
   // Input-to-input correspondence.
@@ -43,7 +44,8 @@ TEST(MiterTest, MiterOutTest) {
   hints.targetBinding  = std::make_shared<GateBinding>(std::move(obind));
   hints.triggerBinding = std::make_shared<GateBinding>(std::move(tbind));
   
-  GNet * mit = miter(net.get(), netCloned, hints);
+  GNet* mit = miter(net.get(), netCloned, hints);
+  std::cout << "nTargetLinks:" << mit->nTargetLinks() << std::endl;
   EXPECT_TRUE(mit->nTargetLinks() == 1);
   EXPECT_TRUE(mit->nSourceLinks() == netCloned->nSourceLinks());
 }
