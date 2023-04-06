@@ -14,7 +14,6 @@ bool linkDontDraw(std::set<std::string> &linksDraw, const Link &link) {
   if (linksDraw.find(linkDescription(link)) == linksDraw.end() &&
       linksDraw.find(linkDescriptionReverse(link)) == linksDraw.end()) {
     linksDraw.insert(linkDescription(link));
-    linksDraw.insert(linkDescriptionReverse(link));
     return true;
   }
   return false;
@@ -37,7 +36,7 @@ std::ostream &operator<<(std::ostream &output, GNet &model) {
   for (size_t numberOfGate = 0; numberOfGate < allGates.size();
        numberOfGate++) {
     output
-        << "<node id=\"n"
+        << "<node id=\""
         << allGates[numberOfGate]->id()
         << "\"/>\n";
     // describing the nodes
