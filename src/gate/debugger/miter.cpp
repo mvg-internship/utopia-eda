@@ -62,12 +62,12 @@ GNet* miter(GNet* net1, GNet* net2, Hints &hints) {
   GateId finalOutId = miter->addOr(xorSignalList);
   miter->addOut(finalOutId);
   miter->setGate(finalOutId, GateSymbol::OR, xorSignalList);
-  int count = 0;
   for (auto bind : *hints.targetBinding.get()) {
-    miter->setGate(bind.first.source, GateSymbol::NOP, xorSignalList[count]);
-    miter->setGate(bind.second.source, GateSymbol::NOP, xorSignalList[count]);
-    count += 1;
+    miter->setGate(bind.first.source, GateSymbol::NOP, Gate::get(bind.first.source)->inputs());
+    miter->setGate(bind.second.source, GateSymbol::NOP, Gate::get(bind.second.source)->inputs());
   }
+  
+  miter->sortTopologically();
   return miter;
 } 
 } // namespace eda::gate::debugger
