@@ -2,7 +2,9 @@
  * \brief Implements translation from Liberty format file to GNet.
  * \author <a href="mailto:anushakov@edu.hse.ru">Aleksander Ushakov</a>
  */
+
 #include "parserGnet.h"
+
 #include <map>
 #include <string>
 
@@ -212,6 +214,22 @@ static GateId buildNet(
     const std::map<size_t, GateId> &inputs,
     const std::map<size_t, std::string> &typeRTLIL);
 
+/// The function checks that it is pin or wire:
+/// if it is wire, then call buildNet on it.
+static GateId buildGate(
+    size_t node,
+    GModel::GNet &net,
+    const std::map<size_t, GateSymbol> &typeFunc,
+    const std::map<size_t, std::pair<size_t, size_t>> &cell,
+    const std::map<size_t, GateId> &inputs,
+    const std::map<size_t, std::string> &typeRTLIL) {
+  auto it = inputs.find(node);
+  if (it != inputs.end()) {
+    return it->second;
+  }
+  return buildNet(node, net, typeFunc, cell, inputs, typeRTLIL);
+}
+
 /// The function creates Gnet from ordinary cells.
 static GateId makeJustCellNet(
     const size_t root,
@@ -220,54 +238,22 @@ static GateId makeJustCellNet(
     const std::map<size_t, std::pair<size_t, size_t>> &cell,
     const std::map<size_t, GateId> &inputs,
     const std::map<size_t, std::string> &typeRTLIL) {
-  std::pair<size_t, size_t> rootCell = cell.at(root);
-  bool isPin1 = inputs.find(rootCell.first) != inputs.end();
-  bool isPin2 = inputs.find(rootCell.second) != inputs.end();
-  Gate::SignalList inputs_;
   GateSymbol func = typeFunc.find(root)->second;
+  std::pair<size_t, size_t> rootCell = cell.at(root);
   size_t leftLeaf = rootCell.first;
   size_t rightLeaf = rootCell.second;
-  if (isPin1 && isPin2) {
-    // The condition is needed to check neg operator for the cell.
-    // leftLeaf == rightLeaf, when the cell contains of neg operator.
-    if (leftLeaf != rightLeaf) {
-      GateId leftLeaf_ = inputs.find(leftLeaf)->second;
-      inputs_.push_back(Gate::Signal::always(leftLeaf_));
-      GateId rightLeaf_ = inputs.find(rightLeaf)->second;
-      inputs_.push_back(Gate::Signal::always(rightLeaf_));
-    } else {
-      GateId oneLeaf = inputs.find(leftLeaf)->second;
-      inputs_.push_back(Gate::Signal::always(oneLeaf));
-    }
-    return net.addGate(func, inputs_);
-  } else if (isPin1 && !isPin2) {
-    GateId leftLeaf_ = inputs.find(leftLeaf)->second;
-    inputs_.push_back(Gate::Signal::always(leftLeaf_));
-    GateId rightLeaf_ = buildNet(rightLeaf, net, typeFunc, cell, inputs, typeRTLIL);
-    inputs_.push_back(Gate::Signal::always(rightLeaf_));
-    return net.addGate(func, inputs_);
-  } else if (!isPin1 && isPin2) {
-    GateId leftLeaf_ = buildNet(leftLeaf, net, typeFunc, cell, inputs, typeRTLIL);
-    inputs_.push_back(Gate::Signal::always(leftLeaf_));
-    GateId rightLeaf_ = inputs.find(rightLeaf)->second;
-    inputs_.push_back(Gate::Signal::always(rightLeaf_));
-    return net.addGate(func, inputs_);
-  } else {
-    if (leftLeaf != rightLeaf) {
-      GateId leftLeaf_ = buildNet(leftLeaf, net, typeFunc, cell, inputs, typeRTLIL);
-      inputs_.push_back(Gate::Signal::always(leftLeaf_));
-      GateId rightLeaf_ = buildNet(rightLeaf, net, typeFunc, cell, inputs, typeRTLIL);
-      inputs_.push_back(Gate::Signal::always(rightLeaf_));
-    } else {
-      size_t singleLeaf = leftLeaf;
-      GateId sLeaf_ = buildNet(singleLeaf, net, typeFunc, cell, inputs, typeRTLIL);
-      inputs_.push_back(Gate::Signal::always(sLeaf_));
-    }
-    return net.addGate(func, inputs_);
+  GateId lLeaf_ = buildGate(leftLeaf, net, typeFunc, cell, inputs, typeRTLIL);
+  Gate::SignalList inputs_;
+  inputs_.push_back(Gate::Signal::always(lLeaf_));
+  if (leftLeaf != rightLeaf) {
+    GateId rLeaf_ = buildGate(rightLeaf, net, typeFunc, cell, inputs, typeRTLIL);
+    inputs_.push_back(Gate::Signal::always(rLeaf_));
   }
+  return net.addGate(func, inputs_);
 }
 
-/// The function creates Net with help a root and a tree.
+/// The function creates Net with help a root and a tree,
+/// which is placed in cell container.
 static GateId buildNet(
     const size_t root,
     GModel::GNet &net,
@@ -296,7 +282,7 @@ static void createTree(
     std::map<size_t, std::pair<size_t, size_t>> &cell,
     std::map<size_t, std::string> &typeRTLIL) {
   for (auto it1 = cells.begin(); it1 != cells.end(); ++it1) {
-    bool notOp = 0;
+    bool notOp = false;
     GateSymbol f;
     size_t firstWire, secondWire, thirdWire;
     size_t typeFunction = it1->second->type.index_;
@@ -309,7 +295,7 @@ static void createTree(
       f = determineGateSymbol(typeFunction, typeRTLIL, firstWire);
       typeFunc.emplace(firstWire, f);
       if (f == GateSymbol::NOT) {
-        notOp = 1;
+        notOp = true;
       }
       ++it2;
     }
@@ -317,7 +303,7 @@ static void createTree(
       index = it2->second.as_wire()->name.index_;
       if (!notOp) {
         secondWire = index;
-        notOp = 0;
+        notOp = false;
       } else {
         secondWire = index;
         thirdWire = secondWire;
