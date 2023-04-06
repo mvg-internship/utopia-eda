@@ -6,6 +6,6 @@
 using namespace eda::printer::graphMl;
 
 TEST(toGraphMlTest,all) {
-  GNet test = *makeRand(5, 5);
+  GNet test = *makeRand(1000, 1000);
   std::cout << test;
 }
