@@ -37,7 +37,7 @@ std::ostream &operator<<(std::ostream &output, GNet &model) {
   for (size_t numberOfGate = 0; numberOfGate < allGates.size();
        numberOfGate++) {
     output
-        << "<node id = \"n"
+        << "<node id=\"n"
         << allGates[numberOfGate]->id()
         << "\"/>\n";
     // describing the nodes
@@ -49,12 +49,12 @@ std::ostream &operator<<(std::ostream &output, GNet &model) {
         std::string link_deskription =
             linkDescription(allLinksFromGate[numberOfLink]);
         output
-            << "<edge id = \"l" + link_deskription + "\" source = \""
+            << "<edge id=\"l" + link_deskription + "\" source=\""
             << allLinksFromGate[numberOfLink].source
-            << "\" target = \""
+            << "\" target=\""
             << allLinksFromGate[numberOfLink].target
             << "\">\n"
-            << "<data key = \"l_d" + link_deskription + "\">"
+            << "<data key=\"l_d" + link_deskription + "\">"
             << allLinksFromGate[numberOfLink].input
             << "</data>\n"
             << "</edge>\n";
