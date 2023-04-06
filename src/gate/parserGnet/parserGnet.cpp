@@ -14,30 +14,22 @@ using eda::gate::model::Gate;
 using eda::gate::model::GateSymbol;
 using GateId = eda::gate::model::Gate::Id;
 
-/// The functions creates inputs and outputs containers.
-static void printWires(
+/// The functions creates inputs container.
+static void fillInputs(
     const YLib::dict<RTlil::IdString, RTlil::Wire*> &wires,
     GModel::GNet &net,
-    std::map<size_t, GateId> &inputs,
-    std::map<size_t, GateId> &outputs) {
-  for (auto it1 = wires.begin(); it1 != wires.end(); ++it1) {
-    size_t index;
-    auto wireIdStringYosys = it1->first;
-    index = wireIdStringYosys.index_;
-    auto propertyWireYosys = it1->second;
-    if (propertyWireYosys->port_input == 1) {
+    std::map<size_t, GateId> &inputs) {
+  for (auto [name, wire]: wires) {
+    size_t index = name.index_;
+    if (wire->port_input) {
       GateId inputId = net.addIn();
       inputs.emplace(index, inputId);
-    }
-    if (propertyWireYosys->port_output == 1) {
-      GateId outputId;
-      outputs.emplace(index, outputId);
     }
   }
 }
 
 /// The function determinates GateSymbol.
-static GateSymbol functionGateSymbol(
+static GateSymbol determineGateSymbol(
     const size_t type,
     std::map<size_t, std::string> &typeRTLIL,
     const size_t index) {
@@ -109,7 +101,7 @@ static GateSymbol functionGateSymbol(
 }
 
 /// The function creates input list for creating DFFsr module.
-static Gate::SignalList typeDffsr(
+static Gate::SignalList makeInputsDffsr(
     const std::string type,
     const size_t upperField,
     const std::map<size_t, std::pair<size_t, size_t>> &cell,
@@ -130,7 +122,8 @@ static Gate::SignalList typeDffsr(
   // lowestField is index of clock pin, which places in first cell.
   size_t lowestField = cell.find(upperField)->second.second;
   GateId clock = inputs.find(lowestField)->second;
-  // type[7] is P - positive or N - negative clock pin, where 'type' consist of information about the cell.
+  // type[7] is P - positive or N - negative clock pin,
+  // where 'type' consist of information about the cell.
   if (type[7] == 'P') {
     inputs_.push_back(Gate::Signal::posedge(clock));
   } else {
@@ -139,13 +132,15 @@ static Gate::SignalList typeDffsr(
   // secondMidField is index of reset pin, which places in second cell
   size_t secondMidField = cell.find(secondUpperField)->second.first;
   GateId reset = inputs.find(secondMidField)->second;
-  //type[8] is P - positive or N - negative reset pin, where 'type' consist of information about the cell.
+  // type[8] is P - positive or N - negative reset pin,
+  // where 'type' consist of an information about the cell.
   if (type[8] == 'P') {
     inputs_.push_back(Gate::Signal::level1(reset));
   } else {
     inputs_.push_back(Gate::Signal::level0(reset));
   }
-  // type[9] is P - positive or N - negative preset pin, where 'type' consist of information about the cell.
+  // type[9] is P - positive or N - negative preset pin,
+  // where 'type' consist of information about the cell.
   GateId preset = inputs.find(secondUpperField)->second;
   if (type[9] == 'P') {
     inputs_.push_back(Gate::Signal::level1(preset));
@@ -155,15 +150,15 @@ static Gate::SignalList typeDffsr(
   return inputs_;
 }
 
-/// The function creates Net with help a root and a tree.
-static GateId buildNet(
+/// The search and make of specific cell: Latch, Dff, Dffsr.
+static bool makeSpecCell(
+    GateId &outId,
     const size_t root,
     GModel::GNet &net,
     const std::map<size_t, GateSymbol> &typeFunc,
     const std::map<size_t, std::pair<size_t, size_t>> &cell,
     const std::map<size_t, GateId> &inputs,
     const std::map<size_t, std::string> &typeRTLIL) {
-  // The search specific cell: Latch, Dff, Dffsr.
   for (auto it: cell) {
     size_t middleField = it.second.first;
     if (middleField == root) {
@@ -176,44 +171,63 @@ static GateId buildNet(
         GateId data = inputs.find(upperField)->second;
         GateId clock = inputs.find(lowerField)->second;
         if (typeRTLIL.find(upperField)->second == "_DLATCH_P_") {
-          return net.addLatch(data, clock);
-        } else {          
+          outId = net.addLatch(data, clock);
+          return true;
+        } else {
           inputs_.push_back(Gate::Signal::always(data));
           inputs_.push_back(Gate::Signal::level0(clock));
-          return net.addGate(GateSymbol::LATCH, inputs_);
+          outId = net.addGate(GateSymbol::LATCH, inputs_);
+          return true;
         }
       }
       if (curr == GateSymbol::DFF) {
         GateId data = inputs.find(lowerField)->second;
         GateId clock = inputs.find(upperField)->second;
         if (typeRTLIL.find(upperField)->second == "_DFF_P_") {
-          return net.addDff(data, clock);
+          outId = net.addDff(data, clock);
+          return true;
         } else {
           inputs_.push_back(Gate::Signal::always(data));
           inputs_.push_back(Gate::Signal::negedge(clock));
-          return net.addGate(GateSymbol::DFF, inputs_);
+          outId = net.addGate(GateSymbol::DFF, inputs_);
+          return true;
         }
       }
       if (curr == GateSymbol::DFFrs) {
         std::string type = typeRTLIL.find(upperField)->second;
-        inputs_ = typeDffsr(type, upperField, cell, inputs);
-        return net.addGate(GateSymbol::DFFrs, inputs_);
+        inputs_ = makeInputsDffsr(type, upperField, cell, inputs);
+        outId = net.addGate(GateSymbol::DFFrs, inputs_);
+        return true;
       }
     }
   }
-  bool flag1 = 0, flag2 = 0;
-  size_t leftLeaf = cell.find(root)->second.first;
-  size_t rightLeaf = cell.find(root)->second.second;
+  return false;
+}
+
+static GateId buildNet(
+    const size_t root,
+    GModel::GNet &net,
+    const std::map<size_t, GateSymbol> &typeFunc,
+    const std::map<size_t, std::pair<size_t, size_t>> &cell,
+    const std::map<size_t, GateId> &inputs,
+    const std::map<size_t, std::string> &typeRTLIL);
+
+/// The function creates Gnet from ordinary cells.
+static GateId makeJustCellNet(
+    const size_t root,
+    GModel::GNet &net,
+    const std::map<size_t, GateSymbol> &typeFunc,
+    const std::map<size_t, std::pair<size_t, size_t>> &cell,
+    const std::map<size_t, GateId> &inputs,
+    const std::map<size_t, std::string> &typeRTLIL) {
+  std::pair<size_t, size_t> rootCell = cell.at(root);
+  bool isPin1 = inputs.find(rootCell.first) != inputs.end();
+  bool isPin2 = inputs.find(rootCell.second) != inputs.end();
   Gate::SignalList inputs_;
-  // If leaf is a wire of pin type, then flag == 1, else it is just wire.
-  if (inputs.find(leftLeaf) != inputs.end()) {
-    flag1 = 1;
-  }
-  if (inputs.find(rightLeaf) != inputs.end()) {
-    flag2 = 1;
-  }
   GateSymbol func = typeFunc.find(root)->second;
-  if (flag1 && flag2) {
+  size_t leftLeaf = rootCell.first;
+  size_t rightLeaf = rootCell.second;
+  if (isPin1 && isPin2) {
     // The condition is needed to check neg operator for the cell.
     // leftLeaf == rightLeaf, when the cell contains of neg operator.
     if (leftLeaf != rightLeaf) {
@@ -226,22 +240,19 @@ static GateId buildNet(
       inputs_.push_back(Gate::Signal::always(oneLeaf));
     }
     return net.addGate(func, inputs_);
-  }
-  if (flag1 && !flag2) {
+  } else if (isPin1 && !isPin2) {
     GateId leftLeaf_ = inputs.find(leftLeaf)->second;
     inputs_.push_back(Gate::Signal::always(leftLeaf_));
     GateId rightLeaf_ = buildNet(rightLeaf, net, typeFunc, cell, inputs, typeRTLIL);
     inputs_.push_back(Gate::Signal::always(rightLeaf_));
     return net.addGate(func, inputs_);
-  }
-  if (!flag1 && flag2) {
+  } else if (!isPin1 && isPin2) {
     GateId leftLeaf_ = buildNet(leftLeaf, net, typeFunc, cell, inputs, typeRTLIL);
     inputs_.push_back(Gate::Signal::always(leftLeaf_));
     GateId rightLeaf_ = inputs.find(rightLeaf)->second;
     inputs_.push_back(Gate::Signal::always(rightLeaf_));
     return net.addGate(func, inputs_);
-  }
-  if (!flag1 && !flag2) {
+  } else {
     if (leftLeaf != rightLeaf) {
       GateId leftLeaf_ = buildNet(leftLeaf, net, typeFunc, cell, inputs, typeRTLIL);
       inputs_.push_back(Gate::Signal::always(leftLeaf_));
@@ -249,15 +260,36 @@ static GateId buildNet(
       inputs_.push_back(Gate::Signal::always(rightLeaf_));
     } else {
       size_t singleLeaf = leftLeaf;
-      GateId singleLeaf_ = buildNet(singleLeaf, net, typeFunc, cell, inputs, typeRTLIL);
-      inputs_.push_back(Gate::Signal::always(singleLeaf_));
+      GateId sLeaf_ = buildNet(singleLeaf, net, typeFunc, cell, inputs, typeRTLIL);
+      inputs_.push_back(Gate::Signal::always(sLeaf_));
     }
     return net.addGate(func, inputs_);
   }
 }
 
+/// The function creates Net with help a root and a tree.
+static GateId buildNet(
+    const size_t root,
+    GModel::GNet &net,
+    const std::map<size_t, GateSymbol> &typeFunc,
+    const std::map<size_t, std::pair<size_t, size_t>> &cell,
+    const std::map<size_t, GateId> &inputs,
+    const std::map<size_t, std::string> &typeRTLIL) {
+  GateId out;
+  if (makeSpecCell(out, root, net, typeFunc, cell, inputs, typeRTLIL)) {
+    return out;
+  }
+  return makeJustCellNet(
+        root,
+        net,
+        typeFunc,
+        cell,
+        inputs,
+        typeRTLIL);
+}
+
 /// The function creates a tree for Liberty module.
-static void printCells(
+static void createTree(
     const YLib::dict<RTlil::IdString, RTlil::Cell*> &cells,
     GModel::GNet &net,
     std::map<size_t, GateSymbol> &typeFunc,
@@ -274,7 +306,7 @@ static void printCells(
     //the filling just cell
     if (it2 != endConnections) {
       firstWire = index;
-      f = functionGateSymbol(typeFunction, typeRTLIL, firstWire);
+      f = determineGateSymbol(typeFunction, typeRTLIL, firstWire);
       typeFunc.emplace(firstWire, f);
       if (f == GateSymbol::NOT) {
         notOp = 1;
@@ -306,31 +338,30 @@ static void printCells(
     if (it2 != it1->second->connections_.end()) {
       secondWire = it2->second.as_wire()->name.index_;
       cell.emplace(thirdWire, std::make_pair(firstWire, secondWire));
-      f = functionGateSymbol(typeFunction, typeRTLIL, thirdWire);
+      f = determineGateSymbol(typeFunction, typeRTLIL, thirdWire);
       typeFunc.emplace(thirdWire, f);
     }
   }
 }
 
-/// The function finds output ID and determine root of tree for the output.
-static void printConnections(
+/// The function determines root of the tree and create an output for the root.
+static void createOutput(
     const std::vector<std::pair<RTlil::SigSpec, RTlil::SigSpec>> &connections,
     GModel::GNet &net,
     std::map<size_t, GateSymbol> &typeFunc,
     std::map<size_t, std::pair<size_t, size_t>> &cell,
     std::map<size_t, GateId> &inputs,
-    std::map<size_t, GateId> &outputs,
     std::map<size_t, std::string> &typeRTLIL) {
   for (auto it1 = connections.begin(); it1 != connections.end(); ++it1) {
     size_t root = it1->second.as_wire()->name.index_;
     // The case, when output is not equal input.
     if (inputs.find(root) == inputs.end()) {
       GateId output = buildNet(root, net, typeFunc, cell, inputs, typeRTLIL);
-      outputs.find(root)->second = net.addOut(output);
+      net.addOut(output);
     } else {
       GateId oneLeaf = inputs.find(root)->second;
       GateId output = net.addGate(GateSymbol::NOP, Gate::Signal::always(oneLeaf));
-      outputs.find(root)->second = net.addOut(output);
+      net.addOut(output);
     }
   }
 }
@@ -338,21 +369,19 @@ static void printConnections(
 void translateModuleToGNet(
     const std::pair<RTlil::IdString, RTlil::Module*> &m,
     GModel::GNet &net) {
-  std::map<size_t, GateId> outputs;
   std::map<size_t, GateId> inputs;
   std::map<size_t, std::pair<size_t, size_t>> cell;
   std::map<size_t, GateSymbol> typeFunc;
   std::map<size_t, std::string> typeRTLIL;
-  printWires(m.second->wires_, net, inputs, outputs);
-  printCells(m.second->cells_, net, typeFunc, cell, typeRTLIL);
-  printConnections(
-      m.second->connections_,
-      net,
-      typeFunc,
-      cell,
-      inputs,
-      outputs,
-      typeRTLIL);
+  fillInputs(m.second->wires_, net, inputs);
+  createTree(m.second->cells_, net, typeFunc, cell, typeRTLIL);
+  createOutput(
+        m.second->connections_,
+        net,
+        typeFunc,
+        cell,
+        inputs,
+        typeRTLIL);
 }
 
 void translateDesignToGNet(
