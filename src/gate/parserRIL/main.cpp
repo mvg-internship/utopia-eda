@@ -11,13 +11,9 @@
 namespace RTlil = Yosys::RTLIL;
 namespace YLib = Yosys::hashlib;
 
-void printModules(const int ind, std::ostream &out, std::ofstream &fout) {
+void printModules(const RTlil::IdString module, std::ostream &out, std::ofstream &fout) {
 
-  for (const auto &it1 : RTlil::IdString::global_id_index_) {
-    if (it1.second == ind) {
-      out << it1.first << " - module of index: " << it1.second << "\n";
-    }
-  }
+  out << module.str() << " - module of index: " << module.index_ << "\n";
 
 }
 
@@ -34,13 +30,11 @@ void printWires(const YLib::dict<RTlil::IdString, RTlil::Wire *> &ywires,
     unsigned index;
     auto portOutput = it1->second->port_output;
     auto portInput = it1->second->port_input;
-    for (const auto &it2 : RTlil::IdString::global_id_index_) {
-      if (it2.second == it1->first.index_) {
-        out << "  " << it2.first << " - wire of index: " << it2.second << "\n";
-        index = it2.second;
-        temp = it2.first;
-      }
-    }
+    index = it1->first.index_;
+    temp = it1->first.str();
+
+    out << "  " << temp << " - wire of index: " << index << "\n";
+
     width.append(std::to_string(it1->second->width));
     if (it1->second->width > 1) {
       out << "    type: bus with width " << it1->second->width << "\n";
@@ -75,17 +69,23 @@ void printWires(const YLib::dict<RTlil::IdString, RTlil::Wire *> &ywires,
 std::string logicFunction(size_t type) {
 
   std::string func;
+  if (type == ID($add).index_) {
+    func = "+";
+  }
+  if (type == ID($sub).index_) {
+    func = "-";
+  }
   if (type == ID($and).index_) {
     func = "&";
-  }
-  if (type == ID($not).index_) {
-    func = "~";
   }
   if (type == ID($or).index_) {
     func = "|";
   }
   if (type == ID($xor).index_) {
     func = "^";
+  }
+  if (type == ID($not).index_) {
+    func = "~";
   }
   return func;
 
@@ -150,12 +150,9 @@ void printCells(const YLib::dict<RTlil::IdString, RTlil::Cell *> &cells,
 
   out << "Cells:" << "\n";
   for (auto it1 = cells.begin(); it1 != cells.end(); ++it1) {
-    for (const auto &it2 : RTlil::IdString::global_id_index_) {
-      if (it2.second == it1->first.index_) {
-        out << "  " << it2.first << " cell of index " << it2.second << " type "
-            << it1->second->type.index_ << "\n";
-      }
-    }
+    out << "  " << it1->first.str() << " cell of index " << it1->first.index_
+        << " type " << it1->second->type.index_ << "\n";
+
     size_t i = 0;
     bool flag = 0;
     std::string symbol;
@@ -480,7 +477,7 @@ void printParams(
   std::map<int, std::string> typeFunc;
   std::map<int, std::string> wires;
   std::map<int, std::pair<int, int>> cell;
-  printModules(m.first.index_, out, fout);
+  printModules(m.first, out, fout);
   out << "\n";
   printWires(m.second->wires_, out, fout, inputs, outputs, wires);
   out << "\n";
