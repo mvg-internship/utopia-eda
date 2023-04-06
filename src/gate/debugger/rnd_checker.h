@@ -21,7 +21,7 @@ namespace eda::gate::debugger {
 
 // generator return value
 // EQUAL returns if there exhaustive check and nets are equal
-// UNKNOW returns if there NO exhaustive check and nets are equal
+// UNKNOWN returns if there NO exhaustive check and nets are equal
 enum Result {
   ERROR = -2,
   UNKNOWN = -1,
@@ -29,8 +29,5 @@ enum Result {
   NOTEQUAL = 1,
 };
 
-/* generator gets miter and makes а checks the specified number of               * times (@param tries) OR all possible values(@param flag)
-* flag = true => exhaustive check (default)
-*/
-Result Generator(GNet &miter, const unsigned int tries, const bool flag);
+Result Generator(GNet &miter, const unsigned int tries, const bool exhaustive);
 } // namespace eda::gate::debugger
