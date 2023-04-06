@@ -65,6 +65,7 @@ std::ostream &operator<<(std::ostream &output, GNet &model) {
   output
       << "</graph>\n"
       << "</graphml>";
+  return output;
 }
 
 } //namespace eda::printer::graphMl
