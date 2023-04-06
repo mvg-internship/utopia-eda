@@ -72,7 +72,7 @@ std::string logicFunction(size_t type) {
 
 }
 
-std::string buildRIL(int root, std::map<int, std::pair<int, int>> &cell,
+std::string buildRIL(std::ostringstream &buf, int root, std::map<int, std::pair<int, int>> &cell,
                      std::map<int, std::string> &inputs,
                      std::map<int, std::string> &typeFunc) {
 
@@ -92,28 +92,28 @@ std::string buildRIL(int root, std::map<int, std::pair<int, int>> &cell,
     }
   } else if (!flag1 && !flag2) {
     if (leftLeaf != rightLeaf) {
-      return "(" +
-             buildRIL(leftLeaf, cell, inputs, typeFunc) +
-             strCells +
-             buildRIL(rightLeaf, cell, inputs, typeFunc) +
+      buf << "(" <<
+             buildRIL(buf, leftLeaf, cell, inputs, typeFunc) <<
+             strCells <<
+             buildRIL(buf, rightLeaf, cell, inputs, typeFunc) <<
              ")";
     } else {
-      return strCells + "(" +
-             buildRIL(leftLeaf, cell, inputs, typeFunc) +
+      buf << strCells << "(" <<
+             buildRIL(buf, leftLeaf, cell, inputs, typeFunc) <<
              ")";
     }
   } else if (!flag1 && flag2) {
-    return "(" +
-           buildRIL(leftLeaf, cell, inputs, typeFunc) +
-           strCells +
-           inputs.find(rightLeaf)->second + ")";
+    buf << "(" <<
+           buildRIL(buf, leftLeaf, cell, inputs, typeFunc) <<
+           strCells <<
+           inputs.find(rightLeaf)->second << ")";
   } else {
-    return "(" + inputs.find(leftLeaf)->second +
-           strCells +
-           buildRIL(rightLeaf, cell, inputs, typeFunc) +
+    buf << "(" << inputs.find(leftLeaf)->second <<
+           strCells <<
+           buildRIL(buf, rightLeaf, cell, inputs, typeFunc) <<
            ")";
   }
-
+  return buf.str();
 }
 
 void printCells(const YLib::dict<RTlil::IdString, RTlil::Cell *> &cells,
@@ -171,14 +171,14 @@ void printConnections(
     std::map<int, std::pair<int, int>> &cell,
     std::map<int, std::string> &inputs, std::map<int, std::string> &outputs,
     std::map<int, std::string> &typeFunc) {
-
+  std::ostringstream buf;
   for (auto it1 = connections.begin(); it1 != connections.end(); ++it1) {
     auto connAsWireInput = it1->second.as_wire()->name.index_;
     auto connAsWireOutput = it1->first.as_wire()->name.index_;
     if (inputs.find(connAsWireInput) == inputs.end()) {
       fout << "@(*) {\n";
       fout << "   " << outputs.find(connAsWireOutput)->second
-           << " = " << buildRIL(connAsWireInput, cell, inputs, typeFunc) << ";\n";
+           << " = " << buildRIL(buf, connAsWireInput, cell, inputs, typeFunc) << ";\n";
       fout << "}\n";
     } else {
       fout << "@(*) {\n";
@@ -187,7 +187,6 @@ void printConnections(
       fout << "}\n";
     }
   }
-
 }
 
 void printActions(const std::vector<RTlil::SigSig> &actions,
