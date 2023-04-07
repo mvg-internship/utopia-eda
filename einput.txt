@@ -1,0 +1,2 @@
+INPUT(G0)
+G0 = DFF(G10)
