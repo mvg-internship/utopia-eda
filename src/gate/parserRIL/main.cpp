@@ -11,12 +11,12 @@
 namespace RTlil = Yosys::RTLIL;
 namespace YLib = Yosys::hashlib;
 
-void printHeaders(const YLib::dict<RTlil::IdString, RTlil::Wire *> &ywires,
-                std::ofstream &fout,
-                std::map<int, std::string> &inputs,
-                std::map<int, std::string> &outputs,
-                std::map<int, std::string> &wires) {
-
+void printHeaders(
+   const YLib::dict<RTlil::IdString, RTlil::Wire *> &ywires,
+   std::ostream &fout,
+   std::map<int, std::string> &inputs,
+   std::map<int, std::string> &outputs,
+   std::map<int, std::string> &wires) {
   for (auto it1 = ywires.begin(); it1 != ywires.end(); ++it1) {
     auto portOutput = it1->second->port_output;
     auto portInput = it1->second->port_input;
@@ -29,26 +29,24 @@ void printHeaders(const YLib::dict<RTlil::IdString, RTlil::Wire *> &ywires,
       fout << "output " << width << " " << wireName << ";\n";
       outputs.emplace(index, wireName);
     }
-    if (portInput == 1) {
+    if (portInput == true) {
       wireName.erase(0, 1);
       fout << "input " << width << " " << wireName << ";\n";
       inputs.emplace(index, wireName);
     }
-    if (portOutput == 1) {
+    if (portOutput == true) {
       wireName.erase(0, 1);
       fout << "output " << width << " " << wireName << ";\n";
       outputs.emplace(index, wireName);
     }
-    if (portOutput == 0 && portInput == 0) {
+    if (portOutput == false && portInput == false) {
       wires.emplace(index, wireName);
       fout << "wire " << width << " " << wireName << ";\n";
     }
   }
-
 }
 
 std::string logicFunction(size_t type) {
-
   std::string func;
   if (type == ID($add).index_) {
     func = "+";
@@ -69,13 +67,14 @@ std::string logicFunction(size_t type) {
     func = "~";
   }
   return func;
-
 }
 
-std::string buildRIL(std::ostringstream &buf, int root, std::map<int, std::pair<int, int>> &cell,
-                     std::map<int, std::string> &inputs,
-                     std::map<int, std::string> &typeFunc) {
-
+void buildRIL(
+   int root,
+   std::map<int, std::pair<int, int>> &cell,
+   std::map<int, std::string> &inputs,
+   std::map<int, std::string> &typeFunc,
+   std::ostream &fout) {
   auto rootCell = cell.at(root);
   bool flag1  = inputs.find(rootCell.first) != inputs.end();
   bool flag2  = inputs.find(rootCell.second) != inputs.end();
@@ -86,58 +85,60 @@ std::string buildRIL(std::ostringstream &buf, int root, std::map<int, std::pair<
   std::string strCells = typeFunc.find(cellPairFirst)->second;
   if (flag1 && flag2) {
     if (leftLeaf != rightLeaf) {
-      buf << inputs.find(rightLeaf)->second << strCells << inputs.find(leftLeaf)->second;
+      fout << inputs.find(rightLeaf)->second << strCells << inputs.find(leftLeaf)->second;
     } else {
-      buf << strCells << inputs.find(rightLeaf)->second;
+      fout << strCells << inputs.find(rightLeaf)->second;
     }
   } else if (!flag1 && !flag2) {
     if (leftLeaf != rightLeaf) {
-      buf << "(" <<
-             buildRIL(buf, leftLeaf, cell, inputs, typeFunc) <<
-             strCells <<
-             buildRIL(buf, rightLeaf, cell, inputs, typeFunc) <<
-             ")";
+      fout << "(";
+      buildRIL(leftLeaf, cell, inputs, typeFunc, fout);
+      fout << strCells;
+      buildRIL(rightLeaf, cell, inputs, typeFunc, fout);
+      fout << ")";
     } else {
-      buf << strCells << "(" <<
-             buildRIL(buf, leftLeaf, cell, inputs, typeFunc) <<
-             ")";
+      fout << strCells << "(";
+      buildRIL(leftLeaf, cell, inputs, typeFunc, fout);
+      fout << ")";
     }
   } else if (!flag1 && flag2) {
-    buf << "(" <<
-           buildRIL(buf, leftLeaf, cell, inputs, typeFunc) <<
-           strCells <<
-           inputs.find(rightLeaf)->second << ")";
+    fout << "(";
+    buildRIL(leftLeaf, cell, inputs, typeFunc, fout);
+    fout << strCells << inputs.find(rightLeaf)->second << ")";
   } else {
-    buf << "(" << inputs.find(leftLeaf)->second <<
-           strCells <<
-           buildRIL(buf, rightLeaf, cell, inputs, typeFunc) <<
-           ")";
+    fout << "(" << inputs.find(leftLeaf)->second << strCells;
+    buildRIL(rightLeaf, cell, inputs, typeFunc, fout);
+    fout << ")";
   }
-  return buf.str();
 }
 
-//void fillCells(std::map<int, std::pair<int, int>> &cell,
-//               std::map<int, std::string> &typeFunc,
-//               int &connAsWire, RTlil::Cell* const cellSec) {
+//void fillCells(
+//   std::map<int, std::pair<int, int>> &cell,
+//   std::map<int, std::string> &typeFunc,
+//   RTlil::Cell* const cellSec) {
 //    bool flag = 0;
 //    std::string symbol;
 //    int a, b, c;
 
 //    const auto &conns = cellSec->connections_;
 //    auto it = conns.begin();
-
+//    auto connAsWire = it->second.as_wire()->name.index_;
 //    if (++it == conns.end()) {
 //      return;
 //    }
+//    connAsWire = it->second.as_wire()->name.index_;
 //    a = connAsWire;
 //    symbol = logicFunction(cellSec->type.index_);
 //    typeFunc.emplace(a, symbol);
+
 //    if (symbol == "~") {
 //      flag = 1;
 //    }
+//    //end 1st
 //    if (++it == conns.end()) {
 //      return;
 //    }
+//    connAsWire = it->second.as_wire()->name.index_;
 //    if (!flag) {
 //      b = connAsWire;
 //      flag = 0;
@@ -146,39 +147,46 @@ std::string buildRIL(std::ostringstream &buf, int root, std::map<int, std::pair<
 //      c = b;
 //      cell.emplace(a, std::make_pair(b, c));
 //    }
+//    //end 2nd
 //    if (++it == conns.end()) {
 //      return;
 //    }
+//    connAsWire = it->second.as_wire()->name.index_;
 //    c = connAsWire;
 //    cell.emplace(a, std::make_pair(b, c));
+//    //end 3rd
 //    if (++it == conns.end()) {
 //      return;
 //    }
+//    connAsWire = it->second.as_wire()->name.index_;
 //    a = connAsWire;
+//    //end 4th
 //    if (++it == conns.end()) {
 //      return;
 //    }
+//    connAsWire = it->second.as_wire()->name.index_;
 //    b = connAsWire;
 //    cell.emplace(c, std::make_pair(a, b));
 //    typeFunc.emplace(c, symbol);
 
 //}
 
-void printCells(const YLib::dict<RTlil::IdString, RTlil::Cell *> &cells,
-                std::ofstream &fout,
-                std::map<int, std::pair<int, int>> &cell,
-                std::map<int, std::string> &typeFunc) {
-
+void printCells(
+   const YLib::dict<RTlil::IdString, RTlil::Cell *> &cells,
+   std::ostream &fout,
+   std::map<int, std::pair<int, int>> &cell,
+   std::map<int, std::string> &typeFunc) {
   for (auto it1 = cells.begin(); it1 != cells.end(); ++it1) {
-      size_t i = 0;
-      bool flag = 0;
-      std::string symbol;
-      int a, b, c;
+    size_t i = 0;
+    bool flag = 0;
+    std::string symbol;
+    int a, b, c;
+    //fillCells(cell, typeFunc, it1->second);
+      //comment all lines below for use of fillCells()
     for (auto it2 = it1->second->connections_.begin();
          it2 != it1->second->connections_.end(); ++it2) {
 
       auto connAsWire = it2->second.as_wire()->name.index_;
-      //fillCells(cell, typeFunc, connAsWire, it1->second);
 
       i++;
       if (i == 1) {
@@ -213,23 +221,23 @@ void printCells(const YLib::dict<RTlil::IdString, RTlil::Cell *> &cells,
       }
     }
   }
-
 }
 
 void printConnections(
-    const std::vector<std::pair<RTlil::SigSpec, RTlil::SigSpec>> &connections,
-    std::ofstream &fout,
-    std::map<int, std::pair<int, int>> &cell,
-    std::map<int, std::string> &inputs, std::map<int, std::string> &outputs,
-    std::map<int, std::string> &typeFunc) {
+   const std::vector<std::pair<RTlil::SigSpec, RTlil::SigSpec>> &connections,
+   std::ostream &fout,
+   std::map<int, std::pair<int, int>> &cell,
+   std::map<int, std::string> &inputs, std::map<int, std::string> &outputs,
+   std::map<int, std::string> &typeFunc) {
   std::ostringstream buf;
   for (auto it1 = connections.begin(); it1 != connections.end(); ++it1) {
     auto connAsWireInput = it1->second.as_wire()->name.index_;
     auto connAsWireOutput = it1->first.as_wire()->name.index_;
     if (inputs.find(connAsWireInput) == inputs.end()) {
+      buildRIL(connAsWireInput, cell, inputs, typeFunc, fout);
       fout << "@(*) {\n";
       fout << "   " << outputs.find(connAsWireOutput)->second
-           << " = " << buildRIL(buf, connAsWireInput, cell, inputs, typeFunc) << ";\n";
+           << " = " << buf.str() << ";\n";
       fout << "}\n";
     } else {
       fout << "@(*) {\n";
@@ -240,32 +248,28 @@ void printConnections(
   }
 }
 
-void printExistingAct(int key, const std::map<int, std::string> &type, std::string suffix, std::ostream &fout) {
-    auto it = type.find(key);
-    if (it != type.end()) {
-        fout << it->second << suffix;
-    }
+void printExistingAct(
+   int key,
+   const std::map<int, std::string> &type,
+   std::string suffix, std::ostream &fout) {
+  auto it = type.find(key);
+  if (it != type.end()) {
+    fout << it->second << suffix;
+  }
 }
 
-void printActions(const std::vector<RTlil::SigSig> &actions,
-                  std::ofstream &fout,
-                  std::map<int, std::string> &inputs,
-                  std::map<int, std::string> &outputs,
-                  std::map<int, std::string> &wires) {
-
-  int actNum = 0;
+void printActions(
+   const std::vector<RTlil::SigSig> &actions,
+   std::ostream &fout,
+   std::map<int, std::string> &inputs,
+   std::map<int, std::string> &outputs,
+   std::map<int, std::string> &wires) {
   for (auto &it : actions) {
-    actNum++;
-
-    bool firstIsWire = it.first.is_wire();
-    bool secondIsWire = it.second.is_wire();
     bool firstIsChunk = it.first.is_chunk();
     bool secondIsChunk = it.second.is_chunk();
-
     if (firstIsChunk && secondIsChunk) {
       auto firstAsChunk = it.first.as_chunk().wire->name.index_;
       auto secondAsChunk = it.second.as_chunk().wire->name.index_;
-
       fout << "  ";
       printExistingAct(firstAsChunk, wires, " = ", fout);
       printExistingAct(firstAsChunk, inputs, " = ", fout);
@@ -278,13 +282,14 @@ void printActions(const std::vector<RTlil::SigSig> &actions,
   }
 }
 
-void printSyncs(const std::vector<RTlil::SyncRule *> &syncs,
-                std::ofstream &fout,
-                std::map<int, std::string> &inputs,
-                std::map<int, std::string> &outputs,
-                std::map<int, std::string> &wires, std::string &state,
-                int &temporary) {
-
+void printSyncs(
+   const std::vector<RTlil::SyncRule *> &syncs,
+   std::ostream &fout,
+   std::map<int, std::string> &inputs,
+   std::map<int, std::string> &outputs,
+   std::map<int, std::string> &wires,
+   std::string &state,
+   int &temporary) {
   for (auto it1 = syncs.begin(); it1 != syncs.end(); ++it1) {
     std::string listSensitivity[]{
         "ST0", // level sensitive: 0
@@ -295,7 +300,6 @@ void printSyncs(const std::vector<RTlil::SyncRule *> &syncs,
         "STa", // always active
         "STi"  // init
     };
-
     std::string currType = listSensitivity[(*it1)->type];
 
     if (currType == "STn") {
@@ -310,39 +314,33 @@ void printSyncs(const std::vector<RTlil::SyncRule *> &syncs,
     if (currType == "ST1") {
       state = "level1";
     }
-
     temporary = (*it1)->signal.as_wire()->name.index_;
-
     if ((*it1)->actions.size() != 0) {
       fout << "@(*) {\n";
       printActions((*it1)->actions, fout, inputs, outputs, wires);
       fout << "}\n";
     }
   }
-
 }
 
-void printCaseRule(std::vector<RTlil::CaseRule *> &cases,
-                   std::ofstream &fout,
-                   std::map<int, std::string> &inputs,
-                   std::map<int, std::string> &outputs,
-                   std::map<int, std::string> &wires) {
-
+void printCaseRule(
+   std::vector<RTlil::CaseRule *> &cases,
+   std::ostream &fout,
+   std::map<int, std::string> &inputs,
+   std::map<int, std::string> &outputs,
+   std::map<int, std::string> &wires) {
   for (auto i : cases) {
     printActions(i->actions, fout, inputs, outputs, wires);
     for (auto j : i->switches) {
       printCaseRule(j->cases, fout, inputs, outputs, wires);
     }
   }
-
 }
 
 void printProcesses(
-    const YLib::dict<RTlil::IdString, RTlil::Process *>
-        &processes,
-    std::ofstream &fout, std::map<int, std::string> &inputs,
-    std::map<int, std::string> &outputs, std::map<int, std::string> &wires) {
-
+   const YLib::dict<RTlil::IdString, RTlil::Process *> &processes,
+   std::ostream &fout, std::map<int, std::string> &inputs,
+   std::map<int, std::string> &outputs, std::map<int, std::string> &wires) {
   for (auto it1 = processes.begin(); it1 != processes.end(); ++it1) {
     std::string state;
     int temporary;
@@ -355,13 +353,11 @@ void printProcesses(
     }
     fout << "}\n";
   }
-
 }
 
 void printParams(
-    const std::pair<RTlil::IdString, RTlil::Module *> &m,
-    std::ofstream &fout) {
-
+   const std::pair<RTlil::IdString, RTlil::Module *> &m,
+   std::ostream &fout) {
   std::map<int, std::string> inputs;
   std::map<int, std::string> outputs;
   std::map<int, std::string> typeFunc;
@@ -374,16 +370,14 @@ void printParams(
   printProcesses(m.second->processes, fout, inputs, outputs, wires);
 
 }
-void printParsed(const RTlil::Design &des,
-                 std::ofstream &fout) {
 
+void printParsed(const RTlil::Design &des, std::ostream &fout) {
   for (auto &m : des.modules_) {
     printParams(m, fout);
   }
-
 }
-int main(int argc, char *argv[]) {
 
+int main(int argc, char *argv[]) {
   Yosys::yosys_setup();
   for (size_t o = 1; o < argc; ++o) {
     std::string filename = argv[o];
@@ -396,11 +390,12 @@ int main(int argc, char *argv[]) {
     if (pos != std::string::npos) {
       filename.replace(pos, extension.length(), extension);
     }
-    std::ofstream fout(filename);
+    std::filebuf fb;
+    fb.open(filename, std::ios::out);
+    std::ostream fout(&fb);
     printParsed(design, fout);
     std::cout << "Parsed to: " << filename << "\n";
-    fout.close();
+    fb.close();
   }
   Yosys::yosys_shutdown();
-
 }
