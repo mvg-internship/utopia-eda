@@ -28,9 +28,9 @@ using SignalList = model::Gate::SignalList;
  *  @param hints Stores correspondence between gates. 
  *  @return The miter.
  */
-GNet* miter(GNet* net1, GNet* net2, Hints &hints);
+GNet *miter(GNet *net1, GNet *net2, Hints &hints);
 
 // Checks if it is possible to construct a miter with given parameters.
-bool areMiterable(GNet* net1, GNet* net2, Hints &hints);
+bool areMiterable(GNet *net1, GNet *net2, Hints &hints);
 
 } // namespace eda::gate::debugger

@@ -17,21 +17,21 @@ using namespace eda::gate::model;
 TEST(MiterTest, MiterStructureTest) {
   auto net = new GNet();
   SignalList inps;
-  for (int i = 0; i<10;i++){
+  for (int i = 0; i < 100; i++) {
     GateId z = net->addIn();
     inps.push_back(Signal::always(z));
   }
   GateId y = net->addGate(GateSymbol::AND, inps);
   GateId outId = net->addOut(y);
   SignalList inps1;
-  for (int i = 0; i<10;i++){
+  for (int i = 0; i < 100; i++) {
     GateId z = net->addIn();
     inps1.push_back(Signal::always(z));
   }
   GateId w = net->addGate(GateSymbol::NOR, inps1);
   net->addOut(w);
   w = net->addGate(GateSymbol::OR, inps);
-  for(int i = 0; i<10;i++){
+  for(int i = 0; i < 100; i++) {
     outId = net->addOut(w);
   }
   net->addOut(w);
@@ -63,9 +63,8 @@ TEST(MiterTest, MiterStructureTest) {
   hints.targetBinding  = std::make_shared<GateBinding>(std::move(obind));
   hints.triggerBinding = std::make_shared<GateBinding>(std::move(tbind));
   
-  GNet* mit = miter(net, netCloned, hints);
+  GNet *mit = miter(net, netCloned, hints);
   EXPECT_TRUE(mit->nTargetLinks() == 1);
   EXPECT_TRUE(mit->nSourceLinks() == netCloned->nSourceLinks());
 }
-
 
