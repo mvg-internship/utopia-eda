@@ -21,10 +21,10 @@ The list of tools required to build the project:
 * CMake-supported "build" system (e.g., `make` or `ninja`)
 * `CUDD` library (see installation guide below)
 
-CUDD installation
+### CUDD installation
 
 1. Get `CUDD` from here: https://github.com/ivmai/cudd
-2. Configure and build `CUDD` using following commands in the `CUDD` 
+2. Configure and build `CUDD` using following commands in the `CUDD`
 source directory:
 
 ```
@@ -36,8 +36,8 @@ make
 sudo make install
 ```
 
-If you installed `CUDD` not in default directory then building `Utopia EDA` 
-will require environment variable `CUDD_DIR` to contain the path to the 
+If you installed `CUDD` not in default directory then building `Utopia EDA`
+will require environment variable `CUDD_DIR` to contain the path to the
 `CUDD` installation directory.
 
 ```

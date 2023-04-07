@@ -6,6 +6,7 @@ add_library(Gate OBJECT
   model/gate.cpp
   model/gnet.cpp
   model/gsymbol.cpp
+  optimizer/rwdatabase.cpp
   premapper/aigmapper.cpp
   premapper/premapper.cpp
   simulator/simulator.cpp
@@ -19,6 +20,7 @@ target_link_libraries(Gate
   PUBLIC
     minisat-lib-static
     Cudd::Cudd
+    sqlite3
 
   PRIVATE
     Utopia::Util
