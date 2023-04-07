@@ -229,16 +229,14 @@ void printConnections(
    std::map<int, std::pair<int, int>> &cell,
    std::map<int, std::string> &inputs, std::map<int, std::string> &outputs,
    std::map<int, std::string> &typeFunc) {
-  std::ostringstream buf;
   for (auto it1 = connections.begin(); it1 != connections.end(); ++it1) {
     auto connAsWireInput = it1->second.as_wire()->name.index_;
     auto connAsWireOutput = it1->first.as_wire()->name.index_;
     if (inputs.find(connAsWireInput) == inputs.end()) {
-      buildRIL(connAsWireInput, cell, inputs, typeFunc, fout);
       fout << "@(*) {\n";
-      fout << "   " << outputs.find(connAsWireOutput)->second
-           << " = " << buf.str() << ";\n";
-      fout << "}\n";
+      fout << "   " << outputs.find(connAsWireOutput)->second << " = ";
+      buildRIL(connAsWireInput, cell, inputs, typeFunc, fout);
+      fout << ";\n" << "}\n";
     } else {
       fout << "@(*) {\n";
       fout << "   " << outputs.find(connAsWireOutput)->second
