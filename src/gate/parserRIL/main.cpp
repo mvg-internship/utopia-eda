@@ -11,7 +11,7 @@
 namespace RTlil = Yosys::RTLIL;
 namespace YLib = Yosys::hashlib;
 
-void printWires(const YLib::dict<RTlil::IdString, RTlil::Wire *> &ywires,
+void printHeaders(const YLib::dict<RTlil::IdString, RTlil::Wire *> &ywires,
                 std::ofstream &fout,
                 std::map<int, std::string> &inputs,
                 std::map<int, std::string> &outputs,
@@ -86,9 +86,9 @@ std::string buildRIL(std::ostringstream &buf, int root, std::map<int, std::pair<
   std::string strCells = typeFunc.find(cellPairFirst)->second;
   if (flag1 && flag2) {
     if (leftLeaf != rightLeaf) {
-      return inputs.find(leftLeaf)->second + strCells + inputs.find(rightLeaf)->second;
+      buf << inputs.find(rightLeaf)->second << strCells << inputs.find(leftLeaf)->second;
     } else {
-      return strCells + inputs.find(rightLeaf)->second;
+      buf << strCells << inputs.find(rightLeaf)->second;
     }
   } else if (!flag1 && !flag2) {
     if (leftLeaf != rightLeaf) {
@@ -116,20 +116,71 @@ std::string buildRIL(std::ostringstream &buf, int root, std::map<int, std::pair<
   return buf.str();
 }
 
+//void fillCells(std::map<int, std::pair<int, int>> &cell,
+//               std::map<int, std::string> &typeFunc,
+//               int &connAsWire, RTlil::Cell* const cellSec) {
+//    bool flag = 0;
+//    std::string symbol;
+//    int a, b, c;
+
+//    const auto &conns = cellSec->connections_;
+//    auto it = conns.begin();
+
+//    if (++it == conns.end()) {
+//      return;
+//    }
+//    a = connAsWire;
+//    symbol = logicFunction(cellSec->type.index_);
+//    typeFunc.emplace(a, symbol);
+//    if (symbol == "~") {
+//      flag = 1;
+//    }
+//    if (++it == conns.end()) {
+//      return;
+//    }
+//    if (!flag) {
+//      b = connAsWire;
+//      flag = 0;
+//    } else {
+//      b = connAsWire;
+//      c = b;
+//      cell.emplace(a, std::make_pair(b, c));
+//    }
+//    if (++it == conns.end()) {
+//      return;
+//    }
+//    c = connAsWire;
+//    cell.emplace(a, std::make_pair(b, c));
+//    if (++it == conns.end()) {
+//      return;
+//    }
+//    a = connAsWire;
+//    if (++it == conns.end()) {
+//      return;
+//    }
+//    b = connAsWire;
+//    cell.emplace(c, std::make_pair(a, b));
+//    typeFunc.emplace(c, symbol);
+
+//}
+
 void printCells(const YLib::dict<RTlil::IdString, RTlil::Cell *> &cells,
                 std::ofstream &fout,
                 std::map<int, std::pair<int, int>> &cell,
                 std::map<int, std::string> &typeFunc) {
 
   for (auto it1 = cells.begin(); it1 != cells.end(); ++it1) {
-    size_t i = 0;
-    bool flag = 0;
-    std::string symbol;
-    int a, b, c;
-    for (auto it3 = it1->second->connections_.begin();
-         it3 != it1->second->connections_.end(); ++it3) {
+      size_t i = 0;
+      bool flag = 0;
+      std::string symbol;
+      int a, b, c;
+    for (auto it2 = it1->second->connections_.begin();
+         it2 != it1->second->connections_.end(); ++it2) {
+
+      auto connAsWire = it2->second.as_wire()->name.index_;
+      //fillCells(cell, typeFunc, connAsWire, it1->second);
+
       i++;
-      auto connAsWire = it3->second.as_wire()->name.index_;
       if (i == 1) {
         a = connAsWire;
         symbol = logicFunction(it1->second->type.index_);
@@ -189,6 +240,13 @@ void printConnections(
   }
 }
 
+void printExistingAct(int key, const std::map<int, std::string> &type, std::string suffix, std::ostream &fout) {
+    auto it = type.find(key);
+    if (it != type.end()) {
+        fout << it->second << suffix;
+    }
+}
+
 void printActions(const std::vector<RTlil::SigSig> &actions,
                   std::ofstream &fout,
                   std::map<int, std::string> &inputs,
@@ -209,35 +267,15 @@ void printActions(const std::vector<RTlil::SigSig> &actions,
       auto secondAsChunk = it.second.as_chunk().wire->name.index_;
 
       fout << "  ";
-      if (wires.find(firstAsChunk) != wires.end()) {
-        fout << wires.find(firstAsChunk)->second
-             << " = ";
-      }
-      if (inputs.find(firstAsChunk) != inputs.end()) {
-        fout << inputs.find(firstAsChunk)->second
-             << " = ";
-      }
-      if (outputs.find(firstAsChunk) !=
-          outputs.end()) {
-        fout << outputs.find(firstAsChunk)->second
-             << " = ";
-      }
-      if (wires.find(secondAsChunk) != wires.end()) {
-        fout << wires.find(secondAsChunk)->second
-             << "\n";
-      }
-      if (inputs.find(secondAsChunk) != inputs.end()) {
-        fout << inputs.find(secondAsChunk)->second
-             << "\n";
-      }
-      if (outputs.find(secondAsChunk) !=
-          outputs.end()) {
-        fout << outputs.find(secondAsChunk)->second
-             << "\n";
-      }
+      printExistingAct(firstAsChunk, wires, " = ", fout);
+      printExistingAct(firstAsChunk, inputs, " = ", fout);
+      printExistingAct(firstAsChunk, outputs, " = ", fout);
+
+      printExistingAct(secondAsChunk, wires, "\n", fout);
+      printExistingAct(secondAsChunk, inputs, "\n", fout);
+      printExistingAct(secondAsChunk, outputs, "\n", fout);
     }
   }
-
 }
 
 void printSyncs(const std::vector<RTlil::SyncRule *> &syncs,
@@ -329,7 +367,7 @@ void printParams(
   std::map<int, std::string> typeFunc;
   std::map<int, std::string> wires;
   std::map<int, std::pair<int, int>> cell;
-  printWires(m.second->wires_, fout, inputs, outputs, wires);
+  printHeaders(m.second->wires_, fout, inputs, outputs, wires);
   printCells(m.second->cells_, fout, cell, typeFunc);
   printConnections(m.second->connections_, fout, cell, inputs, outputs,
                    typeFunc);
