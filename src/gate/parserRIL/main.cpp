@@ -11,6 +11,7 @@
 namespace RTlil = Yosys::RTLIL;
 namespace YLib = Yosys::hashlib;
 
+/// The function printins headers of ril file
 void printHeaders(
     const YLib::dict<RTlil::IdString, RTlil::Wire *> &ywires,
     std::ostream &fout,
@@ -38,13 +39,14 @@ void printHeaders(
       fout << "output " << width << " " << wireName << ";\n";
       outputs.emplace(index, wireName);
     }
-    if (portOutput && portInput) {
+    if (!portOutput && !portInput) {
       wires.emplace(index, wireName);
       fout << "wire " << width << " " << wireName << ";\n";
     }
   }
 }
 
+/// The function determines operation
 std::string logicFunction(size_t type) {
   std::string func;
   if (type == ID($add).index_) {
@@ -68,6 +70,7 @@ std::string logicFunction(size_t type) {
   return func;
 }
 
+/// The function builds operation with variables
 void buildRIL(
     int root,
     std::map<int, std::pair<int, int>> &cell,
@@ -77,11 +80,10 @@ void buildRIL(
   auto rootCell = cell.at(root);
   bool flag1  = inputs.find(rootCell.first) != inputs.end();
   bool flag2  = inputs.find(rootCell.second) != inputs.end();
-  auto cellPairFirst = cell.find(root)->first;
-  auto cellPairSecond = cell.find(root)->second;
-  auto leftLeaf = cellPairSecond.first;
-  auto rightLeaf = cellPairSecond.second;
-  std::string strCells = typeFunc.find(cellPairFirst)->second;
+  auto leftLeaf = cell.find(root)->second.first;
+  auto rightLeaf = cell.find(root)->second.second;
+  std::string strCells = typeFunc.find(cell.find(root)->first)->second;
+  // Flags are used to avoid unwanted round brackets
   if (flag1 && flag2) {
     if (leftLeaf != rightLeaf) {
       fout << inputs.find(rightLeaf)->second << strCells
@@ -164,6 +166,7 @@ void printCells(
   }
 }
 
+/// The function prints connections between variables
 void printConnections(
     const std::vector<std::pair<RTlil::SigSpec, RTlil::SigSpec>> &connections,
     std::ostream &fout,
@@ -187,6 +190,7 @@ void printConnections(
   }
 }
 
+/// The helper function for printActions
 void printExistingAct(
     int key,
     const std::map<int, std::string> &type,
@@ -197,6 +201,7 @@ void printExistingAct(
   }
 }
 
+/// The function prints actions between variables
 void printActions(
     const std::vector<RTlil::SigSig> &actions,
     std::ostream &fout,
@@ -220,6 +225,7 @@ void printActions(
   }
 }
 
+/// The function determines states
 void printSyncs(
     const std::vector<RTlil::SyncRule *> &syncs,
     std::ostream &fout,
@@ -227,7 +233,7 @@ void printSyncs(
     std::map<int, std::string> &outputs,
     std::map<int, std::string> &wires,
     std::string &state,
-   int &temporary) {
+    int &temporary) {
   for (auto it1 = syncs.begin(); it1 != syncs.end(); ++it1) {
     std::string listSensitivity[]{
         "ST0", // level sensitive: 0
@@ -261,6 +267,7 @@ void printSyncs(
   }
 }
 
+/// The function calling actions in some cases
 void printCaseRule(
     std::vector<RTlil::CaseRule *> &cases,
     std::ostream &fout,
@@ -275,6 +282,7 @@ void printCaseRule(
   }
 }
 
+/// The function printing states
 void printProcesses(
     const YLib::dict<RTlil::IdString, RTlil::Process *> &processes,
     std::ostream &fout, std::map<int, std::string> &inputs,
@@ -294,25 +302,19 @@ void printProcesses(
   }
 }
 
-void printParams(
-    const std::pair<RTlil::IdString, RTlil::Module *> &m,
-    std::ostream &fout) {
-  std::map<int, std::string> inputs;
-  std::map<int, std::string> outputs;
-  std::map<int, std::string> typeFunc;
-  std::map<int, std::string> wires;
-  std::map<int, std::pair<int, int>> cell;
-  printHeaders(m.second->wires_, fout, inputs, outputs, wires);
-  printCells(m.second->cells_, fout, cell, typeFunc);
-  printConnections(m.second->connections_, fout, cell, inputs, outputs,
-                   typeFunc);
-  printProcesses(m.second->processes, fout, inputs, outputs, wires);
-
-}
-
-void printParsed(const RTlil::Design &des, std::ostream &fout) {
+/// The function creates variables to be filled and calls other functions
+void printParams(const RTlil::Design &des, std::ostream &fout) {
   for (auto &m : des.modules_) {
-    printParams(m, fout);
+    std::map<int, std::string> inputs;
+    std::map<int, std::string> outputs;
+    std::map<int, std::string> typeFunc;
+    std::map<int, std::string> wires;
+    std::map<int, std::pair<int, int>> cell;
+    printHeaders(m.second->wires_, fout, inputs, outputs, wires);
+    printCells(m.second->cells_, fout, cell, typeFunc);
+    printConnections(m.second->connections_, fout, cell, inputs, outputs,
+                     typeFunc);
+    printProcesses(m.second->processes, fout, inputs, outputs, wires);
   }
 }
 
@@ -321,10 +323,8 @@ int main(int argc, char *argv[]) {
   for (size_t o = 1; o < argc; ++o) {
     std::string filename = argv[o];
     std::string extension = ".ril";
-
     RTlil::Design design;
     Yosys::run_frontend(filename, "verilog", &design, nullptr);
-
     size_t pos = filename.rfind(".");
     if (pos != std::string::npos) {
       filename.replace(pos, extension.length(), extension);
@@ -332,7 +332,7 @@ int main(int argc, char *argv[]) {
     std::filebuf fb;
     fb.open(filename, std::ios::out);
     std::ostream fout(&fb);
-    printParsed(design, fout);
+    printParams(design, fout);
     std::cout << "Parsed to: " << filename << "\n";
     fb.close();
   }
