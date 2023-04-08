@@ -8,6 +8,7 @@
 
 #include "gate/model/gnet.h"
 #include "rtl/library/arithmetic.h"
+#include "rtl/library/support.h"
 #include "rtl/model/fsymbol.h"
 
 #include <algorithm>
@@ -101,7 +102,7 @@ FLibrary::Out ArithmeticLibrary::synthSub(size_t outSize,
 //  P - gates for propagated carry
 //                                                          Input
 //                                                          carry    1
-//  | 6 |   | 5 |   | 4 |   | 3 |   | 2 |   | 1 |   | 0 |   | -1| _________
+//  | 6 |   | 5 |   | 4 |   | 3 |   | 2 |   | 1 |   | 0 |   | - | _________
 //    |  _____|       |  _____|       |  _____|       |  _____|
 //    | /     |       | /     |       | /     |       | /     |
 //    |/      |       |/      |       |/      |       |/      |
@@ -161,6 +162,8 @@ FLibrary::Out ArithmeticLibrary::synthLadnerFisherAdder(const size_t outSize,
                                                         const In &in,
                                                         const bool plusOne,
                                                         GNet &net) {
+  assert(in.size() == 2 && "Number of terms musts be equal two");
+
   const auto &x = in[0];
   const auto &y = in[1];
 
@@ -168,7 +171,7 @@ FLibrary::Out ArithmeticLibrary::synthLadnerFisherAdder(const size_t outSize,
 
   auto carryIn = plusOne ? net.addOne() : net.addZero();
   const size_t inSize = x.size();
-  const bool needsCarryOut = ((outSize > inSize) && (plusOne == 0));
+  const bool needsCarryOut = ((outSize > inSize) && (!plusOne));
 
   if ((!needsCarryOut) && (inSize == 1)) {
     Out out(1);
@@ -384,70 +387,6 @@ FLibrary::Out ArithmeticLibrary::synthMultiplierByOneDigit(const size_t outSize,
   }
   fillingWithZeros(outSize, {out}, net);
   return out;
-}
-
-void fillingWithZeros(const size_t size,
-                      FLibrary::GateIdList &in,
-                      GNet &net) {
-  while (size > in.size()) {
-    in.push_back(net.addZero());
-  }
-}
-
-void makeInputsEqual(const size_t outSize,
-                     FLibrary::GateIdList &x,
-                     FLibrary::GateIdList &y,
-                     GNet &net) {
-  if ((outSize >= x.size()) && (outSize >= y.size())) {
-    // Make x.size() and y.size() equal to the maximum of them
-    fillingWithZeros(x.size(), {y}, net);
-    fillingWithZeros(y.size(), {x}, net);
-  } else {
-    // Make x.size() and y.size() equal to the outSize
-    fillingWithZeros(outSize, {x}, net);
-    fillingWithZeros(outSize, {y}, net);
-    x.resize(outSize);
-    y.resize(outSize);
-  }
-}
-
-GateIdList formGateIdList(const size_t size,
-                          GateSymbol func,
-                          const GateIdList &x,
-                          const GateIdList &y,
-                          GNet &net) {
-  GateIdList list(size);
-  for (size_t i = 0; i < size; i++) {
-    list[i] = net.addGate(func, x[i], y[i]);
-  }
-  return list;
-}
-
-void getPartsOfGateIdList(const GateIdList &x,
-                          GateIdList &x1,
-                          GateIdList &x0,
-                          const size_t firstPartSize) {
-  size_t i{0};
-  for (i = 0; i < firstPartSize; i++) {
-    x0.push_back(x[i]);
-  }
-  for (; i < x.size(); i++) {
-    x1.push_back(x[i]);
-  }
-}
-
-GateIdList leftShiftForGateIdList(const GateIdList &x,
-                                  const size_t shift,
-                                  GNet &net) {
-  GateIdList list(x.size() + shift);
-  size_t i;
-  for (i = 0; i < shift; i++) {
-    list[i] = net.addZero();
-  }
-  for (; i < list.size(); i++) {
-    list[i] = x[i - shift];
-  }
-  return list;
 }
 
 } // namespace eda::rtl::library

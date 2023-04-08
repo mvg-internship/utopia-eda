@@ -8,6 +8,7 @@
 
 #include "gate/model/gnet.h"
 #include "rtl/library/flibrary.h"
+#include "rtl/library/support.h"
 
 #include <cassert>
 
@@ -66,6 +67,8 @@ FLibrary::Out FLibraryDefault::synth(size_t outSize,
     return synthAdd(outSize, in, net);
   case FuncSymbol::SUB:
     return synthSub(outSize, in, net);
+  case FuncSymbol::MUL:
+    return synthMul(outSize, in, net);
   case FuncSymbol::MUX:
     return synthMux(outSize, in, net);
   default:
@@ -128,18 +131,31 @@ FLibrary::Out FLibraryDefault::synth(const Out &out,
 FLibrary::Out FLibraryDefault::synthAdd(size_t outSize,
                                         const In &in,
                                         GNet &net) {
-  return synthAdder(outSize, in, false, net);
+   auto x = in[0];
+   auto y = in[1];
+
+   makeInputsEqual(outSize, x, y, net);
+
+   return synthAdder(outSize, {x, y}, false, net);
 }
 
 FLibrary::Out FLibraryDefault::synthSub(size_t outSize,
                                         const In &in,
                                         GNet &net) {
   // The two's complement code: (x - y) == (x + ~y + 1).
-  const auto &x = in[0];
-  const auto &y = in[1];
+  auto x = in[0];
+  auto y = in[1];
 
-  Out temp = synthUnaryBitwiseOp(GateSymbol::NOT, outSize, { y }, net);
+  makeInputsEqual(outSize, x, y, net);
+
+  Out temp = synthUnaryBitwiseOp(GateSymbol::NOT, y.size(), { y }, net);
   return synthAdder(outSize, { x, temp }, true, net);
+}
+
+FLibrary::Out FLibraryDefault::synthMul(size_t outSize,
+                                        const In &in,
+                                        GNet &net) {
+  return synthMultiplier(outSize, in, net);
 }
 
 FLibrary::Out FLibraryDefault::synthAdder(size_t outSize,
@@ -150,18 +166,27 @@ FLibrary::Out FLibraryDefault::synthAdder(size_t outSize,
 
   const auto &x = in[0];
   const auto &y = in[1];
-  assert(x.size() == y.size() && outSize == x.size());
+  
+  assert(x.size() == y.size());
 
-  auto carryIn = net.addGate(plusOne ? GateSymbol::ONE : GateSymbol::ZERO, {});
+  const bool needsCarryOut = ((outSize > x.size()) && (!plusOne));
+  const size_t sumSize = needsCarryOut ? (x.size() + 1) : x.size();
+  auto carryIn = plusOne ? net.addOne() : net.addZero();
 
-  Out out(outSize);
-  for (size_t i = 0; i < out.size(); i++) {
-    const auto needsCarryOut = (i != out.size() - 1);
+  Out out(x.size());
+  for (size_t i = 0; i < x.size(); i++) {
+    const auto needsCarryOut = (i != sumSize - 1);
     auto zCarryOut = synthAdder(x[i], y[i], carryIn, needsCarryOut, net);
 
     out[i] = zCarryOut[0];
     carryIn = needsCarryOut ? zCarryOut[1] : Gate::INVALID;
   }
+
+  if (carryIn != Gate::INVALID) {
+    out.push_back(carryIn);
+  }
+
+  fillingWithZeros(outSize, {out}, net);
 
   return out;
 }
@@ -191,6 +216,40 @@ FLibrary::Out FLibraryDefault::synthAdder(Gate::Id x,
     out.push_back(net.addGate(GateSymbol::OR, { carryOutLhs, carryOutRhs }));
   }
 
+  return out;
+}
+
+FLibrary::Out FLibraryDefault::synthMultiplier(const size_t outSize,
+                                               const In &in,
+                                               GNet &net) {
+  const auto &x = in[0];
+  const auto &y = in[1];
+
+  size_t min1 = std::min(y.size(), outSize);
+  size_t min2 = std::min(x.size(), outSize);
+
+  auto out = synthMultiplier(min2, x, y[0], net);
+  for (size_t i = 1; i < min1; i++) {
+    min2 = std::min((x.size() + i), outSize);
+    auto temp1 = synthMultiplier((min2 - i), x, y[i], net);
+    GateIdList temp2 = leftShiftForGateIdList(temp1, i, net);
+    size_t min3 = std::min((temp2.size() + 1), outSize);
+    out = synthAdd(min3, {temp2, out}, net);
+  }
+  fillingWithZeros(outSize, {out}, net);
+  return out;
+}
+
+FLibrary::Out FLibraryDefault::synthMultiplier(const size_t outSize,
+                                               const GateIdList &x,
+                                               const GateId &y,
+                                               GNet &net) {
+  Out out;
+  size_t mulSize = std::min(outSize, x.size());
+  for (size_t i = 0; i < mulSize; i++) {
+    out.push_back(net.addGate(GateSymbol::AND, x[i], y));
+  }
+  fillingWithZeros(outSize, {out}, net);
   return out;
 }
 

@@ -30,6 +30,7 @@ namespace eda::rtl::library {
  */
 struct FLibrary {
   using GateIdList = GNet::GateIdList;
+  using GateId     = GNet::GateId;
   using Signal     = GNet::Signal;
   using SignalList = GNet::SignalList;
   using Value      = GNet::Value;
@@ -107,6 +108,7 @@ private:
 
   static Out synthAdd(size_t outSize, const In &in, GNet &net);
   static Out synthSub(size_t outSize, const In &in, GNet &net);
+  static Out synthMul(size_t outSize, const In &in, GNet &net);
   static Out synthMux(size_t outSize, const In &in, GNet &net);
 
   static Out synthAdder(size_t size, const In &in, bool plusOne, GNet &net);
@@ -117,6 +119,15 @@ private:
                         Gate::Id carryIn,
                         bool needsCarryOut,
                         GNet &net);
+
+  static Out synthMultiplier(const size_t outSize,
+                             const In &in,
+                             GNet &net);
+
+  static Out synthMultiplier(const size_t outSize,
+                             const GateIdList &x,
+                             const GateId &y,
+                             GNet &net);
 
   static Signal invertIfNegative(const Signal &event, GNet &net);
 
