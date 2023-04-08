@@ -43,12 +43,12 @@ void makeInputsEqual(const size_t outsize,
 // 111000 -> 111 and 000 (for firstPartSize = 3)
 void getPartsOfGateIdList(const GateIdList &x,
                           GateIdList &x1,
-                          GateIdList &x0, 
+                          GateIdList &x0,
                           const size_t firstPartSize);
 
 // Make left shift for GateIdList:
 // 111 -> 111000 (for shift = 3)
-GateIdList leftShiftForGateIdList(const GateIdList &x, 
-                                  const size_t shift, 
+GateIdList leftShiftForGateIdList(const GateIdList &x,
+                                  const size_t shift,
                                   GNet &net);
 } // namespace eda::rtl::library

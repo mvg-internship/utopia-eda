@@ -65,7 +65,7 @@ struct FLibrary {
                     const SignalList &control,
                     GNet &net) = 0;
 
-  virtual ~FLibrary() {} 
+  virtual ~FLibrary() {}
 };
 
 /**

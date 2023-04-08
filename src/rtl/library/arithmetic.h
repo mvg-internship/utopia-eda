@@ -41,42 +41,42 @@ public:
 
   bool supports(FuncSymbol func) const override;
 
-  Out synth(const size_t outSize, 
-            const Value &value, 
+  Out synth(const size_t outSize,
+            const Value &value,
             GNet &net) override;
 
-  Out synth(const size_t outSize, 
-            const Out &out, 
+  Out synth(const size_t outSize,
+            const Out &out,
             GNet &net) override;
 
-  Out synth(const size_t outSize, 
-            const FuncSymbol func, 
+  Out synth(const size_t outSize,
+            const FuncSymbol func,
             const In &in, 
             GNet &net) override;
 
-  Out synth(const Out &out, 
-            const In &in, 
-            const SignalList &control, 
+  Out synth(const Out &out,
+            const In &in,
+            const SignalList &control,
             GNet &net) override;
 
-  Out alloc(const size_t outSize, 
+  Out alloc(const size_t outSize,
             GNet &net) override;
 
 private:
   ArithmeticLibrary(FLibrary &library) : supportLibrary(library) {}
   ~ArithmeticLibrary() override {}
 
-  static Out synthAdd(const size_t outSize, 
-                      const In &in, 
+  static Out synthAdd(const size_t outSize,
+                      const In &in,
                       GNet &net);
 
-  static Out synthSub(const size_t outSize, 
-                      const In &in, 
+  static Out synthSub(const size_t outSize,
+                      const In &in,
                       GNet &net);
 
-  static Out synthLadnerFisherAdder(const size_t outSize, 
-                                    const In &in, 
-                                    const bool plusOne, 
+  static Out synthLadnerFisherAdder(const size_t outSize,
+                                    const In &in,
+                                    const bool plusOne,
                                     GNet &net);
 
   static Out synthKaratsubaMultiplier(const size_t outSize,
