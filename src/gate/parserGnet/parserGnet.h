@@ -18,4 +18,8 @@ void translateDesignToGNet(
     const Yosys::RTLIL::Design &des,
     std::vector<eda::gate::model::GNet> &vec);
 
+void translateLibertyToDesign(
+    const char* namefile,
+    std::vector<eda::gate::model::GNet> &vec);
+
 
