@@ -18,7 +18,7 @@ using namespace eda::rtl::model;
 
 namespace eda::rtl::library {
 
-bool FLibraryDefault::supports(FuncSymbol func) const {
+bool FLibraryDefault::supports(const FuncSymbol func) const {
   return true;
 }
 

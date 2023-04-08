@@ -39,7 +39,7 @@ public:
     return *instance;
   }
 
-  bool supports(FuncSymbol func) const override;
+  bool supports(const FuncSymbol func) const override;
 
   Out synth(const size_t outSize,
             const Value &value,
