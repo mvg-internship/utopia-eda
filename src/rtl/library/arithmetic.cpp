@@ -162,7 +162,7 @@ FLibrary::Out ArithmeticLibrary::synthLadnerFisherAdder(const size_t outSize,
                                                         const In &in,
                                                         const bool plusOne,
                                                         GNet &net) {
-  assert(in.size() == 2 && "Number of terms musts be equal two");
+  assert((in.size() == 2) && "Number of terms musts be equal two");
 
   const auto &x = in[0];
   const auto &y = in[1];
