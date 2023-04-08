@@ -19,7 +19,7 @@ void fillingWithZeros(const size_t size,
 // Form GateIdList of outputs for the operation
 // applied to pairs of input identifiers
 GateIdList formGateIdList(const size_t size,
-                          GateSymbol func,
+                          const GateSymbol func,
                           const GateIdList &x,
                           const GateIdList &y,
                           GNet &net);

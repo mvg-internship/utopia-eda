@@ -59,11 +59,11 @@ BV convertToBV(uint64_t number) {
   do {
     vector.push_back(number % 2);
     number = number / 2;
-  } while(number != 0);
+  } while (number != 0);
   return vector;
 }
 
-bool arithmeticTest(FuncSymbol func,
+bool arithmeticTest(const FuncSymbol func,
                     const size_t xSize,
                     const size_t ySize,
                     const size_t outSize) {
@@ -110,8 +110,8 @@ bool arithmeticTest(FuncSymbol func,
     result = convertToBV(first * second);
     break;
   default:
-    assert(false);
-  return {};
+    assert(false && "There are not tests fot this operation");
+    return {};
   }
   bool flag = true;
   size_t checkSize = out.size() <= result.size() ? out.size() : result.size();

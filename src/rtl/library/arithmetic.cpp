@@ -29,20 +29,20 @@ bool ArithmeticLibrary::supports(FuncSymbol func) const {
   return true;
 }
 
-FLibrary::Out ArithmeticLibrary::synth(size_t outSize,
+FLibrary::Out ArithmeticLibrary::synth(const size_t outSize,
                                        const Value &value,
                                        GNet &net) {
   return supportLibrary.synth(outSize, value, net);
 }
 
-FLibrary::Out ArithmeticLibrary::synth(size_t outSize,
+FLibrary::Out ArithmeticLibrary::synth(const size_t outSize,
                                        const Out &out,
                                        GNet &net) {
   return supportLibrary.synth(outSize, out, net);
 }
 
-FLibrary::Out ArithmeticLibrary::synth(size_t outSize,
-                                       FuncSymbol func,
+FLibrary::Out ArithmeticLibrary::synth(const size_t outSize,
+                                       const FuncSymbol func,
                                        const In &in,
                                        GNet &net) {
   switch (func) {
@@ -64,12 +64,12 @@ FLibrary::Out ArithmeticLibrary::synth(const Out &out,
   return supportLibrary.synth(out, in, control, net);
 }
 
-FLibrary::Out ArithmeticLibrary::alloc(size_t outSize,
+FLibrary::Out ArithmeticLibrary::alloc(const size_t outSize,
                                        GNet &net) {
   return supportLibrary.alloc(outSize, net);
 }
 
-FLibrary::Out ArithmeticLibrary::synthAdd(size_t outSize,
+FLibrary::Out ArithmeticLibrary::synthAdd(const size_t outSize,
                                           const In &in,
                                           GNet &net) {
   auto x = in[0];
@@ -80,7 +80,7 @@ FLibrary::Out ArithmeticLibrary::synthAdd(size_t outSize,
   return synthLadnerFisherAdder(outSize, {x, y}, false, net);
 }
 
-FLibrary::Out ArithmeticLibrary::synthSub(size_t outSize,
+FLibrary::Out ArithmeticLibrary::synthSub(const size_t outSize,
                                           const In &in,
                                           GNet &net) {
   auto x = in[0];
@@ -332,7 +332,7 @@ FLibrary::Out ArithmeticLibrary::synthKaratsubaMultiplier(const size_t outSize,
 
       // Third term:
       // [x1 * y1] * (2 ^ (2 * firstPartSize))
-      significant = outSize - 2*firstPartSize;
+      significant = outSize - 2 * firstPartSize;
       if (significant > 0) {
         terms.push_back(
           leftShiftForGateIdList(productOfSecondParts, 2 * firstPartSize, net));
