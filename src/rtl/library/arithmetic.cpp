@@ -276,7 +276,6 @@ FLibrary::Out ArithmeticLibrary::synthLadnerFisherAdder(const size_t outSize,
 
     return out;
   }
-
 }
 
 FLibrary::Out ArithmeticLibrary::synthKaratsubaMultiplier(const size_t outSize,
