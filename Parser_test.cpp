@@ -49,36 +49,93 @@ printf("%s:%d: %s: token '%s' (%d)\n", __FILE__, __LINE__, (msg), yytext, (tok))
 static std::size_t place = 0;
 static std::size_t line = 0;
 
-//Создание класса для таблицы символов, содержащего методы добавления, удаления и проверки типа идентификатора по его имени
-class SymbolTable{
+
+
+
+class SymbolTable {
   public:
-  SymbolTable() = default;
-  ~SymbolTable()= default;
-
-  void addSymbol(const std::string& name, SymbolType type);
-  void removeSymbol(const std::string& name);
-  SymbolType getSymbolType(const std::string& name);
-
+    SymbolTable() = default;
+    ~SymbolTable() = default;
+  
+    void addSymbol(const std::string& name, SymbolType type);
+    void removeSymbol(const std::string& name);
+    SymbolType getSymbolType(const std::string& name);
+  
+    void setParentTable(SymbolTable* parentTable) {
+      parentTable_ = parentTable;
+    }
+  
+    SymbolTable* getParentTable() const {
+      return parentTable_;
+    }
+  
   private:
-  std::unordered_map<std::string, SymbolType> symbolTable_;
+    std::unordered_map<std::string, SymbolType> symbolTable_;
+    SymbolTable* parentTable_ = nullptr;
 };
 
-//Описание методов
+// Описание методов
 void SymbolTable::addSymbol(const std::string& name, SymbolType type) {
   symbolTable_[name] = type;
 }
+
 void SymbolTable::removeSymbol(const std::string& name) {
   symbolTable_.erase(name);
 }
+
 SymbolType SymbolTable::getSymbolType(const std::string& name) {
   if (symbolTable_.find(name) != symbolTable_.end()) {
-      return symbolTable_[name];
-  }else {
+    return symbolTable_[name];
+  } else if (parentTable_ != nullptr) {
+    return parentTable_->getSymbolType(name);
+  } else {
     return SymbolType::VOID;
   }
 }
 
+// Добавление родительской таблицы
+void addParentTable(SymbolTable* currentTable, SymbolTable* parentTable) 
 
+{
+  currentTable->setParentTable(parentTable);
+}
+
+
+
+
+// struct Namespace {
+//     Namespace *parent;
+//     std::unordered_map<std::string, SymbolType> symbols;
+// };
+
+// Namespace global;
+// std::vector<Namespace *> table{&global};
+
+// // Создание нового пространства имён
+// if (MODULE) {
+//     Namespace *nested = new Namespace();
+//     nested->parent = table.back();
+//     table.push_back(nested);
+// }
+
+// // Завершение определения модуля
+// if (ENDMODULE) {
+//     table.pop_back();
+// }
+
+// // Поиск символа в таблице символов
+// Symbol findSymbol(const std::string &name, const std::vector<Namespace *> &table) {
+//     int i = static_cast<int>(table.size()) - 1;
+//     while (i >= 0) {
+//         const auto &symbols = table[i]->symbols;
+//         auto it = symbols.find(name);
+//         if (it != symbols.end()) {
+//             return it->second;
+//         }
+//         i--;
+//     }
+//     return SymbolNotFound;
+// }
 
 
 
@@ -121,11 +178,11 @@ kind_of_error parse_module(token_t &tok)
   line += 1;
   ASSERT_NEXT_TOKEN(tok, SEMICOLON, FAILURE_IN_MODULE_NAME);
   tok = get_next_token();
-          //std::cout<<__FILE__ <<__LINE__ <<yytext <<" tok = " << tok << std::endl;
+          
   while (rc == SUCCESS && tok != ENDMODULE)
   {
     DEBUGTOKEN(tok, "Module loop");
-          //std::cout<<__FILE__ <<__LINE__ <<yytext <<"tok =" << tok << std::endl;
+          
     switch (tok)
     {
     case INPUT:
@@ -165,7 +222,7 @@ kind_of_error parse_decl(token_t &tok)
     ASSERT_NEXT_TOKEN(tok, STRING, FAILURE_IN_DECL);
     rc = parse_name_list(tok, SEMICOLON);
     tok = get_next_token();
-          //std::cout<<__FILE__ <<__LINE__ <<yytext <<"tok =" << tok << std::endl;
+          
     line += 1;
     break;
   case STRING:
@@ -286,8 +343,8 @@ kind_of_error parse_name_list(token_t &tok, token_t separate_tok)
 
     default:
       if(tok != separate_tok){
-        //*((int *)0)=13;
-      rc = FAILURE_IN_PARSE_NAME_LIST; //aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+      
+      rc = FAILURE_IN_PARSE_NAME_LIST; 
       }else{
         break;
       }
