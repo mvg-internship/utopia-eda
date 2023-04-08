@@ -102,7 +102,7 @@ FLibrary::Out ArithmeticLibrary::synthSub(const size_t outSize,
 //  P - gates for propagated carry
 //                                                          Input
 //                                                          carry    1
-//  | 6 |   | 5 |   | 4 |   | 3 |   | 2 |   | 1 |   | 0 |   | - | _________
+//  | 6 |   | 5 |   | 4 |   | 3 |   | 2 |   | 1 |   | 0 |   |-1 | _________
 //    |  _____|       |  _____|       |  _____|       |  _____|
 //    | /     |       | /     |       | /     |       | /     |
 //    |/      |       |/      |       |/      |       |/      |
