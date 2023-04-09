@@ -16,6 +16,17 @@ using eda::gate::model::Gate;
 using eda::gate::model::GateSymbol;
 using GateId = eda::gate::model::Gate::Id;
 
+class YosysManager {
+public:
+  YosysManager() {
+    Yosys::yosys_setup();
+  }
+
+  ~YosysManager() {
+    Yosys::yosys_shutdown();
+  }
+};
+
 /// The functions creates inputs container.
 static void fillInputs(
     const YLib::dict<RTlil::IdString, RTlil::Wire*> &wires,
@@ -300,14 +311,9 @@ static void createTree(
       ++it2;
     }
     if (it2 != endConnections) {
-      index = it2->second.as_wire()->name.index_;
-      if (!notOp) {
-        secondWire = index;
-        notOp = false;
-      } else {
-        secondWire = index;
-        thirdWire = secondWire;
-        cell.emplace(firstWire, std::make_pair(secondWire, thirdWire));
+      secondWire = it2->second.as_wire()->name.index_;
+      if (notOp) {
+        cell.emplace(firstWire, std::make_pair(secondWire, secondWire));
       }
       ++it2;
     }
@@ -321,7 +327,7 @@ static void createTree(
       firstWire = it2->second.as_wire()->name.index_;
       ++it2;
     }
-    if (it2 != it1->second->connections_.end()) {
+    if (it2 != endConnections) {
       secondWire = it2->second.as_wire()->name.index_;
       cell.emplace(thirdWire, std::make_pair(firstWire, secondWire));
       f = determineGateSymbol(typeFunction, typeRTLIL, thirdWire);
@@ -378,4 +384,13 @@ void translateDesignToGNet(
     translateModuleToGNet(m, net);
     vec.push_back(net);
   }
+}
+
+void translateLibertyToDesign(
+    const char* namefile,
+    std::vector<eda::gate::model::GNet> &vec) {
+  static YosysManager mgr;
+  RTlil::Design design;
+  Yosys::run_frontend(namefile, "liberty", &design, nullptr);
+  translateDesignToGNet(design, vec);
 }
