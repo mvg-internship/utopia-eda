@@ -15,17 +15,17 @@
 #include <cassert>
 #include <cmath>
 
-using GNet = eda::gate::model::GNet;
+using FuncSymbol = eda::rtl::model::FuncSymbol;
 using GateId = GNet::GateId;
 using GateIdList = eda::rtl::library::FLibrary::GateIdList;
 using GateSymbol = eda::gate::model::GateSymbol;
-using FuncSymbol = eda::rtl::model::FuncSymbol;
+using GNet = eda::gate::model::GNet;
 
 namespace eda::rtl::library {
 
 // TODO: In the future, ArithmeticLibrary will be responsible only
 // for arithmetic operations
-bool ArithmeticLibrary::supports(FuncSymbol func) const {
+bool ArithmeticLibrary::supports(const FuncSymbol func) const {
   return true;
 }
 
@@ -99,22 +99,15 @@ FLibrary::Out ArithmeticLibrary::synthSub(const size_t outSize,
 FLibrary::Out ArithmeticLibrary::synthMul(const size_t outSize,
                                           const In &in,
                                           GNet &net) {
-  const auto &x = in[0];
-  const auto &y = in[1];
-
-  // TODO: Different multipliers should be used for
-  // different sizes of x.size() and y.size().
-  // For example, column multiplier is more effective 
-  // than Karatsuba Multiplier, when x.size() and y.size() 
-  // is less than someNumer. SomeNumber is unknown. 
-  
-  return synthKaratsubaMultiplier(outSize, {x, y}, 3, net);
+  return synthKaratsubaMultiplier(outSize, in, 3, net);
 }
+
 //                            LADNER-FISHER ADDER
 //
 //  G - gates for generated carry
 //  P - gates for propagated carry
-//
+//  The numbering of the input and out digits starts from one.
+//  The digit #0 is input carry.
 //                                                          Input
 //                                                          carry    1
 //  | 7 |   | 6 |   | 5 |   | 4 |   | 3 |   | 2 |   | 1 |   | 0 | _________
@@ -144,6 +137,8 @@ FLibrary::Out ArithmeticLibrary::synthMul(const size_t outSize,
 //
 //  1. Pre-calculation of P[i] and G[i]:
 //       cell | i |:
+//         P[0] = 0
+//         G[0] = input carry
 //         P[i] = A[i] xor B[i]
 //         G[i] = A[i] and B[i]
 //
@@ -171,13 +166,13 @@ FLibrary::Out ArithmeticLibrary::synthMul(const size_t outSize,
 //
 //  3. Generating the sum:
 //       cell ( i ):
-//         S[i] =  P[i] xor G[i,0]
+//         S[i] =  P[i] xor G[i - 1,0]
 //
 FLibrary::Out ArithmeticLibrary::synthLadnerFisherAdder(const size_t outSize,
                                                         const In &in,
                                                         const bool plusOne,
                                                         GNet &net) {
-  assert((in.size() == 2) && "Number of terms musts be equal two");
+  assert((in.size() == 2) && "Number of terms must be equal to two");
 
   const auto &x = in[0];
   const auto &y = in[1];
@@ -217,8 +212,10 @@ FLibrary::Out ArithmeticLibrary::synthLadnerFisherAdder(const size_t outSize,
   size_t &lastDigit{key.first};
   size_t &firstDigit{key.second};
   while (lastDigit <= maxDigit) {
-    p[key] = net.addGate(GateSymbol::AND, preP[lastDigit - 1], preP[firstDigit - 1]);
-    temp = net.addGate(GateSymbol::AND, preP[lastDigit - 1], preG[firstDigit - 1]);
+    p[key] = net.addGate(
+            GateSymbol::AND, preP[lastDigit - 1], preP[firstDigit - 1]);
+    temp = net.addGate(
+            GateSymbol::AND, preP[lastDigit - 1], preG[firstDigit - 1]);
     g[key] = net.addGate(GateSymbol::OR, preG[lastDigit - 1], temp);
     lastDigit += 2;
     firstDigit += 2;
@@ -272,8 +269,9 @@ FLibrary::Out ArithmeticLibrary::synthLadnerFisherAdder(const size_t outSize,
   lastDigit = 2;
   firstDigit = 0;
   while (lastDigit <= maxDigit) {
-    temp = net.addGate(GateSymbol::AND, preP[lastDigit - 1], g[{lastDigit - 1, 0}]);
-    g[key] = net.addGate(GateSymbol::OR, preG[lastDigit -1 ], temp);
+    temp = net.addGate(
+            GateSymbol::AND, preP[lastDigit - 1], g[{lastDigit - 1, 0}]);
+    g[key] = net.addGate(GateSymbol::OR, preG[lastDigit -1], temp);
     lastDigit += 2;
   }
 
