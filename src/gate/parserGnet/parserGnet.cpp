@@ -4,8 +4,8 @@
  */
 
 #include "parserGnet.h"
+#include "gate/simulator/simulator.h"
 
-#include <map>
 #include <string>
 
 namespace GModel = eda::gate::model;
@@ -15,6 +15,7 @@ namespace RTlil = Yosys::RTLIL;
 using eda::gate::model::Gate;
 using eda::gate::model::GateSymbol;
 using GateId = eda::gate::model::Gate::Id;
+using eda::gate::simulator::Simulator;
 
 class YosysManager {
 public:
@@ -291,7 +292,8 @@ static void createTree(
     GModel::GNet &net,
     std::map<size_t, GateSymbol> &typeFunc,
     std::map<size_t, std::pair<size_t, size_t>> &cell,
-    std::map<size_t, std::string> &typeRTLIL) {
+    std::map<size_t, std::string> &typeRTLIL,
+    bool &isMem) {
   for (auto it1 = cells.begin(); it1 != cells.end(); ++it1) {
     bool notOp = false;
     GateSymbol f;
@@ -304,6 +306,9 @@ static void createTree(
     if (it2 != endConnections) {
       firstWire = index;
       f = determineGateSymbol(typeFunction, typeRTLIL, firstWire);
+      if (f == GateSymbol::LATCH || f == GateSymbol::DFFrs || f == GateSymbol::DFF) {
+        isMem = true;
+      }
       typeFunc.emplace(firstWire, f);
       if (f == GateSymbol::NOT) {
         notOp = true;
@@ -360,13 +365,14 @@ static void createOutput(
 
 void translateModuleToGNet(
     const std::pair<RTlil::IdString, RTlil::Module*> &m,
-    GModel::GNet &net) {
+    eda::gate::model::GNet &net,
+    bool &isMem) {
   std::map<size_t, GateId> inputs;
   std::map<size_t, std::pair<size_t, size_t>> cell;
   std::map<size_t, GateSymbol> typeFunc;
   std::map<size_t, std::string> typeRTLIL;
   fillInputs(m.second->wires_, net, inputs);
-  createTree(m.second->cells_, net, typeFunc, cell, typeRTLIL);
+  createTree(m.second->cells_, net, typeFunc, cell, typeRTLIL, isMem);
   createOutput(
         m.second->connections_,
         net,
@@ -378,19 +384,54 @@ void translateModuleToGNet(
 
 void translateDesignToGNet(
     const RTlil::Design &des,
-    std::vector<GModel::GNet> &vec) {
+    NetData &vec) {
   for (auto &m : des.modules_) {
     GModel::GNet net(0);
-    translateModuleToGNet(m, net);
-    vec.push_back(net);
+    bool isMem = false;
+    translateModuleToGNet(m, net, isMem);
+    net.sortTopologically();
+    if (isMem) {
+      vec.memNets.push_back(net);
+    } else {
+      vec.combNets.push_back(net);
+    }
   }
 }
 
 void translateLibertyToDesign(
     const char* namefile,
-    std::vector<eda::gate::model::GNet> &vec) {
+    NetData &vec) {
   static YosysManager mgr;
   RTlil::Design design;
   Yosys::run_frontend(namefile, "liberty", &design, nullptr);
   translateDesignToGNet(design, vec);
+}
+
+std::map<eda::gate::model::GNet*, std::vector<uint64_t>> truthTab(
+    NetData &vec) {
+  std::map<eda::gate::model::GNet*, std::vector<uint64_t>> table;
+  for (auto it: vec.combNets) {
+    static Simulator simulator;
+    Gate::LinkList in, out;
+    for (auto link: it.sourceLinks()) {
+      in.push_back(Gate::Link(link.target));
+    }
+    for(auto link: it.targetLinks()) {
+      out.push_back(Gate::Link(link.source));
+    }
+    auto compiled = simulator.compile(it, in, out);
+    uint64_t mean;
+    std::vector<uint64_t> tMean;
+    tMean.resize(out.size());
+    std::fill(tMean.begin(), tMean.end(), 0);
+    uint64_t length = 1 << it.nSourceLinks();
+    for (uint64_t i = 0; i < length; ++i) {
+      compiled.simulate(mean, i);
+      for (uint64_t j = 0; j < tMean.size(); ++j) {
+        tMean[j] += ((mean >> j) % 2) << i;
+      }
+    }
+    table.emplace(&it, tMean);
+  }
+  return table;
 }

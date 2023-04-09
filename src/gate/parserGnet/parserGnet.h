@@ -8,18 +8,26 @@
 #include "gate/model/gnet.h"
 
 #include <kernel/yosys.h>
+
+#include <map>
 #include <vector>
+
+struct NetData {
+    std::vector<eda::gate::model::GNet> combNets;
+    std::vector<eda::gate::model::GNet> memNets;
+};
 
 void translateModuleToGNet(
     const std::pair<Yosys::RTLIL::IdString, Yosys::RTLIL::Module*> &m,
-    eda::gate::model::GNet &net);
+    NetData &net);
 
 void translateDesignToGNet(
     const Yosys::RTLIL::Design &des,
-    std::vector<eda::gate::model::GNet> &vec);
+    NetData &vec);
 
 void translateLibertyToDesign(
     const char* namefile,
-    std::vector<eda::gate::model::GNet> &vec);
+    NetData &vec);
 
-
+std::map<eda::gate::model::GNet*, std::vector<uint64_t>> truthTab(
+    NetData &vec);
