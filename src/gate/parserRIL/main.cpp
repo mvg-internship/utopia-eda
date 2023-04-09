@@ -21,14 +21,12 @@ void printHeaders(
   for (auto it1 = ywires.begin(); it1 != ywires.end(); ++it1) {
     auto portOutput = it1->second->port_output;
     auto portInput = it1->second->port_input;
+    auto portWire = it1->second->upto;
     unsigned index = it1->first.index_;
     std::string wireName = it1->first.str();
+    int countDlr = std::count(wireName.begin(), wireName.end(), '$');
     std::string width = "u:";
     width.append(std::to_string(it1->second->width));
-    if (it1->second->width > 1) {
-      fout << "output " << width << " " << wireName << ";\n";
-      outputs.emplace(index, wireName);
-    }
     if (portInput) {
       wireName.erase(0, 1);
       fout << "input " << width << " " << wireName << ";\n";
@@ -40,8 +38,20 @@ void printHeaders(
       outputs.emplace(index, wireName);
     }
     if (!portOutput && !portInput) {
-      wires.emplace(index, wireName);
-      fout << "wire " << width << " " << wireName << ";\n";
+      fout << "??? " << width << " " << wireName << ";\n";
+      //wires.emplace(index, wireName);
+      if (countDlr == 1) {
+        //fout << "reg " << width << " " << wireName << ";\n";
+        wireName.erase(4);
+        wireName.erase(0, 3);
+        //fout << "reg " << width << " " << wireName << ";\n";
+        wires.emplace(index, wireName);
+      } else if (countDlr == 0) {
+        //fout << "wire " << width << " " << wireName << ";\n";
+        wireName.erase(0, 1);
+        //fout << "wire " << width << " " << wireName << ";\n";
+        wires.emplace(index, wireName);
+      }
     }
   }
 }
@@ -72,48 +82,48 @@ std::string logicFunction(size_t type) {
 
 /// The function builds operation with variables
 void buildRIL(
+    std::ostream &fout,
     int root,
     std::map<int, std::pair<int, int>> &cell,
     std::map<int, std::string> &inputs,
-    std::map<int, std::string> &typeFunc,
-    std::ostream &fout) {
-  auto rootCell = cell.at(root);
-  bool flag1  = inputs.find(rootCell.first) != inputs.end();
-  bool flag2  = inputs.find(rootCell.second) != inputs.end();
-  auto leftLeaf = cell.find(root)->second.first;
-  auto rightLeaf = cell.find(root)->second.second;
-  std::string strCells = typeFunc.find(cell.find(root)->first)->second;
-  // Flags are used to avoid unwanted round brackets
-  if (flag1 && flag2) {
-    if (leftLeaf != rightLeaf) {
-      fout << inputs.find(rightLeaf)->second << strCells
-           << inputs.find(leftLeaf)->second;
-    } else {
-      fout << strCells << inputs.find(rightLeaf)->second;
-    }
-  } else if (!flag1 && !flag2) {
-    if (leftLeaf != rightLeaf) {
-      fout << "(";
-      buildRIL(leftLeaf, cell, inputs, typeFunc, fout);
-      fout << strCells;
-      buildRIL(rightLeaf, cell, inputs, typeFunc, fout);
-      fout << ")";
-    } else {
-      fout << strCells << "(";
-      buildRIL(leftLeaf, cell, inputs, typeFunc, fout);
-      fout << ")";
-    }
-  } else if (!flag1 && flag2) {
-    fout << "(";
-    buildRIL(leftLeaf, cell, inputs, typeFunc, fout);
-    fout << strCells << inputs.find(rightLeaf)->second << ")";
+    std::map<int, std::string> &typeFunc);
+
+void printGate(
+    std::ostream &fout,
+    int node,
+    std::map<int, std::pair<int, int>> &cell,
+    std::map<int, std::string> &inputs,
+    std::map<int, std::string> &typeFunc) {
+  auto it = inputs.find(node);
+  if (it != inputs.end()) {
+    fout << it->second;
   } else {
-    fout << "(" << inputs.find(leftLeaf)->second << strCells;
-    buildRIL(rightLeaf, cell, inputs, typeFunc, fout);
+    buildRIL(fout, node, cell, inputs, typeFunc);
+  }
+}
+
+void buildRIL(
+    std::ostream &fout,
+    int root,
+    std::map<int, std::pair<int, int>> &cell,
+    std::map<int, std::string> &inputs,
+    std::map<int, std::string> &typeFunc) {
+  auto rootCell = cell.at(root);
+  std::string opName = typeFunc.at(root);
+  if (rootCell.first == rootCell.second) {
+    fout << opName << "(";
+    printGate(fout, rootCell.first, cell, inputs, typeFunc);
+    fout << ")";
+  } else {
+    fout << "(";
+    printGate(fout, rootCell.second, cell, inputs, typeFunc);
+    fout << opName ;
+    printGate(fout, rootCell.first, cell, inputs, typeFunc);
     fout << ")";
   }
 }
 
+/// The function fills cell map to be used in buildRil
 void printCells(
     const YLib::dict<RTlil::IdString, RTlil::Cell *> &cells,
     std::ostream &fout,
@@ -171,21 +181,21 @@ void printConnections(
     const std::vector<std::pair<RTlil::SigSpec, RTlil::SigSpec>> &connections,
     std::ostream &fout,
     std::map<int, std::pair<int, int>> &cell,
-    std::map<int, std::string> &inputs, std::map<int, std::string> &outputs,
+    std::map<int, std::string> &inputs,
+    std::map<int, std::string> &outputs,
     std::map<int, std::string> &typeFunc) {
   for (auto it1 = connections.begin(); it1 != connections.end(); ++it1) {
     auto connAsWireInput = it1->second.as_wire()->name.index_;
     auto connAsWireOutput = it1->first.as_wire()->name.index_;
     if (inputs.find(connAsWireInput) == inputs.end()) {
       fout << "@(*) {\n";
-      fout << "   " << outputs.find(connAsWireOutput)->second << " = ";
-      buildRIL(connAsWireInput, cell, inputs, typeFunc, fout);
-      fout << ";\n" << "}\n";
+      fout << "  " << outputs[connAsWireOutput] << " = ";
+      buildRIL(fout, connAsWireInput, cell, inputs, typeFunc);
+      fout << ";\n}\n";
     } else {
       fout << "@(*) {\n";
-      fout << "   " << outputs.find(connAsWireOutput)->second
-           << " = " << inputs.find(connAsWireInput)->second << ";\n";
-      fout << "}\n";
+      fout << "  " << outputs[connAsWireOutput] << " = "
+           << inputs[connAsWireInput] << ";\n}\n";
     }
   }
 }
@@ -194,7 +204,8 @@ void printConnections(
 void printExistingAct(
     int key,
     const std::map<int, std::string> &type,
-    std::string suffix, std::ostream &fout) {
+    std::string suffix,
+    std::ostream &fout) {
   auto it = type.find(key);
   if (it != type.end()) {
     fout << it->second << suffix;
@@ -218,15 +229,15 @@ void printActions(
       printExistingAct(firstAsChunk, wires, " = ", fout);
       printExistingAct(firstAsChunk, inputs, " = ", fout);
       printExistingAct(firstAsChunk, outputs, " = ", fout);
-      printExistingAct(secondAsChunk, wires, "\n", fout);
-      printExistingAct(secondAsChunk, inputs, "\n", fout);
-      printExistingAct(secondAsChunk, outputs, "\n", fout);
+      printExistingAct(secondAsChunk, wires, ";\n", fout);
+      printExistingAct(secondAsChunk, inputs, ";\n", fout);
+      printExistingAct(secondAsChunk, outputs, ";\n", fout);
     }
   }
 }
 
 /// The function determines states
-void printSyncs(
+void detState(
     const std::vector<RTlil::SyncRule *> &syncs,
     std::ostream &fout,
     std::map<int, std::string> &inputs,
@@ -245,7 +256,6 @@ void printSyncs(
         "STi"  // init
     };
     std::string currType = listSensitivity[(*it1)->type];
-
     if (currType == "STn") {
       state = "negedge";
     }
@@ -258,12 +268,10 @@ void printSyncs(
     if (currType == "ST1") {
       state = "level1";
     }
-    temporary = (*it1)->signal.as_wire()->name.index_;
-    if ((*it1)->actions.size() != 0) {
-      fout << "@(*) {\n";
-      printActions((*it1)->actions, fout, inputs, outputs, wires);
-      fout << "}\n";
+    if (currType == "STa") {
+      state = "always";
     }
+    temporary = (*it1)->signal.as_wire()->name.index_;
   }
 }
 
@@ -285,14 +293,16 @@ void printCaseRule(
 /// The function printing states
 void printProcesses(
     const YLib::dict<RTlil::IdString, RTlil::Process *> &processes,
-    std::ostream &fout, std::map<int, std::string> &inputs,
-    std::map<int, std::string> &outputs, std::map<int, std::string> &wires) {
+    std::ostream &fout,
+    std::map<int, std::string> &inputs,
+    std::map<int, std::string> &outputs,
+    std::map<int, std::string> &wires) {
   for (auto it1 = processes.begin(); it1 != processes.end(); ++it1) {
     std::string state;
     int temporary;
-    printSyncs(it1->second->syncs, fout, inputs, outputs,
-               wires, state, temporary);
-    fout << "@(" << state << "(" << inputs.find(temporary)->second << ")) {\n";
+    detState(it1->second->syncs, fout, inputs, outputs,
+             wires, state, temporary);
+    fout << "@(" << state << "(" << inputs[temporary] << ")) {\n";
     auto rootCase = it1->second->root_case;
     printActions(rootCase.actions, fout, inputs, outputs, wires);
     for (auto it2 : rootCase.switches) {
