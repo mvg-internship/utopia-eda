@@ -130,11 +130,11 @@ static Gate::SignalList makeInputsDffsr(
     }
   }
   // uppearField is root of second cell and index of data pin same time.
-  GateId data = inputs.find(upperField)->second;
+  GateId data = inputs.at(upperField);
   inputs_.push_back(Gate::Signal::always(data));
   // lowestField is index of clock pin, which places in first cell.
-  size_t lowestField = cell.find(upperField)->second.second;
-  GateId clock = inputs.find(lowestField)->second;
+  size_t lowestField = cell.at(upperField).second;
+  GateId clock = inputs.at(lowestField);
   // type[7] is P - positive or N - negative clock pin,
   // where 'type' consist of information about the cell.
   if (type[7] == 'P') {
@@ -143,8 +143,8 @@ static Gate::SignalList makeInputsDffsr(
     inputs_.push_back(Gate::Signal::negedge(clock));
   }
   // secondMidField is index of reset pin, which places in second cell
-  size_t secondMidField = cell.find(secondUpperField)->second.first;
-  GateId reset = inputs.find(secondMidField)->second;
+  size_t secondMidField = cell.at(secondUpperField).first;
+  GateId reset = inputs.at(secondMidField);
   // type[8] is P - positive or N - negative reset pin,
   // where 'type' consist of an information about the cell.
   if (type[8] == 'P') {
@@ -154,7 +154,7 @@ static Gate::SignalList makeInputsDffsr(
   }
   // type[9] is P - positive or N - negative preset pin,
   // where 'type' consist of information about the cell.
-  GateId preset = inputs.find(secondUpperField)->second;
+  GateId preset = inputs.at(secondUpperField);
   if (type[9] == 'P') {
     inputs_.push_back(Gate::Signal::level1(preset));
   } else {
@@ -178,12 +178,12 @@ static bool makeSpecCell(
       Gate::SignalList inputs_;
       size_t upperField = it.first;
       size_t lowerField = it.second.second;
-      GateSymbol curr = typeFunc.find(upperField)->second;
+      GateSymbol curr = typeFunc.at(upperField);
       // The checking that middleField is a wire of specific cell.
       if (curr == GateSymbol::LATCH) {
-        GateId data = inputs.find(upperField)->second;
-        GateId clock = inputs.find(lowerField)->second;
-        if (typeRTLIL.find(upperField)->second == "_DLATCH_P_") {
+        GateId data = inputs.at(upperField);
+        GateId clock = inputs.at(lowerField);
+        if (typeRTLIL.at(upperField) == "_DLATCH_P_") {
           outId = net.addLatch(data, clock);
           return true;
         } else {
@@ -194,9 +194,9 @@ static bool makeSpecCell(
         }
       }
       if (curr == GateSymbol::DFF) {
-        GateId data = inputs.find(lowerField)->second;
-        GateId clock = inputs.find(upperField)->second;
-        if (typeRTLIL.find(upperField)->second == "_DFF_P_") {
+        GateId data = inputs.at(lowerField);
+        GateId clock = inputs.at(upperField);
+        if (typeRTLIL.at(upperField) == "_DFF_P_") {
           outId = net.addDff(data, clock);
           return true;
         } else {
@@ -207,7 +207,7 @@ static bool makeSpecCell(
         }
       }
       if (curr == GateSymbol::DFFrs) {
-        std::string type = typeRTLIL.find(upperField)->second;
+        std::string type = typeRTLIL.at(upperField);
         inputs_ = makeInputsDffsr(type, upperField, cell, inputs);
         outId = net.addGate(GateSymbol::DFFrs, inputs_);
         return true;
@@ -249,7 +249,7 @@ static GateId makeJustCellNet(
     const std::map<size_t, std::pair<size_t, size_t>> &cell,
     const std::map<size_t, GateId> &inputs,
     const std::map<size_t, std::string> &typeRTLIL) {
-  GateSymbol func = typeFunc.find(root)->second;
+  GateSymbol func = typeFunc.at(root);
   std::pair<size_t, size_t> rootCell = cell.at(root);
   size_t leftLeaf = rootCell.first;
   size_t rightLeaf = rootCell.second;
@@ -351,7 +351,7 @@ static void createOutput(
       GateId output = buildNet(root, net, typeFunc, cell, inputs, typeRTLIL);
       net.addOut(output);
     } else {
-      GateId oneLeaf = inputs.find(root)->second;
+      GateId oneLeaf = inputs.at(root);
       GateId output = net.addGate(GateSymbol::NOP, Gate::Signal::always(oneLeaf));
       net.addOut(output);
     }
