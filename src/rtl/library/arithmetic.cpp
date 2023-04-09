@@ -51,7 +51,7 @@ FLibrary::Out ArithmeticLibrary::synth(const size_t outSize,
   case FuncSymbol::SUB:
     return synthSub(outSize, in, net);
   case FuncSymbol::MUL:
-    return synthKaratsubaMultiplier(outSize, in, 3, net);
+    return synthMul(outSize, in, net);
   default:
     return supportLibrary.synth(outSize, func, in, net);
   }
@@ -96,34 +96,49 @@ FLibrary::Out ArithmeticLibrary::synthSub(const size_t outSize,
   return synthLadnerFisherAdder(outSize, {x, temp}, true, net);
 }
 
+FLibrary::Out ArithmeticLibrary::synthMul(const size_t outSize,
+                                          const In &in,
+                                          GNet &net) {
+  const auto &x = in[0];
+  const auto &y = in[1];
+
+  // TODO: Different multipliers should be used for
+  // different sizes of x.size() and y.size().
+  // For example, column multiplier is more effective 
+  // than Karatsuba Multiplier, when x.size() and y.size() 
+  // is less than someNumer. SomeNumber is unknown. 
+  
+  return synthKaratsubaMultiplier(outSize, {x, y}, 3, net);
+}
 //                            LADNER-FISHER ADDER
 //
 //  G - gates for generated carry
 //  P - gates for propagated carry
+//
 //                                                          Input
 //                                                          carry    1
-//  | 6 |   | 5 |   | 4 |   | 3 |   | 2 |   | 1 |   | 0 |   |-1 | _________
+//  | 7 |   | 6 |   | 5 |   | 4 |   | 3 |   | 2 |   | 1 |   | 0 | _________
 //    |  _____|       |  _____|       |  _____|       |  _____|
 //    | /     |       | /     |       | /     |       | /     |
 //    |/      |       |/      |       |/      |       |/      |
-//    X[6,5]  |       X[4,3]  |       X[2,1]  |       O[0,-1] |
+//    X[7,6]  |       X[5,4]  |       X[3,2]  |       O[1,0]  |
 //    |       |       |       |       |       |       |       |
 //    |  _____________|       |       |  _____________|       |
 //    | /     |       |       |       | /     |       |       |
 //    |/      |       |       |       |/      |       |       |
-//    X[6,3]  |       |       |       O[2,-1] |       |       |
+//    X[7,4]  |       |       |       O[3,0]  |       |       |
 //    |       |       |       |       |       |       |       |      2
 //    |  _____________________________|       |       |       |
 //    | /     |       | /     |       |       |       |       |
 //    |/      |       |/      |       |       |       |       |
-//    O[6,-1] |       O[4,-1] |       |       |       |       |
+//    O[7,0]  |       O[5,0]  |       |       |       |       |
 //    |       |       |       |       |       |       |       |
 //    |       |  _____|       |  _____|       |  _____|       |
 //    |       | /     |       | /     |       | /     |       |
 //    |       |/      |       |/      |       |/      |       |
-//    |       O[5,-1] |       O[3,-1] |       O[1,-1] |       |
+//    |       O[6,0]  |       O[4,0]  |       O[2,0]  |       |
 //    |       |       |       |       |       |       |       |   _________
-//  ( 7 )   ( 6 )   ( 5 )   ( 4 )   ( 3 )   ( 2 )   ( 1 )   ( 0 )
+//  ( 8 )   ( 7 )   ( 6 )   ( 5 )   ( 4 )   ( 3 )   ( 2 )   ( 1 )
 //  Output                                                           3
 //  carry
 //
@@ -156,7 +171,7 @@ FLibrary::Out ArithmeticLibrary::synthSub(const size_t outSize,
 //
 //  3. Generating the sum:
 //       cell ( i ):
-//         S[i] =  P[i] xor G[i,-1]
+//         S[i] =  P[i] xor G[i,0]
 //
 FLibrary::Out ArithmeticLibrary::synthLadnerFisherAdder(const size_t outSize,
                                                         const In &in,
@@ -178,104 +193,103 @@ FLibrary::Out ArithmeticLibrary::synthLadnerFisherAdder(const size_t outSize,
     auto temp = net.addGate(GateSymbol::XOR, x[0], y[0]);
     out[0] = net.addGate(GateSymbol::XOR, carryIn, temp);
     return out;
-  } else {
-    const size_t maxDigit = needsCarryOut ? (inSize - 1) : (inSize - 2);
-    auto preP = formGateIdList(inSize, GateSymbol::XOR, x, y, net);
-    auto preG = formGateIdList(maxDigit + 1, GateSymbol::AND, x, y, net);
-
-    // The tree of gates for generated carry
-    GateIdTree p;
-    // The tree of gates for propagated carry
-    GateIdTree g;
-
-    const size_t size = needsCarryOut ? (inSize + 1) : inSize;
-    // A new level of the prefix tree is added for size: 4, 6, 10, 18, etc.
-    const size_t treeDepth = (size <= 3) ? 1 : (floor(log2(size - 2)) + 1);
-
-    // The level #0 of the prefix tree
-    // Cell indices start with lastDigit = 0 and firstDigit = -1.
-    // Step between cells is 2 for lastDigit and 2 for firstDigit.
-    auto temp = net.addGate(GateSymbol::AND, preP[0], carryIn);
-    g[{0, -1}] = net.addGate(GateSymbol::OR, preG[0], temp);
-    GateIdKey key(2, 1);
-    size_t &lastDigit{key.first};
-    int &firstDigit{key.second};
-    while (lastDigit <= maxDigit) {
-      p[key] = net.addGate(GateSymbol::AND, preP[lastDigit], preP[firstDigit]);
-      temp = net.addGate(GateSymbol::AND, preP[lastDigit], preG[firstDigit]);
-      g[key] = net.addGate(GateSymbol::OR, preG[lastDigit], temp);
-      lastDigit += 2;
-      firstDigit += 2;
-    }
-
-    // Levels of prefix tree before the last level
-    // Cell indices start with lastDigit = (2^level) and firstDigit = -1.
-    // a) Transition to cell in the same group:
-    //      step is 2 only for lastDigit
-    // b) Transition to cell in a new group:
-    //      step is (2 + 2^level) for lastDigit and
-    //      (2^(level + 1)) for firstDigit
-    // c) middelDigit is needed to find index k:
-    //      k = middleDigit - 1
-    //      For each group of cells middleDigit is constant.
-    //      It starts with 2^level and has step (2^(level + 1))
-    //      (It changes only when there is the transition to a new group)
-    // d) The condition of transition to a new group of cells:
-    //      (cell + 1) is a multiple of (2^(level - 1))
-    size_t middleDigit{0};
-    std::pair<size_t&, size_t> lKey(lastDigit, 0);
-    std::pair<size_t, int&> rKey(0, firstDigit);
-    for (size_t i = 1; i < treeDepth; i++) {// i - the number of the level
-      lastDigit = (1 << i);
-      firstDigit = -1;
-      middleDigit = (1 << i);
-      lKey.second = middleDigit - 1;
-      rKey.first = middleDigit - 2;
-      size_t j{0};// j - the number of the cell
-      while (lastDigit <= maxDigit) {
-        if (firstDigit != -1) {
-          p[key] = net.addGate(GateSymbol::AND, p[lKey], p[rKey]);
-        }
-        temp = net.addGate(GateSymbol::AND, p[lKey], g[rKey]);
-        g[key] = net.addGate(GateSymbol::OR, g[lKey], temp);
-        lastDigit += 2;
-        if ((j + 1) % (1 << (i - 1)) == 0) {
-          lastDigit += (1 << i);
-          firstDigit += (1 << (i + 1));
-          middleDigit += (1 << (i + 1));
-          lKey.second = middleDigit - 1;
-          rKey.first = middleDigit - 2;
-        }
-        j++;
-      }
-    }
-
-    // The last level of prefix tree
-    // Cell indices start with lastDigit = 1 and firstDigit = -1.
-    // Step between cells is 2 for lastDigit but firstDigit remains constant.
-    lastDigit = 1;
-    firstDigit = -1;
-    while (lastDigit <= maxDigit) {
-      temp =
-          net.addGate(GateSymbol::AND, preP[lastDigit], g[{lastDigit - 1, -1}]);
-      g[key] = net.addGate(GateSymbol::OR, preG[lastDigit], temp);
-      lastDigit += 2;
-    }
-
-    // Generating the sum
-    Out out(inSize);
-    out[0] = net.addGate(GateSymbol::XOR, preP[0], carryIn);
-    for (size_t i = 1; i < inSize; i++) {
-      out[i] = net.addGate(GateSymbol::XOR, preP[i], g[{i - 1, -1}]);
-    }
-    if (needsCarryOut) {
-      out.push_back(net.addGate(GateSymbol::NOP, g[{inSize - 1, -1}]));
-    }
-
-    fillingWithZeros(outSize, {out}, net);
-
-    return out;
   }
+
+  const size_t maxDigit = needsCarryOut ? (inSize) : (inSize - 1);
+  auto preP = formGateIdList(inSize, GateSymbol::XOR, x, y, net);
+  auto preG = formGateIdList(maxDigit, GateSymbol::AND, x, y, net);
+
+  // The tree of gates for generated carry
+  GateIdTree p;
+  // The tree of gates for propagated carry
+  GateIdTree g;
+
+  const size_t sumSize = needsCarryOut ? (inSize + 1) : inSize;
+  // A new level of the prefix tree is added for sumSize: 4, 6, 10, 18, etc.
+  const size_t treeDepth = (sumSize <= 3) ? 1 : (floor(log2(sumSize - 2)) + 1);
+
+  // The level #0 of the prefix tree
+  // Cell indices start with lastDigit = 1 and firstDigit = 0.
+  // Step between cells is 2 for lastDigit and 2 for firstDigit.
+  auto temp = net.addGate(GateSymbol::AND, preP[0], carryIn);
+  g[{1, 0}] = net.addGate(GateSymbol::OR, preG[0], temp);
+  GateIdKey key(3, 2);
+  size_t &lastDigit{key.first};
+  size_t &firstDigit{key.second};
+  while (lastDigit <= maxDigit) {
+    p[key] = net.addGate(GateSymbol::AND, preP[lastDigit - 1], preP[firstDigit - 1]);
+    temp = net.addGate(GateSymbol::AND, preP[lastDigit - 1], preG[firstDigit - 1]);
+    g[key] = net.addGate(GateSymbol::OR, preG[lastDigit - 1], temp);
+    lastDigit += 2;
+    firstDigit += 2;
+  }
+
+  // Levels of prefix tree before the last level
+  // Cell indices start with lastDigit = ((2^level) + 1) and firstDigit = 0.
+  // a) Transition to cell in the same group:
+  //      step is 2 only for lastDigit
+  // b) Transition to cell in a new group:
+  //      step is (2 + 2^level) for lastDigit and
+  //      (2^(level + 1)) for firstDigit
+  // c) middelDigit is needed to find index k:
+  //      k = middleDigit - 1
+  //      For each group of cells middleDigit is constant.
+  //      It starts with ((2^level) + 1) and has step (2^(level + 1))
+  //      (It changes only when there is the transition to a new group)
+  // d) The condition of transition to a new group of cells:
+  //      (cell + 1) is a multiple of (2^(level - 1))
+  size_t middleDigit{0};
+  std::pair<size_t&, size_t> lKey(lastDigit, 0);
+  std::pair<size_t, size_t&> rKey(0, firstDigit);
+  for (size_t i = 1; i < treeDepth; i++) {// i - the number of the level
+    lastDigit = ((1 << i) + 1);
+    firstDigit = 0;
+    middleDigit = ((1 << i) + 1);
+    lKey.second = middleDigit - 1;
+    rKey.first = middleDigit - 2;
+    size_t j{0};// j - the number of the cell
+    while (lastDigit <= maxDigit) {
+      if (firstDigit != 0) {
+        p[key] = net.addGate(GateSymbol::AND, p[lKey], p[rKey]);
+      }
+      temp = net.addGate(GateSymbol::AND, p[lKey], g[rKey]);
+      g[key] = net.addGate(GateSymbol::OR, g[lKey], temp);
+      lastDigit += 2;
+      if ((j + 1) % (1 << (i - 1)) == 0) {
+        lastDigit += (1 << i);
+        firstDigit += (1 << (i + 1));
+        middleDigit += (1 << (i + 1));
+        lKey.second = middleDigit - 1;
+        rKey.first = middleDigit - 2;
+      }
+      j++;
+    }
+  }
+
+  // The last level of prefix tree
+  // Cell indices start with lastDigit = 2 and firstDigit = 0.
+  // Step between cells is 2 for lastDigit but firstDigit remains constant.
+  lastDigit = 2;
+  firstDigit = 0;
+  while (lastDigit <= maxDigit) {
+    temp = net.addGate(GateSymbol::AND, preP[lastDigit - 1], g[{lastDigit - 1, 0}]);
+    g[key] = net.addGate(GateSymbol::OR, preG[lastDigit -1 ], temp);
+    lastDigit += 2;
+  }
+
+  // Generating the sum
+  Out out(inSize);
+  out[0] = net.addGate(GateSymbol::XOR, preP[0], carryIn);
+  for (size_t i = 1; i < inSize; i++) {
+    out[i] = net.addGate(GateSymbol::XOR, preP[i], g[{i, 0}]);
+  }
+  if (needsCarryOut) {
+    out.push_back(net.addGate(GateSymbol::NOP, g[{inSize, 0}]));
+  }
+
+  fillingWithZeros(outSize, {out}, net);
+
+  return out;
 }
 
 FLibrary::Out ArithmeticLibrary::synthKaratsubaMultiplier(const size_t outSize,

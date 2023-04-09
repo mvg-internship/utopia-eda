@@ -30,7 +30,7 @@ namespace eda::rtl::library {
  */
 class ArithmeticLibrary final : public FLibrary {
 public:
-  using GateIdKey = std::pair<size_t, int>;
+  using GateIdKey = std::pair<size_t, size_t>;
   using GateIdTree = std::map<GateIdKey, GateId>;
 
   static FLibrary &get() {
@@ -71,6 +71,10 @@ private:
                       GNet &net);
 
   static Out synthSub(const size_t outSize,
+                      const In &in,
+                      GNet &net);
+
+  static Out synthMul(const size_t outSize,
                       const In &in,
                       GNet &net);
 
