@@ -78,14 +78,15 @@ std::ostream &operator<<(std::ostream &output, GNet &model) {
         if((gatesDraw.find(allLinksFromGate[numberOfLink].source)) == 
         gatesDraw.end())
         {
-          output << 
-                  "<node id=\""
+          gatesDraw.insert(allLinksFromGate[numberOfLink].source);
+          output << "<node id=\""
                  << allLinksFromGate[numberOfLink].source
                  << "\"/>\n";
         }
                 if((gatesDraw.find(allLinksFromGate[numberOfLink].target)) == 
         gatesDraw.end())
         {
+          gatesDraw.insert(allLinksFromGate[numberOfLink].target);
           output << 
                   "<node id=\""
                  << allLinksFromGate[numberOfLink].target
@@ -94,9 +95,8 @@ std::ostream &operator<<(std::ostream &output, GNet &model) {
       }
     }
   }
-  output <<
-         "</graph>\n"
-      << "</graphml>";
+  output << "</graph>\n"
+         << "</graphml>";
   return output;
 }
 
