@@ -1,4 +1,19 @@
+//===----------------------------------------------------------------------===//
+//
+// Part of the Utopia EDA Project, under the Apache License v2.0
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2021 ISP RAS (http://www.ispras.ru)
+//
+//===----------------------------------------------------------------------===//
+
 #include "graphml.h"
+
+#include <set>
+#include <string>
+
+using GNet = eda::gate::model::GNet;
+using Gate = eda::gate::model::Gate;
+using Link = Gate::Link;
 
 namespace eda::printer::graphMl {
 
@@ -20,8 +35,8 @@ bool linkDontDraw(std::set<std::string> &linksDraw, const Link &link) {
 }
 
 std::ostream &operator<<(std::ostream &output, GNet &model) {
-  output
-      << R"HEADER(<?xml version="1.0" encoding="UTF-8"?>
+  output << 
+         R"HEADER(<?xml version="1.0" encoding="UTF-8"?>
 <graphml xmlns="http://graphml.graphdrawing.org/xmlns"  
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns 
@@ -33,12 +48,14 @@ std::ostream &operator<<(std::ostream &output, GNet &model) {
   // Document header
   auto &allGates = model.gates();
   std::set<std::string> linksDraw;
+  std::set<size_t> gatesDraw;
   for (size_t numberOfGate = 0; numberOfGate < allGates.size();
        numberOfGate++) {
-    output
-        << "<node id=\""
+    output << 
+           "<node id=\""
         << allGates[numberOfGate]->id()
         << "\"/>\n";
+    gatesDraw.insert(allGates[numberOfGate]->id());
     // describing the nodes
     auto &allLinksFromGate = allGates[numberOfGate]->links();
     for (size_t numberOfLink = 0;
@@ -47,8 +64,8 @@ std::ostream &operator<<(std::ostream &output, GNet &model) {
       // we check that we did not draw this edge
         std::string link_deskription =
             linkDescription(allLinksFromGate[numberOfLink]);
-        output
-            << "<edge id=\"l" + link_deskription + "\" source=\""
+        output <<
+               "<edge id=\"l" + link_deskription + "\" source=\""
             << allLinksFromGate[numberOfLink].source
             << "\" target=\""
             << allLinksFromGate[numberOfLink].target
@@ -58,11 +75,27 @@ std::ostream &operator<<(std::ostream &output, GNet &model) {
             << "</data>\n"
             << "</edge>\n";
         // describing the edges
+        if((gatesDraw.find(allLinksFromGate[numberOfLink].source)) == 
+        gatesDraw.end())
+        {
+          output << 
+                  "<node id=\""
+                 << allLinksFromGate[numberOfLink].source
+                 << "\"/>\n";
+        }
+                if((gatesDraw.find(allLinksFromGate[numberOfLink].target)) == 
+        gatesDraw.end())
+        {
+          output << 
+                  "<node id=\""
+                 << allLinksFromGate[numberOfLink].target
+                 << "\"/>\n";
+        }
       }
     }
   }
-  output
-      << "</graph>\n"
+  output <<
+         "</graph>\n"
       << "</graphml>";
   return output;
 }
