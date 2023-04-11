@@ -126,7 +126,7 @@ size_t getDigit() {
   return 1 + rand() % 64;
 }
 
-TEST(arithmeticTest, addTest) {
+TEST(ArithmeticTest, AddTest) {
   bool flag = true;
   for (size_t i = 0; i < 100; i++) {
     flag *= arithmeticTest(FuncSymbol::ADD, getDigit(), getDigit(), getDigit());
@@ -134,7 +134,7 @@ TEST(arithmeticTest, addTest) {
   EXPECT_TRUE(flag);
 }
 
-TEST(arithmeticTest, subTest) {
+TEST(ArithmeticTest, SubTest) {
   bool flag = true;
   for (size_t i = 0; i < 10; i++) {
     flag *= arithmeticTest(FuncSymbol::SUB, 10, 10, 11);
@@ -143,7 +143,7 @@ TEST(arithmeticTest, subTest) {
 }
 
 
-TEST(arithmeticTest, mulTest) {
+TEST(ArithmeticTest, MulTest) {
   bool flag = true;
   for (size_t i = 0; i < 50; i++) {
     flag *= arithmeticTest(FuncSymbol::MUL, getDigit(), getDigit(), getDigit());
