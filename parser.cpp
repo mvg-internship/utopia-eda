@@ -10,7 +10,7 @@
             k += 1;\
     }\
     if (k == strlen(yytext)) {\
-        std::cout << "ERROR IN " << text << " WITH " << yytext << "\tline: " << std::endl;\
+        std::cout << "ERROR IN " << text << " WITH " << yytext << "\tline: " << line << std::endl;\
         exit(EXIT_FAILURE);\
     }\
 } while (false)
@@ -47,9 +47,11 @@ void parse_bench_file();
 void parse_id();
 void parse_parenthesis_io(token_t);
 void parse_parenthesis_id(token_t);
-void double_defenition(token_t);
-void output(token_t);
+void double_definition(token_t);
 void input(token_t);
+void output(token_t);
+void unknown();
+void assert_next_id(token_t, char*, token_t);
 
 static std::size_t place = 0;
 static std::size_t line = 0;
@@ -81,7 +83,6 @@ void unknown() {
             exit(EXIT_FAILURE);
         }
     }
-
 }
 
 void input() {
@@ -97,19 +98,19 @@ void output(token_t type) {
         if (type != OUTPUT) {
             int k = 0;
             if (strlen(yytext) == strlen(i.name) && i.type_init == 1)
-                COMPARE("ENTRY INPUT");
+                COMPARE("ENTRY OUTPUT");
         }
     }
 }
 
 
-void double_defenition(token_t type) {
+void double_definition(token_t where_called) {
     for (auto i : maps) {
-        if(i.definite == 1) {
+        if(i.definite == 1) { // definite = {0 if not declared, 1 if declared}
             int k = 0;
-            if (strlen(yytext) == strlen(i.name) && type != OUTPUT && i.type_init != 1)  {
+            if (strlen(yytext) == strlen(i.name) && where_called != OUTPUT && i.type_init != 1)  {
                 COMPARE("DOUBLE DEFINITION");
-            } else if (strlen(yytext) == strlen(i.name) && type == OUTPUT ) {
+            } else if (strlen(yytext) == strlen(i.name) && where_called == OUTPUT ) {
                 if(i.type_init == 1)
                     COMPARE("DOUBLE DEFINITION");
             }
@@ -117,21 +118,21 @@ void double_defenition(token_t type) {
     }
 }
 
-void ASSERT_NEXT_ID(token_t expected_token, char* error_string, token_t type) {
+void assert_next_id(token_t expected_token, char* error_string, token_t where_called) {
     token_t token = get_next_token(); 
-    if (type == INPUT) {
-        double_defenition(INPUT);
-        MAPS(1, 0);
-    } else if (type == OUTPUT) {
-        double_defenition(OUTPUT);
-        MAPS(1, 1);
-    } else {
-        output(type);
-        MAPS(0, 2);
-    } 
     if ( token != expected_token ) { 
         ALERT(error_string); 
     }   
+    if (where_called == INPUT) {
+        double_definition(INPUT);
+        MAPS(1, 0);
+    } else if (where_called == OUTPUT) {
+        double_definition(OUTPUT);
+        MAPS(1, 1);
+    } else {
+        output(where_called);
+        MAPS(0, 2);
+    } 
 }
 
 token_t get_next_token() { 
@@ -144,16 +145,17 @@ token_t get_next_token() {
 void parse_bench_file() {
     while ( token_t token = get_next_token() ) {
         if ( token == INPUT || token == OUTPUT ) {
-            parse_parenthesis_io(token);
+            parse_parenthesis_io(token);    // deepening to a level below 
         } else if (token == ID) {
-            double_defenition(ID);
-            input();
-            MAPS(1, 2);
-            parse_id();
+            double_definition(ID); // checker
+            input();    // checker
+            MAPS(1, 2); // adding
+            parse_id(); // deepening to a level below
         } else {
-            ALERT("INPUT', 'OUTPUT' or 'ID");
+            ALERT("INPUT', 'OUTPUT' or 'ID"); 
         }
     }
+    unknown(); // checker 
     std::cout << "END OF FILE.\n";
 }
 
@@ -169,19 +171,19 @@ void parse_id() {
     }
 }
 
-void parse_parenthesis_io(token_t type) { // type = {INPUT, OUTPUT, ...}
+void parse_parenthesis_io(token_t type) { // type = {INPUT, OUTPUT, DFF, NOT}
     ASSERT_NEXT_TOKEN( LP, "LP");
-    ASSERT_NEXT_ID( ID, "ID", type );
+    assert_next_id( ID, "ID", type );
     ASSERT_NEXT_TOKEN( RP, "RP");
     line += 1;
 }
 
-void parse_parenthesis_id(token_t type) {
+void parse_parenthesis_id(token_t type) { // type = {AND, OR, NAND, NOR}
     token_t token;
     ASSERT_NEXT_TOKEN( LP, "LP" );
-    ASSERT_NEXT_ID(ID, "ID", type);
+    assert_next_id(ID, "ID", type);
     while ( (token = get_next_token()) == COMMA )
-        ASSERT_NEXT_ID(ID, "ID", type);
+        assert_next_id(ID, "ID", type);
     if ( token != RP ) {
         ALERT("'RP'");
     }
@@ -189,26 +191,13 @@ void parse_parenthesis_id(token_t type) {
 }
 
 int main(int argc, char* argv[]) {
-    // for (int i = 1; i < argc; i++) {
-    //     yyin = fopen( argv[i], "r" );
-    //     std::cout << parse_bench_file() << std::endl;
-    // }
 
-    std::vector<char*> txts {"s27.txt", 
-                                "dinput.txt",
-                                "doutput.txt", 
-                                "dddf.txt", 
-                                "einput.txt", 
-                                "eoutput.txt"
-                            };
-    yyin = fopen( "s27.txt", "r" );
-    parse_bench_file();
-    unknown();
-    // std::cout << "start\n";
-    // for (auto i : maps) { 
-    //     std::cout << i.name << " " << i.definite << " " << i.type_init << "\n";
-    // }
-    std::cout << " end_check\n\n";
-    fclose(yyin);
+    for (int i = 1; i < argc; i++) {
+        yyin = fopen( argv[i], "r" );
+        parse_bench_file();
+        std::cout << " end_check\n\n";
+        fclose(yyin);
+    }
+
     return 0;
 }

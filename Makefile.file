@@ -6,8 +6,7 @@ SOURCE = parser.cpp
 OBJECT = $(SOURCE:.cpp=.o)
 TARGET = parser
 
-CXXFLAGS += \
-  -std=c++17 -g -Wall -Wextra
+CXXFLAGS += -std=c++17 -g -Wall -Wextra
 
 all: $(TARGET)
 
