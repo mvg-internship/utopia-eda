@@ -76,16 +76,14 @@ std::ostream &operator<<(std::ostream &output, GNet &model) {
             << "</edge>\n";
         // describing the edges
         if((gatesDraw.find(allLinksFromGate[numberOfLink].source)) == 
-        gatesDraw.end())
-        {
+        gatesDraw.end()) {
           gatesDraw.insert(allLinksFromGate[numberOfLink].source);
           output << "<node id=\""
                  << allLinksFromGate[numberOfLink].source
                  << "\"/>\n";
         }
                 if((gatesDraw.find(allLinksFromGate[numberOfLink].target)) == 
-        gatesDraw.end())
-        {
+        gatesDraw.end()) {
           gatesDraw.insert(allLinksFromGate[numberOfLink].target);
           output << 
                   "<node id=\""
