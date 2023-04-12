@@ -38,10 +38,12 @@ enum token_t
   FAILURE_IN_GATE_LEVEL_VERILOG
 };
 
-    enum class SymbolType
+    enum familyInfo
 {
-  INPUT,
-  OUTPUT,
-  WIRE,
-  VOID
+  VOID_,
+  MODULE_,
+  INPUT_,
+  OUTPUT_,
+  WIRE_,
+  ASSIGN_
 };
