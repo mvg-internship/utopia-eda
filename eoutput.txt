@@ -1,3 +1,0 @@
-
-OUTPUT(G17)
-G11 = NOT(G17)
