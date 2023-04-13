@@ -1,4 +1,4 @@
-enum token_t{
+enum Tokens {
     INPUT = 1,
     OUTPUT,
     DFF,

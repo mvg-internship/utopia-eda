@@ -5,7 +5,7 @@ INPUT(G3)
 
 OUTPUT(G17)
 
-G5 = DFF(G10)
+G0 = DFF(G10)
 G6 = DFF(G11)
 G7 = DFF(G13)
 
