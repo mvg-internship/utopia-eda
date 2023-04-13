@@ -1,8 +1,10 @@
+#include "lex.yy.c"
 #include <iostream>
 #include <unordered_map>
 #include <vector>
-#include "lex.yy.c"
-#include <FlexLexer.h>
+#include <fstream>
+//#include <FlexLexer.h>
+
 
 /*
 some defenicion in Verilog
@@ -39,6 +41,10 @@ public:
     table.erase(name);
   }
 
+  void clearTable() {
+  table.erase(table.begin(), table.end());
+  }
+
   void changeParent(const std::string &name, familyInfo parent) {
     table[name].parent = parent;
   }
@@ -57,7 +63,7 @@ public:
 };
 
 void AsserrtVariable(const std::string &name, familyInfo familyType,
-                     SymbolTable table) {
+                     SymbolTable &table) {
   switch (familyType) {
   case WIRE_:
   case MODULE_:
@@ -65,8 +71,9 @@ void AsserrtVariable(const std::string &name, familyInfo familyType,
         table.findChild(name) == familyInfo::VOID_) {
       table.addSymbol(name, familyType, familyInfo::VOID_);
     } else {
-      std::cout << "This variable declorated twice: " << name << std::endl
-                << "line: " << yylineno << std::endl;
+      std::cerr << "This variable declorated twice: " << name << std::endl
+          << "line: " << yylineno << std::endl;
+      exit(EXIT_FAILURE);
     }
 
     break;
@@ -76,8 +83,9 @@ void AsserrtVariable(const std::string &name, familyInfo familyType,
         table.findChild(name) == familyInfo::VOID_) {
       table.changeChild(name, familyType);
     } else {
-      std::cout << "Invalid decloration " << name << std::endl
+      std::cerr << "Invalid decloration1 " << name << " parent type: "<< table.findParent(name) << " child type: "<< table.findChild(name) << std::endl
                 << "line: " << yylineno << std::endl;
+        exit(EXIT_FAILURE);
     }
 
     break;
@@ -85,10 +93,11 @@ void AsserrtVariable(const std::string &name, familyInfo familyType,
      if(table.findParent(name) == MODULE_ && table.findChild(name) != ASSIGN_) {
       table.changeChild(name, ASSIGN_);
      }else{
-      std::cout << "Invalid decloration " << name << std::endl
+      std::cerr << "Invalid decloration in ASSIGN: " << name << " parent type: "<< table.findParent(name) << " child type: "<< table.findChild(name) << std::endl
                 << "line: " << yylineno << std::endl;
+      exit(EXIT_FAILURE);
      }
-
+    
     break;
   default:
 
@@ -104,7 +113,7 @@ kind_of_error parse_expr(token_t &, SymbolTable &);
 kind_of_error parse_assign_parts(token_t &, SymbolTable &);
 kind_of_error parse_assign(token_t &, SymbolTable &);
 kind_of_error parse_arg(token_t &, SymbolTable &);
-kind_of_error parse_name_list(token_t &, token_t, familyInfo, SymbolTable &);
+kind_of_error parse_name_list(token_t &, token_t ,familyInfo , SymbolTable &);
 
 #define DEBUGTOKEN(tok, msg)                                                   \
   printf("%s:%d: %s: token '%s' (%d)\n", __FILE__, __LINE__, (msg), yytext,    \
@@ -178,15 +187,14 @@ kind_of_error parse_module(token_t &tok) {
     }
   }
 
-  delete &table;
+  table.clearTable();
   return rc;
 }
 
 kind_of_error parse_decl(token_t &tok, SymbolTable &table) {
   //Сохраняем тип деклорации. Ничего умнее я не придумал
   familyInfo familyType = familyInfo::VOID_;
-  switch (tok)
-  {
+  switch (tok) {
   case INPUT:
     familyType = INPUT_;
     break;
@@ -199,7 +207,7 @@ kind_of_error parse_decl(token_t &tok, SymbolTable &table) {
   default:
     break;
   }
-  tok              = get_next_token();
+  tok = get_next_token();
   kind_of_error rc = SUCCESS;
   switch (tok) {
   case LBRACKET:
@@ -208,6 +216,7 @@ kind_of_error parse_decl(token_t &tok, SymbolTable &table) {
     ASSERT_NEXT_TOKEN(tok, NUM, FAILURE_IN_DECL);
     ASSERT_NEXT_TOKEN(tok, RBRACKET, FAILURE_IN_DECL);
     ASSERT_NEXT_TOKEN(tok, STRING, FAILURE_IN_DECL);
+    AsserrtVariable(yytext, familyType, table);
     rc  = parse_name_list(tok, SEMICOLON, familyType, table);
     tok = get_next_token();
 
@@ -241,9 +250,14 @@ kind_of_error parse_expr(token_t &tok, SymbolTable &table) {
 kind_of_error parse_assign_parts(token_t &tok, SymbolTable &table) {
   kind_of_error rc = SUCCESS;
   ASSERT_NEXT_TOKEN(tok, STRING, FAILURE_IN_ASSIGN);
-  if(table.findParent(yytext) == WIRE_ && table.findChild(yytext) == familyInfo::VOID_){
+  if (table.findParent(yytext) == WIRE_ && table.findChild(yytext) == familyInfo::VOID_) {
     table.changeChild(yytext, ASSIGN_);
   }
+  // }else{
+  //   std::cerr << "Invalid decloration in ASSIGN: " << yytext << " parent type: "<< table.findParent(yytext) << " child type: "<< table.findChild(yytext) << std::endl
+  //               << "line: " << yylineno << std::endl;
+  //   exit(EXIT_FAILURE);
+  // }
   tok = get_next_token();
   switch (tok) {
   case LBRACKET:
@@ -255,12 +269,14 @@ kind_of_error parse_assign_parts(token_t &tok, SymbolTable &table) {
     ASSERT_NEXT_TOKEN(tok, EQUALS, FAILURE_IN_ASSIGN);
     ASSERT_NEXT_TOKEN(tok, LFIGURNAYA, FAILURE_IN_ASSIGN);
     ASSERT_NEXT_TOKEN(tok, STRING, FAILURE_IN_ASSIGN);
+    AsserrtVariable(yytext, ASSIGN_,table);
     rc = parse_name_list(tok, RFIGURNAYA, ASSIGN_, table);
     std::cout << __FILE__ << __LINE__ << yytext << " end of lbracket case "
               << "tok =" << tok << std::endl;
     break;
   case EQUALS:
     ASSERT_NEXT_TOKEN(tok, STRING, FAILURE_IN_ASSIGN);
+    AsserrtVariable(yytext, ASSIGN_,table);
     std::cout << __FILE__ << __LINE__ << yytext << "end of equals case"
               << "tok =" << tok << std::endl;
     break;
@@ -321,7 +337,6 @@ kind_of_error parse_name_list(token_t &tok, token_t separate_tok,
 
     default:
       if (tok != separate_tok) {
-
         rc = FAILURE_IN_PARSE_NAME_LIST;
       } else {
         break;
