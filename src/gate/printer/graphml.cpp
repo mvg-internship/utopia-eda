@@ -18,11 +18,13 @@ using Link = Gate::Link;
 namespace eda::printer::graphMl {
 
 std::string linkDescription(const Link &link) {
-  return std::to_string(link.source) + "_" + std::to_string(link.target);
+  return std::to_string(link.source) + "_" + std::to_string(link.target) 
+  + "_" + std::to_string(link.input);
 }
 
 std::string linkDescriptionReverse(const Link &link) {
-  return std::to_string(link.target) + "_" + std::to_string(link.source);
+  return std::to_string(link.target) + "_" + std::to_string(link.source) 
+  + "_" + std::to_string(link.input);
 }
 
 bool linkDontDraw(std::set<std::string> &linksDraw, const Link &link) {
@@ -35,64 +37,72 @@ bool linkDontDraw(std::set<std::string> &linksDraw, const Link &link) {
 }
 
 std::ostream &operator<<(std::ostream &output, GNet &model) {
+  // Document header
   output << 
-         R"HEADER(<?xml version="1.0" encoding="UTF-8"?>
-<graphml xmlns="http://graphml.graphdrawing.org/xmlns"  
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns 
-     http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd">
-    )HEADER"
+         R"(<?xml version="1.0" encoding="UTF-8"?>
+            <graphml xmlns="http://graphml.graphdrawing.org/xmlns"  
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns 
+            http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd">
+            )"
       << "<graph id=\"G"
       << model.id()
       << "\" edgedefault=\"directed\">\n";
-  // Document header
-  auto &allGates = model.gates();
+
+  const auto &allGates = model.gates();
   std::set<std::string> linksDraw;
   std::set<size_t> gatesDraw;
-  for (size_t numberOfGate = 0; numberOfGate < allGates.size();
-       numberOfGate++) {
-    output << 
-           "<node id=\""
-        << allGates[numberOfGate]->id()
-        << "\"/>\n";
-    gatesDraw.insert(allGates[numberOfGate]->id());
-    // describing the nodes
-    auto &allLinksFromGate = allGates[numberOfGate]->links();
-    for (size_t numberOfLink = 0;
-         numberOfLink < allLinksFromGate.size(); numberOfLink++) {
-      if (linkDontDraw(linksDraw, allLinksFromGate[numberOfLink])) {
-      // we check that we did not draw this edge
-        std::string link_deskription =
-            linkDescription(allLinksFromGate[numberOfLink]);
+  for (auto *const gate: allGates) {
+    //Adding a description of the vertex if it has not been described yet
+    if((gatesDraw.find(gate->id())) == 
+        gatesDraw.end())
+    {
+      output << 
+                "<node id=\""
+             << gate->id()
+             << "\"/>\n";
+      gatesDraw.insert(gate->id());
+    }
+    //We describe all the edges belonging to the vertex, 
+    //provided that they have not already been described
+    auto &allLinksFromGate = gate->links();
+    for (const auto link: allLinksFromGate) {
+      if (linkDontDraw(linksDraw, link)) {
+        //We describe the edge by talking about its source, destination 
+        //and which input it comes to
+        const std::string link_deskription =
+            linkDescription(link);
         output <<
                "<edge id=\"l" + link_deskription + "\" source=\""
-            << allLinksFromGate[numberOfLink].source
+            << link.source
             << "\" target=\""
-            << allLinksFromGate[numberOfLink].target
+            << link.target
             << "\">\n"
             << "<data key=\"l_d" + link_deskription + "\">"
-            << allLinksFromGate[numberOfLink].input
+            << link.input
             << "</data>\n"
             << "</edge>\n";
-        // describing the edges
-        if((gatesDraw.find(allLinksFromGate[numberOfLink].source)) == 
+        //We check whether there are vertices not drawn in the graph, 
+        //but into which the edge comes or from which it comes
+        if((gatesDraw.find(link.source)) == 
         gatesDraw.end()) {
-          gatesDraw.insert(allLinksFromGate[numberOfLink].source);
+          gatesDraw.insert(link.source);
           output << "<node id=\""
-                 << allLinksFromGate[numberOfLink].source
+                 << link.source
                  << "\"/>\n";
         }
-                if((gatesDraw.find(allLinksFromGate[numberOfLink].target)) == 
+        if((gatesDraw.find(link.target)) == 
         gatesDraw.end()) {
-          gatesDraw.insert(allLinksFromGate[numberOfLink].target);
+          gatesDraw.insert(link.target);
           output << 
                   "<node id=\""
-                 << allLinksFromGate[numberOfLink].target
+                 << link.target
                  << "\"/>\n";
         }
       }
     }
   }
+  //End of document
   output << "</graph>\n"
          << "</graphml>";
   return output;
