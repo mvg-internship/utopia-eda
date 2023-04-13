@@ -55,8 +55,7 @@ std::ostream &operator<<(std::ostream &output, GNet &model) {
   for (auto *const gate: allGates) {
     //Adding a description of the vertex if it has not been described yet
     if((gatesDraw.find(gate->id())) == 
-        gatesDraw.end())
-    {
+        gatesDraw.end()) {
       output << 
                 "<node id=\""
              << gate->id()
