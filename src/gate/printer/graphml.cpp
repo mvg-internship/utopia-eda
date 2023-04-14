@@ -104,7 +104,7 @@ std::ostream &operator<<(std::ostream &output, GNet &model) {
                  << "<data key=\"sv"
                  << link.target
                  << "\">red</data>\n"
-                 << "<node/>";
+                 << "<node/>\n";
         }
       }
     }
