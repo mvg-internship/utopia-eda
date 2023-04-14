@@ -89,14 +89,22 @@ std::ostream &operator<<(std::ostream &output, GNet &model) {
           gatesDrawn.insert(link.source);
           output << "<node id=\""
                  << link.source
-                 << "\"/>\n";
+                 << "\">\n"
+                 << "<data key=\"sv"
+                 << link.source
+                 << "\">green</data>\n"
+                 << "<node/>";
         }
         if((gatesDrawn.find(link.target)) == 
         gatesDrawn.end()) {
           gatesDrawn.insert(link.target);
           output << "<node id=\""
                  << link.target
-                 << "\"/>\n";
+                 << "\">\n"
+                 << "<data key=\"sv"
+                 << link.target
+                 << "\">red</data>\n"
+                 << "<node/>";
         }
       }
     }
