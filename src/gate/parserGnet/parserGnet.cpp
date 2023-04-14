@@ -7,6 +7,7 @@
 #include "gate/simulator/simulator.h"
 
 #include <string>
+#include <deque>
 
 namespace GModel = eda::gate::model;
 namespace YLib = Yosys::hashlib;
@@ -33,12 +34,16 @@ static void fillInputs(
     const YLib::dict<RTlil::IdString, RTlil::Wire*> &wires,
     GModel::GNet &net,
     std::map<size_t, GateId> &inputs) {
+  std::deque<int> tmp;
   for (auto [name, wire]: wires) {
     size_t index = name.index_;
     if (wire->port_input) {
-      GateId inputId = net.addIn();
-      inputs.emplace(index, inputId);
+      tmp.push_front(index);
     }
+  }
+  for (auto index : tmp) {
+    GateId inputId = net.addIn();
+    inputs.emplace(index, inputId);
   }
 }
 
@@ -130,32 +135,32 @@ static Gate::SignalList makeInputsDffsr(
       break;
     }
   }
-  // uppearField is root of second cell and index of data pin same time.
-  GateId data = inputs.at(upperField);
-  inputs_.push_back(Gate::Signal::always(data));
-  // lowestField is index of clock pin, which places in first cell.
+  // uppearField is root of second cell and index of clock pin same time.
+  // lowestField is index of clock data, which places in first cell.
   size_t lowestField = cell.at(upperField).second;
-  GateId clock = inputs.at(lowestField);
+  GateId data = inputs.at(lowestField);
+  inputs_.push_back(Gate::Signal::always(data));
   // type[7] is P - positive or N - negative clock pin,
   // where 'type' consist of information about the cell.
+  GateId clock = inputs.at(upperField);
   if (type[7] == 'P') {
     inputs_.push_back(Gate::Signal::posedge(clock));
   } else {
     inputs_.push_back(Gate::Signal::negedge(clock));
   }
-  // secondMidField is index of reset pin, which places in second cell
+  // secondMidField is index of clear pin, which places in second cell
   size_t secondMidField = cell.at(secondUpperField).first;
-  GateId reset = inputs.at(secondMidField);
-  // type[8] is P - positive or N - negative reset pin,
+  GateId clear = inputs.at(secondUpperField);
+  // type[8] is P - positive or N - negative clear pin,
   // where 'type' consist of an information about the cell.
   if (type[8] == 'P') {
-    inputs_.push_back(Gate::Signal::level1(reset));
+    inputs_.push_back(Gate::Signal::level1(clear));
   } else {
-    inputs_.push_back(Gate::Signal::level0(reset));
+    inputs_.push_back(Gate::Signal::level0(clear));
   }
   // type[9] is P - positive or N - negative preset pin,
   // where 'type' consist of information about the cell.
-  GateId preset = inputs.at(secondUpperField);
+  GateId preset = inputs.at(secondMidField);
   if (type[9] == 'P') {
     inputs_.push_back(Gate::Signal::level1(preset));
   } else {
@@ -182,8 +187,8 @@ static bool makeSpecCell(
       GateSymbol curr = typeFunc.at(upperField);
       // The checking that middleField is a wire of specific cell.
       if (curr == GateSymbol::LATCH) {
-        GateId data = inputs.at(upperField);
-        GateId clock = inputs.at(lowerField);
+        GateId clock = inputs.at(upperField);
+        GateId data = inputs.at(lowerField);
         if (typeRTLIL.at(upperField) == "_DLATCH_P_") {
           outId = net.addLatch(data, clock);
           return true;
@@ -389,6 +394,7 @@ void translateDesignToGNet(
     GModel::GNet net(0);
     bool isMem = false;
     translateModuleToGNet(m, net, isMem);
+    std::cout << net;
     net.sortTopologically();
     if (isMem) {
       vec.memNets.push_back(net);
