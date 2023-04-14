@@ -394,7 +394,6 @@ void translateDesignToGNet(
     GModel::GNet net(0);
     bool isMem = false;
     translateModuleToGNet(m, net, isMem);
-    std::cout << net;
     net.sortTopologically();
     if (isMem) {
       vec.memNets.push_back(net);

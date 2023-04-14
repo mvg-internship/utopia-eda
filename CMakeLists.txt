@@ -13,8 +13,8 @@ find_package(Yosys)
 add_subdirectory(lib)
 add_subdirectory(src)
 add_subdirectory(test)
-add_executable(gnetFINAL src/gate/parserGnet/testGnet.cpp src/gate/parserGnet/parserGnet.cpp)
-target_link_libraries(gnetFINAL PRIVATE Utopia::Lib Yosys::Yosys)
+add_executable(gnetTEST test/gate/parserGnet/testGnet.cpp src/gate/parserGnet/parserGnet.cpp)
+target_link_libraries(gnetTEST PRIVATE Utopia::Lib Yosys::Yosys)
 
 
 
