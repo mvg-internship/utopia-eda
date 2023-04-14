@@ -8,7 +8,6 @@
 
 #include "graphml.h"
 
-#include <set>
 #include <string>
 
 using GNet = eda::gate::model::GNet;
@@ -20,20 +19,6 @@ namespace eda::printer::graphMl {
 std::string linkDescription(const Link &link) {
   return std::to_string(link.source) + "_" + std::to_string(link.target) 
   + "_" + std::to_string(link.input);
-}
-
-std::string linkDescriptionReverse(const Link &link) {
-  return std::to_string(link.target) + "_" + std::to_string(link.source) 
-  + "_" + std::to_string(link.input);
-}
-
-bool linkDidntDraw(std::set<std::string> &linksDrawn, const Link &link) {
-  if (linksDrawn.find(linkDescription(link)) == linksDrawn.end() &&
-      linksDrawn.find(linkDescriptionReverse(link)) == linksDrawn.end()) {
-    linksDrawn.insert(linkDescription(link));
-    return true;
-  }
-  return false;
 }
 
 std::ostream &operator<<(std::ostream &output, GNet &model) {
@@ -49,62 +34,68 @@ std::ostream &operator<<(std::ostream &output, GNet &model) {
          << "\" edgedefault=\"directed\">\n";
 
   const auto &allGates = model.gates();
-  std::set<std::string> linksDrawn;
-  std::set<uint32_t> gatesDrawn;
   for (auto *const gate: allGates) {
-    // Adding a description of the vertex if it has not been described yet
-    if((gatesDrawn.find(gate->id())) == 
-        gatesDrawn.end()) {
-      output << "<node id=\""
-             << gate->id()
-             << "\"/>\n";
-      gatesDrawn.insert(gate->id());
-    }
-    // Describe all the edges belonging to the vertex, 
-    // provided that they have not already been described
+    //We output a description of the nodes of the graph
+    output << "<node id=\""
+            << gate->id()
+            << "\"/>\n";
     const auto &allLinksFromGate = gate->links();
     for (const auto link: allLinksFromGate) {
-      if (linkDidntDraw(linksDrawn, link)) {
-        // Describe the edge by talking about its source, destination 
-        // and which input it comes to
+      //We check whether this node is the beginning for the edge
+      if(link.source==gate->id()) {
         const std::string link_description =
             linkDescription(link);
-        output << "<edge id=\"l" 
-               << link_description 
+        output << "<edge id=\"l"
+               << link_description
                << "\" source=\""
                << link.source
                << "\" target=\""
                << link.target
                << "\">\n"
-               << "<data key=\"l_d" 
-               << link_description 
+               << "<data key=\"l_d"
+               << link_description
                << "\">"
                << link.input
                << "</data>\n"
                << "</edge>\n";
-        // Check whether there are vertices not drawn in the graph, 
-        // but into which the edge comes or from which it comes
-        if((gatesDrawn.find(link.source)) == 
-        gatesDrawn.end()) {
-          gatesDrawn.insert(link.source);
-          output << "<node id=\""
-                 << link.source
-                 << "\">\n"
-                 << "<data key=\"sv"
-                 << link.source
-                 << "\">green</data>\n"
-                 << "<node/>";
-        }
-        if((gatesDrawn.find(link.target)) == 
-        gatesDrawn.end()) {
-          gatesDrawn.insert(link.target);
+        //Check if there is a terminal node in the graph, if not, 
+        //then draw it and mark it in red
+        if(!model.hasNode(link.target)) {
           output << "<node id=\""
                  << link.target
                  << "\">\n"
                  << "<data key=\"sv"
                  << link.target
                  << "\">red</data>\n"
-                 << "<node/>\n";
+                 << "</node>\n";
+        }
+      }
+      else {
+        //Check if there is an initial node in the graph, if not, 
+        //then draw the edge and the initial node by placing it green
+        if(!model.hasNode(link.source)) {
+          const std::string link_description =
+            linkDescription(link);
+          output << "<node id=\""
+                 << link.source
+                 << "\">\n"
+                 << "<data key=\"sv"
+                 << link.source
+                 << "\">green</data>\n"
+                 << "</node>\n"
+                 << "<edge id=\"l"
+                 << link_description
+                 << "\" source=\""
+                 << link.source
+                 << "\" target=\""
+                 << link.target
+                 << "\">\n"
+                 << "<data key=\"l_d"
+                 << link_description
+                 << "\">"
+                 << link.input
+                 << "</data>\n"
+                 << "</edge>\n";
         }
       }
     }
