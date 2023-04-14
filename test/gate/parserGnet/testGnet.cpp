@@ -2,10 +2,7 @@
 #include <iostream>
 
 namespace GModel = eda::gate::model;
-namespace YLib = Yosys::hashlib;
-namespace RTlil = Yosys::RTLIL;
 
-using eda::gate::model::Gate;
 using eda::gate::model::GateSymbol;
 using GateId = eda::gate::model::Gate::Id;
 
@@ -86,8 +83,7 @@ int main() {
   std::vector<uint64_t> mean1;
   fillVectorMean(answ0, mean0);
   fillVectorMean(answ1, mean1);
-  if (mean0 == mean1)
-  {
-      std::cout << "matched\n";
+  if (mean0 == mean1) {
+    std::cout << "matched\n";
   }
 }
