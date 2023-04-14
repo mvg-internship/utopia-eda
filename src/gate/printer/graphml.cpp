@@ -62,7 +62,7 @@ std::ostream &operator<<(std::ostream &output, GNet &model) {
     }
     // Describe all the edges belonging to the vertex, 
     // provided that they have not already been described
-    auto &allLinksFromGate = gate->links();
+    const auto &allLinksFromGate = gate->links();
     for (const auto link: allLinksFromGate) {
       if (linkDidntDraw(linksDrawn, link)) {
         // Describe the edge by talking about its source, destination 
