@@ -50,7 +50,7 @@ std::ostream &operator<<(std::ostream &output, GNet &model) {
 
   const auto &allGates = model.gates();
   std::set<std::string> linksDrawn;
-  std::set<size_t> gatesDrawn;
+  std::set<uint32_t> gatesDrawn;
   for (auto *const gate: allGates) {
     // Adding a description of the vertex if it has not been described yet
     if((gatesDrawn.find(gate->id())) == 
