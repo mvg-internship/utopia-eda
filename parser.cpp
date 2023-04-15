@@ -27,32 +27,32 @@
 } while (false)
 
 ///Defines the alert method for debugging information.
-#define ALERT(error_string) do {\
-  std::cout << " expected '" << error_string << "'\tline: "\
+#define ALERT(errorString) do {\
+  std::cout << " expected '" << errorString << "'\tline: "\
     << line << "\tСaught " << yytext << std::endl;\
   exit(EXIT_FAILURE);\
 } while (false) 
 
 ///Defines the method for verifying the next token.
-#define ASSERT_NEXT_TOKEN(expected_token, error_string) do {\
+#define ASSERT_NEXT_TOKEN(expectedToken, errorString) do {\
   Tokens token = getNextToken();\
-  if ( token != expected_token ) {\
-    ALERT(error_string);\
+  if ( token != expectedToken ) {\
+    ALERT(errorString);\
   }\
 } while (false)
 
 ///Defines the adding in a token map vector.
-#define MAPS(definite, type_init) do {\
+#define MAPS(definite, typeInit) do {\
   char* text = new char[strlen(yytext)];\
   strcpy(text, yytext);\
-  TokenMap map {text, definite, type_init};\
+  TokenMap map {text, definite, typeInit};\
   maps.push_back(map);\
 } while (false)
 
 struct TokenMap {
   const char* name;
   int definite; // 0 = NOT init, 1 = init
-  int type_init; // 0 = input, 1 = output, 2 = function
+  int typeInit; // 0 = input, 1 = output, 2 = function
 };
 
 std::vector<TokenMap> maps;
@@ -61,7 +61,7 @@ static std::size_t place = 0;
 static std::size_t line = 0;
 
 void unknown() {
-  std::vector<TokenMap> maps_upd;
+  std::vector<TokenMap> mapsUpd;
   for (auto& i : maps) {
     for (auto& j : maps) {
       int k = 0; 
@@ -73,17 +73,17 @@ void unknown() {
         }
         if (k == strlen(i.name)) {
           i.definite = 1;
-          maps_upd.push_back(i);
+          mapsUpd.push_back(i);
         }
       }
     }
   }
   for (auto& i : maps) {
     if(i.definite == 1)
-    maps_upd.push_back(i);
+    mapsUpd.push_back(i);
   }
-  for (auto& i : maps_upd) {
-    if (size(maps_upd) != size(maps)) {
+  for (auto& i : mapsUpd) {
+    if (size(mapsUpd) != size(maps)) {
       std::cout << "ERROR IN UNKNOWN DEFINITION " << std::endl;
       exit(EXIT_FAILURE);
     }
@@ -93,7 +93,7 @@ void unknown() {
 void input() {
   for (auto& i : maps) {
     int k = 0;
-    if (strlen(yytext) == strlen(i.name) && i.type_init == 0)
+    if (strlen(yytext) == strlen(i.name) && i.typeInit == 0)
       COMPARE("ENTRY INPUT");
   }
 } 
@@ -102,22 +102,22 @@ void output(Tokens type) {
   for (auto& i : maps) {
     if (type != OUTPUT) {
       int k = 0;
-      if (strlen(yytext) == strlen(i.name) && i.type_init == 1)
+      if (strlen(yytext) == strlen(i.name) && i.typeInit == 1)
         COMPARE("ENTRY OUTPUT");
     }
   }
 }
 
-void doubleDefinition(Tokens where_called) {
+void doubleDefinition(Tokens whereCalled) {
   for (auto& i : maps) {
     if (i.definite == 1) { // definite = {0 if not declared, 1 if declared}
       int k = 0;
-      if (strlen(yytext) == strlen(i.name) && where_called != OUTPUT
-        && i.type_init != 1)  {
+      if (strlen(yytext) == strlen(i.name) && whereCalled != OUTPUT
+        && i.typeInit != 1)  {
         COMPARE("DOUBLE DEFINITION");
         } else if (strlen(yytext) == strlen(i.name) 
-          && where_called == OUTPUT ) {
-          if(i.type_init == 1)
+          && whereCalled == OUTPUT ) {
+          if(i.typeInit == 1)
             COMPARE("DOUBLE DEFINITION");
         }
     }
@@ -132,21 +132,21 @@ Tokens getNextToken() {
   return val;
 }
 
-void assertNextId(Tokens expected_token,
-                    char* error_string, 
-                    Tokens where_called) {
+void assertNextId(Tokens expectedToken,
+                    char* errorString, 
+                    Tokens whereCalled) {
   Tokens token = getNextToken(); 
-  if (token != expected_token) { 
-    ALERT(error_string); 
+  if (token != expectedToken) { 
+    ALERT(errorString); 
   }   
-  if (where_called == INPUT) {
+  if (whereCalled == INPUT) {
     doubleDefinition(INPUT);
     MAPS(1, 0);
-  } else if (where_called == OUTPUT) {
+  } else if (whereCalled == OUTPUT) {
     doubleDefinition(OUTPUT);
     MAPS(1, 1);
   } else {
-    output(where_called);
+    output(whereCalled);
     MAPS(0, 2);
   } 
 }
