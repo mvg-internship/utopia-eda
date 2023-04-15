@@ -133,8 +133,8 @@ Tokens getNextToken() {
 }
 
 void assertNextId(Tokens expectedToken,
-                    char* errorString, 
-                    Tokens whereCalled) {
+                  char* errorString, 
+                  Tokens whereCalled) {
   Tokens token = getNextToken(); 
   if (token != expectedToken) { 
     ALERT(errorString); 
