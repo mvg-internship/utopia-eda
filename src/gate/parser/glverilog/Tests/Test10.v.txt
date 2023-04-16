@@ -1,0 +1,105 @@
+/****************************************************************************
+ *                                                                          *
+ *  VERILOG HIGH-LEVEL DESCRIPTION OF THE ISCAS-85 BENCHMARK CIRCUIT c432   *
+ *                                                                          *
+ *  Function: 27-channel interrupt controller                               *
+ *                                                                          *
+ *  Written by: Mark C. Hansen                                              *
+ *                                                                          *
+ *  Last modified: Oct 17, 1997                                             *
+ *                                                                          *
+ ****************************************************************************/
+
+module Circuit432 (in4, in17, in30, in43, in56, in69, in82, in95, in108,
+                  in1, in11, in24, in37, in50, in63, in76, in89, in102,
+                  in8, in21, in34, in47, in60, in73, in86, in99, in112,
+                  in14, in27, in40, in53, in66, in79, in92, in105, in115,
+                  out223, out329, out370,
+                  out421, out430, out431, out432);
+
+  input         [8:0] in4, in17, in30, in43, in56, in69, in82, in95, in108,
+                in1, in11, in24, in37, in50, in63, in76, in89, in102,
+                in8, in21, in34, in47, in60, in73, in86, in99, in112,
+                in14, in27, in40, in53, in66, in79, in92, in105, in115;
+  output        out223, out329, out370,
+                out421, out430, out431, out432;
+
+  wire [8:0]    A, B, C, E;
+  wire          PA, PB, PC;
+  wire [3:0]    Chan;
+
+  assign
+      E[8:0] = { in4 , in17, in30, in43, in56, in69, in82, in95, in108 },
+      A[8:0] = { in1, in11, in24, in37, in50, in63, in76, in89, in102 },
+      B[8:0] = { in8, in21, in34, in47, in60, in73, in86, in99, in112 },
+      C[8:0] = { in14, in27, in40, in53, in66, in79, in92, in105, in115 },
+      PA = out223,
+      PB = out329,
+      PC = out370,
+      Chan[3:0] = { out421, out430, out431, out432 };
+	
+ TopLevel432 Ckt432 (E, A, B, C, PA, PB, PC, Chan);
+
+endmodule /* Circuit432 */
+
+/*************************************************************************/
+
+module TopLevel432 (E, A, B, C, PA, PB, PC, Chan);
+
+  input[8:0]	E, A, B, C;
+  output     	PA, PB, PC;
+  output[3:0] Chan;
+  wire[8:0] X1, X2, I;
+
+  PriorityA M1(E, A, PA, X1);
+  PriorityB M2(E, X1, B, PB, X2);
+  PriorityC M3(E, X1, X2, C, PC);
+  EncodeChan M4(E, A, B, C, PA, PB, PC, I);
+  DecodeChan M5(I, Chan);
+
+endmodule /* TopLevel432 */
+
+/*************************************************************************/
+
+module PriorityA(E, A, PA, X1);
+
+  input[8:0] E, A;
+  output     PA;
+  output[8:0] X1;
+  
+  wire [8:0] Ab, EAb;
+
+  not Ab0(Ab[0], A[0]);
+  not Ab1(Ab[1], A[1]);
+  not Ab2(Ab[2], A[2]);
+  not Ab3(Ab[3], A[3]);
+  not Ab4(Ab[4], A[4]);
+  not Ab5(Ab[5], A[5]);
+  not Ab6(Ab[6], A[6]);
+  not Ab7(Ab[7], A[7]);
+  not Ab8(Ab[8], A[8]);
+    
+  nand EAb0(EAb[0], Ab[0], E[0]); 
+  nand EAb1(EAb[1], Ab[1], E[1]); 
+  nand EAb2(EAb[2], Ab[2], E[2]); 
+  nand EAb3(EAb[3], Ab[3], E[3]); 
+  nand EAb4(EAb[4], Ab[4], E[4]); 
+  nand EAb5(EAb[5], Ab[5], E[5]); 
+  nand EAb6(EAb[6], Ab[6], E[6]); 
+  nand EAb7(EAb[7], Ab[7], E[7]); 
+  nand EAb8(EAb[8], Ab[8], E[8]); 
+
+  and PAigate(PAi,EAb[0],EAb[1],EAb[2],EAb[3],EAb[4],EAb[5],EAb[6],EAb[7]);
+  nand PAgate(PA,PAi,EAb[8]);
+
+  xor X10(X1[0], PA, EAb[0]);
+  xor X11(X1[1], PA, EAb[1]);
+  xor X12(X1[2], PA, EAb[2]);
+  xor X13(X1[3], PA, EAb[3]);
+  xor X14(X1[4], PA, EAb[4]);
+  xor X15(X1[5], PA, EAb[5]);
+  xor X16(X1[6], PA, EAb[6]);
+  xor X17(X1[7], PA, EAb[7]);
+  xor X18(X1[8], PA, EAb[8]);
+
+endmodule /* PriorityA */

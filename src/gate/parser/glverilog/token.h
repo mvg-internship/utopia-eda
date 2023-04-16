@@ -19,6 +19,11 @@ enum token_t
   COMMA,
   EQUALS,
   ASSIGN,
+  NOT,
+  NAND,
+  AND,
+  XOR,
+  NOR,
   LFIGURNAYA,
   RFIGURNAYA,
   START
@@ -45,5 +50,8 @@ enum token_t
   INPUT_,
   OUTPUT_,
   WIRE_,
-  ASSIGN_
+  ASSIGN_,
+  FUNCTION_,
+  FUNC_INI_,
+  LOGIC_GATE_
 };
