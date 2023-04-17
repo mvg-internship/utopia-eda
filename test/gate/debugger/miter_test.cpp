@@ -15,39 +15,41 @@ using namespace eda::gate::debugger;
 using namespace eda::gate::model;
 
 TEST(MiterTest, MiterStructureTest) {
-  auto net = new GNet();
-  SignalList inps;
-  for (int i = 0; i < 100; i++) {
-    GateId z = net->addIn();
-    inps.push_back(Signal::always(z));
-  }
-  GateId y = net->addGate(GateSymbol::AND, inps);
-  GateId outId = net->addOut(y);
+  GNet* net = new GNet();
   SignalList inps1;
   for (int i = 0; i < 100; i++) {
-    GateId z = net->addIn();
-    inps1.push_back(Signal::always(z));
+    GateId inId1 = net->addIn();
+    inps1.push_back(Signal::always(inId1));
   }
-  GateId w = net->addGate(GateSymbol::NOR, inps1);
-  net->addOut(w);
-  w = net->addGate(GateSymbol::OR, inps);
-  for(int i = 0; i < 100; i++) {
-    outId = net->addOut(w);
+  GateId andId = net->addGate(GateSymbol::AND, inps1);
+  GateId outId = net->addOut(andId);
+  SignalList inps2;
+  for (int i = 0; i < 100; i++) {
+    GateId inId2 = net->addIn();
+    inps2.push_back(Signal::always(inId2));
   }
-  net->addOut(w);
+  GateId norId = net->addGate(GateSymbol::NOR, inps2);
+  net->addOut(norId);
+  GateId orId = net->addGate(GateSymbol::OR, inps1);
+  for (int i = 0; i < 100; i++) {
+    outId = net->addOut(orId);
+  }
+  net->addOut(orId);
   std::unordered_map<Gate::Id, Gate::Id> testMap = {};
-  auto netCloned = net->clone(testMap);
+  GNet* netCloned = net->clone(testMap);
   
   GateBinding ibind, obind, tbind;
 
   // Input-to-input correspondence.
   for (auto oldSourceLink : net->sourceLinks()) {
+    
     auto newSourceId = testMap[oldSourceLink.target];
     ibind.insert({oldSourceLink, Gate::Link(newSourceId)});
   }
 
   // Output-to-output correspondence.
   for (auto oldTargetLink : net->targetLinks()) {
+
     auto newTargetId = testMap[oldTargetLink.source];
     obind.insert({oldTargetLink, Gate::Link(newTargetId)});
   }
