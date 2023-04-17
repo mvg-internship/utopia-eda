@@ -10,6 +10,7 @@
 #include <kernel/yosys.h>
 
 #include <map>
+#include <memory>
 #include <vector>
 
 struct NetData {
@@ -18,7 +19,7 @@ struct NetData {
 };
 
 void translateModuleToGNet(
-    const std::pair<Yosys::RTLIL::IdString, Yosys::RTLIL::Module*> &m,
+    const Yosys::RTLIL::Module &m,
     NetData &net);
 
 void translateDesignToGNet(
@@ -29,5 +30,5 @@ void translateLibertyToDesign(
     const char* namefile,
     NetData &vec);
 
-std::map<eda::gate::model::GNet*, std::vector<uint64_t>> truthTab(
-    NetData &vec);
+std::vector<uint64_t> truthTab(
+    std::unique_ptr<const eda::gate::model::GNet> net);

@@ -9,6 +9,7 @@ add_library(Gate OBJECT
   premapper/premapper.cpp
   simulator/simulator.cpp
   transformer/hmetis.cpp
+  parserGnet/parserGnet.cpp
 )
 add_library(Utopia::Gate ALIAS Gate)
 
@@ -19,4 +20,5 @@ target_link_libraries(Gate
 
   PRIVATE
     Utopia::Util
+    Yosys::Yosys
 )

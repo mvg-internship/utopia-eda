@@ -6,8 +6,8 @@
 #include "parserGnet.h"
 #include "gate/simulator/simulator.h"
 
-#include <string>
 #include <deque>
+#include <string>
 
 namespace GModel = eda::gate::model;
 namespace YLib = Yosys::hashlib;
@@ -49,7 +49,7 @@ static void fillInputs(
 
 /// The function determinates GateSymbol.
 static GateSymbol determineGateSymbol(
-    const size_t type,
+    const int type,
     std::map<size_t, std::string> &typeRTLIL,
     const size_t index) {
   GateSymbol func;
@@ -127,11 +127,11 @@ static Gate::SignalList makeInputsDffsr(
     const std::map<size_t, GateId> &inputs) {
   Gate::SignalList inputs_;
   size_t secondUpperField;
-  // Find second cell, contains preset and reset pins.
+  // Find second cell, contains clear and reset pins.
   for (auto it1: cell) {
     size_t secondLowField = it1.second.second;
-    if (secondLowField == upperField){
-      secondUpperField=it1.first;
+    if (secondLowField == upperField) {
+      secondUpperField = it1.first;
       break;
     }
   }
@@ -192,12 +192,11 @@ static bool makeSpecCell(
         if (typeRTLIL.at(upperField) == "_DLATCH_P_") {
           outId = net.addLatch(data, clock);
           return true;
-        } else {
-          inputs_.push_back(Gate::Signal::always(data));
-          inputs_.push_back(Gate::Signal::level0(clock));
-          outId = net.addGate(GateSymbol::LATCH, inputs_);
-          return true;
         }
+        inputs_.push_back(Gate::Signal::always(data));
+        inputs_.push_back(Gate::Signal::level0(clock));
+        outId = net.addGate(GateSymbol::LATCH, inputs_);
+        return true;
       }
       if (curr == GateSymbol::DFF) {
         GateId data = inputs.at(lowerField);
@@ -205,12 +204,11 @@ static bool makeSpecCell(
         if (typeRTLIL.at(upperField) == "_DFF_P_") {
           outId = net.addDff(data, clock);
           return true;
-        } else {
-          inputs_.push_back(Gate::Signal::always(data));
-          inputs_.push_back(Gate::Signal::negedge(clock));
-          outId = net.addGate(GateSymbol::DFF, inputs_);
-          return true;
         }
+        inputs_.push_back(Gate::Signal::always(data));
+        inputs_.push_back(Gate::Signal::negedge(clock));
+        outId = net.addGate(GateSymbol::DFF, inputs_);
+        return true;
       }
       if (curr == GateSymbol::DFFrs) {
         std::string type = typeRTLIL.at(upperField);
@@ -303,7 +301,7 @@ static void createTree(
     bool notOp = false;
     GateSymbol f;
     size_t firstWire, secondWire, thirdWire;
-    size_t typeFunction = it1->second->type.index_;
+    int typeFunction = it1->second->type.index_;
     auto it2 = it1->second->connections_.begin();
     auto endConnections = it1->second->connections_.end();
     size_t index = it2->second.as_wire()->name.index_;
@@ -368,37 +366,37 @@ static void createOutput(
   }
 }
 
-void translateModuleToGNet(
-    const std::pair<RTlil::IdString, RTlil::Module*> &m,
-    eda::gate::model::GNet &net,
-    bool &isMem) {
+bool translateModuleToGNet(
+    const RTlil::Module* m,
+    eda::gate::model::GNet &net) {
   std::map<size_t, GateId> inputs;
   std::map<size_t, std::pair<size_t, size_t>> cell;
   std::map<size_t, GateSymbol> typeFunc;
   std::map<size_t, std::string> typeRTLIL;
-  fillInputs(m.second->wires_, net, inputs);
-  createTree(m.second->cells_, net, typeFunc, cell, typeRTLIL, isMem);
+  bool isMem = false;
+  fillInputs(m->wires_, net, inputs);
+  createTree(m->cells_, net, typeFunc, cell, typeRTLIL, isMem);
   createOutput(
-        m.second->connections_,
+        m->connections_,
         net,
         typeFunc,
         cell,
         inputs,
         typeRTLIL);
+  return isMem;
 }
 
 void translateDesignToGNet(
     const RTlil::Design &des,
     NetData &vec) {
-  for (auto &m : des.modules_) {
-    GModel::GNet net(0);
-    bool isMem = false;
-    translateModuleToGNet(m, net, isMem);
-    net.sortTopologically();
+  for (auto [IdString, Module]: des.modules_) {
+    std::unique_ptr<GModel::GNet> net = std::make_unique<GModel::GNet>();
+    bool isMem = translateModuleToGNet(Module, *net);
+    net->sortTopologically();
     if (isMem) {
-      vec.memNets.push_back(net);
+      vec.memNets.push_back(*net);
     } else {
-      vec.combNets.push_back(net);
+      vec.combNets.push_back(*net);
     }
   }
 }
@@ -412,31 +410,27 @@ void translateLibertyToDesign(
   translateDesignToGNet(design, vec);
 }
 
-std::map<eda::gate::model::GNet*, std::vector<uint64_t>> truthTab(
-    NetData &vec) {
-  std::map<eda::gate::model::GNet*, std::vector<uint64_t>> table;
-  for (auto it: vec.combNets) {
-    static Simulator simulator;
-    Gate::LinkList in, out;
-    for (auto link: it.sourceLinks()) {
-      in.push_back(Gate::Link(link.target));
-    }
-    for(auto link: it.targetLinks()) {
-      out.push_back(Gate::Link(link.source));
-    }
-    auto compiled = simulator.compile(it, in, out);
-    uint64_t mean;
-    std::vector<uint64_t> tMean;
-    tMean.resize(out.size());
-    std::fill(tMean.begin(), tMean.end(), 0);
-    uint64_t length = 1 << it.nSourceLinks();
-    for (uint64_t i = 0; i < length; ++i) {
-      compiled.simulate(mean, i);
-      for (uint64_t j = 0; j < tMean.size(); ++j) {
-        tMean[j] += ((mean >> j) % 2) << i;
-      }
-    }
-    table.emplace(&it, tMean);
+std::vector<uint64_t> truthTab(
+    std::unique_ptr<const eda::gate::model::GNet> net) {
+  static Simulator simulator;
+  Gate::LinkList in, out;
+  for (auto link: net->sourceLinks()) {
+    in.push_back(Gate::Link(link.target));
   }
-  return table;
+  for(auto link: net->targetLinks()) {
+    out.push_back(Gate::Link(link.source));
+  }
+  auto compiled = simulator.compile(*net, in, out);
+  uint64_t mean;
+  std::vector<uint64_t> tMean;
+  tMean.resize(out.size());
+  std::fill(tMean.begin(), tMean.end(), 0);
+  uint64_t length = 1 << net->nSourceLinks();
+  for (uint64_t i = 0; i < length; ++i) {
+    compiled.simulate(mean, i);
+    for (uint64_t j = 0; j < tMean.size(); ++j) {
+      tMean[j] += ((mean >> j) % 2) << i;
+    }
+  }
+  return tMean;
 }
