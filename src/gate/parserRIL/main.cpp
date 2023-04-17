@@ -64,6 +64,7 @@ void printWires(const YLib::dict<RTlil::IdString, RTlil::Wire *> &ywires,
     }
     if (portOutput == 0 && portInput == 0) {
       wires.emplace(index, TMP_WIRES);
+      fout << "wire " << width << " " << TMP_WIRES << ";\n";
       TMP_WIRES += "1";
     }
     out << "    upto: " << it1->second->upto << "\n\n";
@@ -96,36 +97,38 @@ std::string logicFunction(size_t type) {
 
 std::string buildRIL(int root, std::map<int, std::pair<int, int>> &cell,
                      std::map<int, std::string> &inputs,
-                     std::map<int, std::string> &typeFunc) {
+                     std::map<int, std::string> &typeFunc,
+                     std::map<int, std::string> &wires) {
 
   auto rootCell = cell.at(root);
   bool flag1 = inputs.find(rootCell.first) != inputs.end();
   bool flag2 = inputs.find(rootCell.second) != inputs.end();
-  auto cellPairFirst = cell.find(root)->first;
-  auto cellPairSecond = cell.find(root)->second;
+  auto cellPairFirst = root;
+  auto cellPairSecond = cell[root];
   auto leftLeaf = cellPairSecond.first;
   auto rightLeaf = cellPairSecond.second;
-  std::string strCells = typeFunc.find(cellPairFirst)->second;
+  //std::string strCells = typeFunc.find(cellPairFirst)->second;
   if (flag1 && flag2) {
     if (leftLeaf != rightLeaf) {
-      return inputs.find(leftLeaf)->second + strCells +
-             inputs.find(rightLeaf)->second;
+      return wires[root]+" = " +inputs[rightLeaf] + typeFunc.find(cellPairFirst)->second + inputs[leftLeaf]+";\n";
     } else {
-      return strCells + inputs.find(rightLeaf)->second;
+      return wires[root]+ " = ~" + inputs[rightLeaf] +";\n";
     }
   } else if (!flag1 && !flag2) {
     if (leftLeaf != rightLeaf) {
-      return "(" + buildRIL(leftLeaf, cell, inputs, typeFunc) + strCells +
-             buildRIL(rightLeaf, cell, inputs, typeFunc) + ")";
+      auto z = buildRIL(rightLeaf, cell, inputs, typeFunc,wires);
+      auto z1 = buildRIL(leftLeaf, cell, inputs, typeFunc,wires);
+      return z+z1+wires[root]+" = "+wires[rightLeaf]+typeFunc[root]+wires[leftLeaf]+";\n";
     } else {
-      return strCells + "(" + buildRIL(leftLeaf, cell, inputs, typeFunc) + ")";
+        auto z = buildRIL(leftLeaf, cell, inputs, typeFunc,wires);
+        return z+wires[root]+" = ~"+wires[leftLeaf]+";\n";
     }
   } else if (!flag1 && flag2) {
-    return "(" + buildRIL(leftLeaf, cell, inputs, typeFunc) + strCells +
-           inputs.find(rightLeaf)->second + ")";
+    auto z = buildRIL(leftLeaf, cell, inputs, typeFunc,wires);
+    return z+wires[root]+" = "+wires[leftLeaf]+typeFunc[root]+inputs[rightLeaf]+";\n";
   } else {
-    return "(" + inputs.find(leftLeaf)->second + strCells +
-           buildRIL(rightLeaf, cell, inputs, typeFunc) + ")";
+    auto z = buildRIL(rightLeaf, cell, inputs, typeFunc,wires);
+    return z+wires[root]+ " = "+wires[rightLeaf]+typeFunc[root]+inputs[leftLeaf]+";\n";
   }
 }
 
@@ -189,7 +192,7 @@ void printConnections(
     std::ostream &out, std::ofstream &fout,
     std::map<int, std::pair<int, int>> &cell,
     std::map<int, std::string> &inputs, std::map<int, std::string> &outputs,
-    std::map<int, std::string> &typeFunc) {
+    std::map<int, std::string> &typeFunc,std::map<int, std::string> &wires) {
 
   out << "Connections count: " << connections.size() << "\n";
   for (auto it1 = connections.begin(); it1 != connections.end(); ++it1) {
@@ -199,8 +202,8 @@ void printConnections(
         << connAsWireInput << "\n";
     if (inputs.find(connAsWireInput) == inputs.end()) {
       fout << "@(*) {\n";
-      fout << "   " << outputs.find(connAsWireOutput)->second << " = "
-           << buildRIL(connAsWireInput, cell, inputs, typeFunc) << ";\n";
+      fout << "   " << buildRIL(connAsWireInput, cell, inputs, typeFunc,wires) << outputs.find(connAsWireOutput)->second << " = "
+            << wires[connAsWireInput]<<";\n";
       fout << "}\n";
     } else {
       fout << "@(*) {\n";
@@ -294,7 +297,7 @@ void printSyncs(const std::vector<RTlil::SyncRule *> &syncs, std::ostream &out,
         t1.erase(0, 1);
         t2.erase(0, 1);
         if (it2.second.is_wire()) {
-          fout << "wire u:" << it2.second.as_wire()->width << " "
+          fout << "reg u:" << it2.second.as_wire()->width << " "
                << wires[it2.second.as_wire()->name.index_] << ";\n";
           fout << "@(*) {\n   " << t1 << " = "
                << wires[it2.second.as_wire()->name.index_] << ";\n}\n";
@@ -350,7 +353,7 @@ void printActions(const std::vector<RTlil::SigSig> &actions, std::ostream &out,
                << " = ";
         if (cell.find(it.second.as_wire()->name.index_) != cell.end())
           fout << buildRIL(it.second.as_wire()->name.index_, cell, inputs,
-                           typeFunc)
+                           typeFunc,wires)
                << ";\n}\n";
         else if (inputs.find(it.second.as_wire()->name.index_) != inputs.end())
           fout << inputs[it.second.as_wire()->name.index_] << ";\n}\n";
@@ -379,7 +382,7 @@ void printActions(const std::vector<RTlil::SigSig> &actions, std::ostream &out,
               if (it.second.is_wire()) {
                 if (cell.find(it.second.as_wire()->name.index_) != cell.end()) {
                   fout << buildRIL(it.second.as_wire()->name.index_, cell,
-                                   inputs, typeFunc)
+                                   inputs, typeFunc,wires)
                        << ";\n}\n";
                 } else if (wires.find(it.second.as_wire()->name.index_) !=
                            wires.end()) {
@@ -396,13 +399,13 @@ void printActions(const std::vector<RTlil::SigSig> &actions, std::ostream &out,
           if (it.first.is_wire()) {
             if (Flag && (tmp1 != "")) {
 
-              if (i == 0 || i == 1) {
+              if (0<=i && i<= listSens.size()-1) {
                 if (i==0)
                  cond.erase(0, 1);
                 fout << itt << ") "
                      << "if (" << cond << ") {\n";
 
-                if (i==1)
+                if (i==listSens.size()-1)
                 func += "~" + cond + ")";
 
                 if (!it.second.is_wire()) {
@@ -410,10 +413,10 @@ void printActions(const std::vector<RTlil::SigSig> &actions, std::ostream &out,
                        << " = " << Yosys::log_signal(it.second) << ";\n}\n";
                 } else {
                   if (cell.find(it.second.as_wire()->name.index_) != cell.end())
-                    fout << "    " << wires[it.first.as_wire()->name.index_]
-                         << " = "
-                         << buildRIL(it.second.as_wire()->name.index_, cell,
-                                     inputs, typeFunc)
+                    fout                          << buildRIL(it.second.as_wire()->name.index_, cell,
+                                                              inputs, typeFunc,wires)<< "    " << wires[it.first.as_wire()->name.index_]
+                         << " = "<<wires[it.second.as_wire()->name.index_]
+
                          << ";\n}\n";
                   else
                     fout << "    " << wires[it.first.as_wire()->name.index_]
@@ -421,16 +424,17 @@ void printActions(const std::vector<RTlil::SigSig> &actions, std::ostream &out,
                          << ";\n}\n";
                 }
               }
-              if (i == 2||i == 3) {
+              if (i>= listSens.size()&& i<=2*listSens.size()-1) {
                 // fout << "UUUUUUU" << cond << " " << func;
 
                   func += cond.erase(0, 1);
-                  if (i==2)
+                  if (i==listSens.size())
                 func.erase(func.size() - 1, func.size());
                 z++;
-
-                fout << "wire u:" << width << " " << TMP_WIRES << ";\n";
+                if (i == listSens.size()) {
+                fout << "reg u:" << width << " " << TMP_WIRES << ";\n";
                 fout << "@(*) {\n   " << TMP_WIRES << " = " << func << ";\n}\n";
+                }
 
                 fout << itt << ") "
                      << "if (" << TMP_WIRES << ") {\n";
@@ -443,19 +447,20 @@ void printActions(const std::vector<RTlil::SigSig> &actions, std::ostream &out,
                     fout << "    " << wires[it.first.as_wire()->name.index_]
                          << " = "
                          << buildRIL(it.second.as_wire()->name.index_, cell,
-                                     inputs, typeFunc)
+                                     inputs, typeFunc,wires)
                          << ";\n}\n";
                   else
                     fout << "    " << wires[it.first.as_wire()->name.index_]
                          << " = " << inputs[it.second.as_wire()->name.index_]
                          << ";\n}\n";
                 }
+                if (i==2*listSens.size()-1)
                 TMP_WIRES += "1";
               }
-              if (i == 4 || i==5) {
+              if (i>=2*listSens.size()&&i<=3*listSens.size()-1) {
                 func.erase(func.size() - 2, func.size() - 1);
                 func += "&(~" + cond + ")";
-                fout << "wire u:" << width << " " << TMP_WIRES << ";\n";
+                fout << "reg u:" << width << " " << TMP_WIRES << ";\n";
                 fout << "@(*) {\n   " << TMP_WIRES << " = " << func << ";\n}\n";
                 fout << itt << ") "
                      << "if (" << TMP_WIRES << ") {\n";
@@ -467,7 +472,7 @@ void printActions(const std::vector<RTlil::SigSig> &actions, std::ostream &out,
                     fout << "    " << wires[it.first.as_wire()->name.index_]
                          << " = "
                          << buildRIL(it.second.as_wire()->name.index_, cell,
-                                     inputs, typeFunc)
+                                     inputs, typeFunc,wires)
                          << ";\n}\n";
                   else
                     fout << "    " << wires[it.first.as_wire()->name.index_]
@@ -575,7 +580,7 @@ void printParams(const std::pair<RTlil::IdString, RTlil::Module *> &m,
   printCells(m.second->cells_, out, fout, cell, typeFunc);
   out << "\n";
   printConnections(m.second->connections_, out, fout, cell, inputs, outputs,
-                   typeFunc);
+                   typeFunc,wires);
   out << "\n";
   printMemory(m.second->memories, out, fout);
   out << "\n";
@@ -593,7 +598,6 @@ void printParams(const std::pair<RTlil::IdString, RTlil::Module *> &m,
 }
 void printParsed(const RTlil::Design &des, std::ostream &out,
                  std::ofstream &fout) {
-
   for (auto &m : des.modules_) {
     printParams(m, out, fout);
   }
@@ -616,8 +620,8 @@ int main(int argc, char *argv[]) {
     std::ofstream fout(filename);
     printParsed(design, out, fout);
     fout.close();
-    //std::unique_ptr<eda::rtl::model::Net> tttest =
-        //eda::rtl::parser::ril::parse(filename);
+    std::unique_ptr<eda::rtl::model::Net> tttest =
+        eda::rtl::parser::ril::parse(filename);
   }
   Yosys::yosys_shutdown();
 }
