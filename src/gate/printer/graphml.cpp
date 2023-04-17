@@ -2,7 +2,7 @@
 //
 // Part of the Utopia EDA Project, under the Apache License v2.0
 // SPDX-License-Identifier: Apache-2.0
-// Copyright 2021 ISP RAS (http://www.ispras.ru)
+// Copyright 2023 ISP RAS (http://www.ispras.ru)
 //
 //===----------------------------------------------------------------------===//
 
@@ -10,18 +10,14 @@
 
 #include <string>
 
-using GNet = eda::gate::model::GNet;
-using Gate = eda::gate::model::Gate;
-using Link = Gate::Link;
-
 namespace eda::printer::graphMl {
 
-std::string linkDescription(const Link &link) {
+std::string toGraphMl::linkDescription (const Link &link) {
   return std::to_string(link.source) + "_" + std::to_string(link.target) 
   + "_" + std::to_string(link.input);
 }
 
-std::ostream &operator<<(std::ostream &output, GNet &model) {
+void toGraphMl::printer (std::ostream &output, const GNet &model) {
   // Document header
   output << R"(<?xml version="1.0" encoding="UTF-8"?>
             <graphml xmlns="http://graphml.graphdrawing.org/xmlns"  
@@ -35,14 +31,14 @@ std::ostream &operator<<(std::ostream &output, GNet &model) {
 
   const auto &allGates = model.gates();
   for (auto *const gate: allGates) {
-    //We output a description of the nodes of the graph
+    // Output a description of the nodes of the graph
     output << "<node id=\""
             << gate->id()
             << "\"/>\n";
     const auto &allLinksFromGate = gate->links();
     for (const auto link: allLinksFromGate) {
-      //We check whether this node is the beginning for the edge
-      if(link.source==gate->id()) {
+      // Check whether this node is the beginning for the edge
+      if (link.source==gate->id()) {
         const std::string link_description =
             linkDescription(link);
         output << "<edge id=\"l"
@@ -58,9 +54,9 @@ std::ostream &operator<<(std::ostream &output, GNet &model) {
                << link.input
                << "</data>\n"
                << "</edge>\n";
-        //Check if there is a terminal node in the graph, if not, 
-        //then draw it and mark it in red
-        if(!model.hasNode(link.target)) {
+        // If that isn't target node in the graph, 
+        // then draw it and mark it in red
+        if (!model.hasNode(link.target)) {
           output << "<node id=\""
                  << link.target
                  << "\">\n"
@@ -71,9 +67,9 @@ std::ostream &operator<<(std::ostream &output, GNet &model) {
         }
       }
       else {
-        //Check if there is an initial node in the graph, if not, 
-        //then draw the edge and the initial node by placing it green
-        if(!model.hasNode(link.source)) {
+        // If that isn't source node in the graph, 
+        // then draw it and mark it in green
+        if (!model.hasNode(link.source)) {
           const std::string link_description =
             linkDescription(link);
           output << "<node id=\""
@@ -103,7 +99,6 @@ std::ostream &operator<<(std::ostream &output, GNet &model) {
   // End of document
   output << "</graph>\n"
          << "</graphml>";
-  return output;
-}
+  }
 
-} //namespace eda::printer::graphMl
+}; //namespace eda::printer::graphMl
