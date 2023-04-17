@@ -76,11 +76,11 @@ GNet *miter(GNet *net1, GNet *net2, Hints &hints) {
   for (auto bind : *newHints.sourceBinding.get()) {
     GateId newInputId = miter->addIn();  
     if (Gate::get(bind.first.target)->func() == GateSymbol::IN) {
-      miter->setGate(Gate::get(bind.first.target)->id(), GateSymbol::NOP, newInputId);
-      miter->setGate(Gate::get(bind.second.target)->id(), GateSymbol::NOP, newInputId);
+      miter->setGate(bind.first.target, GateSymbol::NOP, newInputId);
+      miter->setGate(bind.second.target, GateSymbol::NOP, newInputId);
     } else {
-      miter->setGate(Gate::get(bind.first.target)->id(), Gate::get(bind.first.target)->func(), newInputId);
-      miter->setGate(Gate::get(bind.second.target)->id(), Gate::get(bind.second.target)->func(), newInputId);
+      miter->setGate(bind.first.target, Gate::get(bind.first.target)->func(), newInputId);
+      miter->setGate(bind.second.target, Gate::get(bind.second.target)->func(), newInputId);
     }
   }
 
