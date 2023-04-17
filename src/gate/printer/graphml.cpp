@@ -12,7 +12,7 @@
 
 namespace eda::printer::graphMl {
 
-std::string toGraphMl::linkDescription (const Link &link) {
+const std::string toGraphMl::linkToString (const Link &link) {
   return std::to_string(link.source) + "_" + std::to_string(link.target) 
   + "_" + std::to_string(link.input);
 }
@@ -40,7 +40,7 @@ void toGraphMl::printer (std::ostream &output, const GNet &model) {
       // Check whether this node is the beginning for the edge
       if (link.source==gate->id()) {
         const std::string link_description =
-            linkDescription(link);
+            linkToString(link);
         output << "<edge id=\"l"
                << link_description
                << "\" source=\""
@@ -71,7 +71,7 @@ void toGraphMl::printer (std::ostream &output, const GNet &model) {
         // then draw it and mark it in green
         if (!model.hasNode(link.source)) {
           const std::string link_description =
-            linkDescription(link);
+            linkToString(link);
           output << "<node id=\""
                  << link.source
                  << "\">\n"

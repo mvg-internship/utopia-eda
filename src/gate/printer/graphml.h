@@ -23,7 +23,7 @@ class toGraphMl {
   public:
     static void printer(std::ostream &output, const GNet &model);
   private:
-    static std::string linkDescription(const Link &link);
+    static const std::string linkToString(const Link &link);
 };
 
 } //namespace eda::printer::graphMl
