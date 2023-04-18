@@ -123,6 +123,8 @@ FLibrary::Out ArithmeticLibrary::synthSub(const size_t outSize,
 FLibrary::Out ArithmeticLibrary::synthMul(const size_t outSize,
                                           const In &in,
                                           GNet &net) {
+  // TODO: Different multiplication methods should be used 
+  // for different combinations of input sizes.
   return synthKaratsubaMultiplier(outSize, in, 3, net);
 }
 
@@ -237,9 +239,9 @@ FLibrary::Out ArithmeticLibrary::synthLadnerFisherAdder(const size_t outSize,
   size_t &firstDigit{key.second};
   while (lastDigit <= maxDigit) {
     p[key] = net.addGate(
-            GateSymbol::AND, preP[lastDigit - 1], preP[firstDigit - 1]);
+        GateSymbol::AND, preP[lastDigit - 1], preP[firstDigit - 1]);
     temp = net.addGate(
-            GateSymbol::AND, preP[lastDigit - 1], preG[firstDigit - 1]);
+        GateSymbol::AND, preP[lastDigit - 1], preG[firstDigit - 1]);
     g[key] = net.addGate(GateSymbol::OR, preG[lastDigit - 1], temp);
     lastDigit += 2;
     firstDigit += 2;
@@ -294,8 +296,8 @@ FLibrary::Out ArithmeticLibrary::synthLadnerFisherAdder(const size_t outSize,
   firstDigit = 0;
   while (lastDigit <= maxDigit) {
     temp = net.addGate(
-            GateSymbol::AND, preP[lastDigit - 1], g[{lastDigit - 1, 0}]);
-    g[key] = net.addGate(GateSymbol::OR, preG[lastDigit -1], temp);
+        GateSymbol::AND, preP[lastDigit - 1], g[{lastDigit - 1, 0}]);
+    g[key] = net.addGate(GateSymbol::OR, preG[lastDigit - 1], temp);
     lastDigit += 2;
   }
 
@@ -309,7 +311,7 @@ FLibrary::Out ArithmeticLibrary::synthLadnerFisherAdder(const size_t outSize,
     out.push_back(net.addGate(GateSymbol::NOP, g[{inSize, 0}]));
   }
 
-  fillingWithZeros(outSize, {out}, net);
+  fillWithZeros(outSize, {out}, net);
 
   return out;
 }
@@ -384,7 +386,7 @@ FLibrary::Out ArithmeticLibrary::synthKaratsubaMultiplier(const size_t outSize,
       out = synthAdd(size, {out, terms[i]}, net);
     }
  
-    fillingWithZeros(outSize, {out}, net);
+    fillWithZeros(outSize, {out}, net);
 
     return out;
   }
@@ -407,7 +409,7 @@ FLibrary::Out ArithmeticLibrary::synthColumnMultiplier(const size_t outSize,
     size_t min3 = std::min((temp2.size() + 1), outSize);
     out = synthAdd(min3, {temp2, out}, net);
   }
-  fillingWithZeros(outSize, {out}, net);
+  fillWithZeros(outSize, {out}, net);
   return out;
 }
 
@@ -420,7 +422,7 @@ FLibrary::Out ArithmeticLibrary::synthMultiplierByOneDigit(const size_t outSize,
   for (size_t i = 0; i < mulSize; i++) {
     out.push_back(net.addGate(GateSymbol::AND, x[i], y));
   }
-  fillingWithZeros(outSize, {out}, net);
+  fillWithZeros(outSize, {out}, net);
   return out;
 }
 

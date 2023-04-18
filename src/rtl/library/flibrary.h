@@ -26,13 +26,13 @@ namespace eda::rtl::library {
 
 // Complete GateIdList with zeros up to the passed size:
 // 111 -> 000111
-void fillingWithZeros(const size_t size,
-                      GNet::GateIdList &in,
-                      GNet &net);
+void fillWithZeros(const size_t size,
+                   GNet::GateIdList &in,
+                   GNet &net);
 
 // Make inputs equal to each other,
 // but no longer than outSize
-void makeInputsEqual(const size_t outsize,
+void makeInputsEqual(const size_t outSize,
                      GNet::GateIdList &x,
                      GNet::GateIdList &y,
                      GNet &net);

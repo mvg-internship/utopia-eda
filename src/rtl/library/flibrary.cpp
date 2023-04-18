@@ -17,9 +17,9 @@ using namespace eda::rtl::model;
 
 namespace eda::rtl::library {
 
-void fillingWithZeros(const size_t size,
-                      GNet::GateIdList &in,
-                      GNet &net) {
+void fillWithZeros(const size_t size,
+                   GNet::GateIdList &in,
+                   GNet &net) {
   while (size > in.size()) {
     in.push_back(net.addZero());
   }
@@ -31,12 +31,12 @@ void makeInputsEqual(const size_t outSize,
                      GNet &net) {
   if ((outSize >= x.size()) && (outSize >= y.size())) {
     // Make x.size() and y.size() equal to the maximum of them
-    fillingWithZeros(x.size(), {y}, net);
-    fillingWithZeros(y.size(), {x}, net);
+    fillWithZeros(x.size(), {y}, net);
+    fillWithZeros(y.size(), {x}, net);
   } else {
     // Make x.size() and y.size() equal to the outSize
-    fillingWithZeros(outSize, {x}, net);
-    fillingWithZeros(outSize, {y}, net);
+    fillWithZeros(outSize, {x}, net);
+    fillWithZeros(outSize, {y}, net);
     x.resize(outSize);
     y.resize(outSize);
   }
@@ -224,7 +224,7 @@ FLibrary::Out FLibraryDefault::synthAdder(size_t outSize,
     out.push_back(carryIn);
   }
 
-  fillingWithZeros(outSize, {out}, net);
+  fillWithZeros(outSize, {out}, net);
 
   return out;
 }
@@ -274,7 +274,7 @@ FLibrary::Out FLibraryDefault::synthMultiplier(const size_t outSize,
     size_t min3 = std::min((temp2.size() + 1), outSize);
     out = synthAdd(min3, {temp2, out}, net);
   }
-  fillingWithZeros(outSize, {out}, net);
+  fillWithZeros(outSize, {out}, net);
   return out;
 }
 
@@ -287,7 +287,7 @@ FLibrary::Out FLibraryDefault::synthMultiplier(const size_t outSize,
   for (size_t i = 0; i < mulSize; i++) {
     out.push_back(net.addGate(GateSymbol::AND, x[i], y));
   }
-  fillingWithZeros(outSize, {out}, net);
+  fillWithZeros(outSize, {out}, net);
   return out;
 }
 

@@ -32,7 +32,7 @@ GNet::GateIdList formGateIdList(const size_t size,
                                 const GNet::GateIdList &y,
                                 GNet &net);
 
-// Divide one gateidlist into two GateIdLists:
+// Divide one GateIdList into two GateIdLists:
 // 111000 -> 111 and 000 (for firstPartSize = 3)
 void getPartsOfGateIdList(const GNet::GateIdList &x,
                           GNet::GateIdList &x1,
