@@ -2,8 +2,10 @@
 #include <iostream>
 #include <unordered_map>
 #include <vector>
-#include "lex.yy.c"
+//#include "lex.yy.c"
 #include <algorithm>
+#include "headerFile"
+#include "token.h"
 /*
 some defenicion in Verilog
 
@@ -17,6 +19,33 @@ decl -> (input|output|wire)?[NUM:NUM]? name(,name)* ;// тут мы будем �
 name ?[NUM]?; // тут мы будем проверять, есть ли далее скобка, так как она
 опциональна
 */
+
+//     enum kind_of_error
+// {
+//   SUCCESS,
+//   FAILURE_IN_MODULE_NAME,
+//   FAILURE_IN_PARSE_NAME_LIST,
+//   FAILURE_IN_DECL,
+//   FAILURE_IN_MODULE_INCAPTULATION,
+//   FAILURE_IN_EXPR,
+//   FAILURE_IN_ARG,
+//   FAILURE_IN_ASSIGN,
+//   FAILURE_IN_GATE_LEVEL_VERILOG
+// };
+
+//     enum familyInfo
+// {
+//   VOID_,
+//   MODULE_,
+//   INPUT_,
+//   OUTPUT_,
+//   WIRE_,
+//   ASSIGN_,
+//   FUNCTION_,
+//   FUNC_INI_,
+//   LOGIC_GATE_
+// };
+
 
 struct ModuleInfo {
   familyInfo type;

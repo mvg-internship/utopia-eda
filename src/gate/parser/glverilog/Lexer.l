@@ -1,7 +1,7 @@
 %{
         //Define section
         #include <stdio.h>
-        #include "token.h"
+        #include <gate/parser/glverilog/token.h>
         
 %}
 
@@ -9,6 +9,7 @@
 
 %option noyywrap yylineno
 %x IN_COMMENT
+
  
 NUM     [0-9]
 STRING  [a-zA-Z][a-zA-Z0-9]*

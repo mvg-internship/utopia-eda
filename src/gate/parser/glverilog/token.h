@@ -1,3 +1,5 @@
+#ifndef GLVERILOG_TOKEN_H
+#define GLVERILOG_TOKEN_H
 #define YY_DECL int scan_token() 
 enum token_t
 {
@@ -55,3 +57,4 @@ enum token_t
   FUNC_INI_,
   LOGIC_GATE_
 };
+#endif
