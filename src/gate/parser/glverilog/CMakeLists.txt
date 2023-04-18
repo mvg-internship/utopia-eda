@@ -1,5 +1,9 @@
 find_package(FLEX)
-FLEX_TARGET(GateVerilogLexer Lexer.l ${CMAKE_CURRENT_BINARY_DIR}/lex.yy.c)
+FLEX_TARGET(GateVerilogLexer
+  Lexer.l
+  ${CMAKE_CURRENT_BINARY_DIR}/lex.yy.c
+  DEFINES_FILE "${CMAKE_CURRENT_BINARY_DIR}/headerFile"
+)
 
 add_executable(parser.gverilog
   Parser_test.cpp
@@ -16,4 +20,5 @@ target_include_directories(parser.gverilog
 
   PRIVATE
     ${PROJECT_BINARY_DIR}/src
+    ${CMAKE_CURRENT_BINARY_DIR}
 )

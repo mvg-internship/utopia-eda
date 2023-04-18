@@ -9,7 +9,7 @@
 
 %option noyywrap yylineno
 %x IN_COMMENT
-%option header-file="headerFile"
+
  
 NUM     [0-9]
 STRING  [a-zA-Z][a-zA-Z0-9]*

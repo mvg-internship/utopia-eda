@@ -4,8 +4,9 @@
 #include <vector>
 //#include "lex.yy.c"
 #include <algorithm>
-#include "headerFile"
 #include "token.h"
+#include "headerFile"
+#include <gate/model/gnet.h>
 /*
 some defenicion in Verilog
 
@@ -46,6 +47,7 @@ name ?[NUM]?; // тут мы будем проверять, есть ли дал
 //   LOGIC_GATE_
 // };
 
+extern "C" YY_DECL;
 
 struct ModuleInfo {
   familyInfo type;
