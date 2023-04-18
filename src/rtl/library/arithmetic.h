@@ -24,6 +24,21 @@ using FuncSymbol = eda::rtl::model::FuncSymbol;
 
 namespace eda::rtl::library {
 
+// Form GateIdList of outputs for the operation
+// applied to pairs of input identifiers
+GNet::GateIdList formGateIdList(const size_t size,
+                                const GateSymbol func,
+                                const GNet::GateIdList &x,
+                                const GNet::GateIdList &y,
+                                GNet &net);
+
+// Divide one gateidlist into two GateIdLists:
+// 111000 -> 111 and 000 (for firstPartSize = 3)
+void getPartsOfGateIdList(const GNet::GateIdList &x,
+                          GNet::GateIdList &x1,
+                          GNet::GateIdList &x0,
+                          const size_t firstPartSize);
+
 /**
  * \brief Library for arithmetic operations.
  * \author <a href="mailto:aayagzhov@yandex.ru">Alexey Yagzhov</a>

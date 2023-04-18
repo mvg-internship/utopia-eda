@@ -4,7 +4,6 @@ add_library(RTL OBJECT
   compiler/compiler.cpp
   library/arithmetic.cpp
   library/flibrary.cpp
-  library/support.cpp
   model/fsymbol.cpp
   model/net.cpp
   model/pnode.cpp

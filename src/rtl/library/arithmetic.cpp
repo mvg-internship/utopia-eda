@@ -8,7 +8,6 @@
 
 #include "gate/model/gnet.h"
 #include "rtl/library/arithmetic.h"
-#include "rtl/library/support.h"
 #include "rtl/model/fsymbol.h"
 
 #include <algorithm>
@@ -22,6 +21,31 @@ using GateSymbol = eda::gate::model::GateSymbol;
 using GNet = eda::gate::model::GNet;
 
 namespace eda::rtl::library {
+
+GateIdList formGateIdList(const size_t size,
+                          const GateSymbol func,
+                          const GateIdList &x,
+                          const GateIdList &y,
+                          GNet &net) {
+  GateIdList list(size);
+  for (size_t i = 0; i < size; i++) {
+    list[i] = net.addGate(func, x[i], y[i]);
+  }
+  return list;
+}
+
+void getPartsOfGateIdList(const GateIdList &x,
+                          GateIdList &x1,
+                          GateIdList &x0,
+                          const size_t firstPartSize) {
+  size_t i{0};
+  for (i = 0; i < firstPartSize; i++) {
+    x0.push_back(x[i]);
+  }
+  for (; i < x.size(); i++) {
+    x1.push_back(x[i]);
+  }
+}
 
 // TODO: In the future, ArithmeticLibrary will be responsible only
 // for arithmetic operations

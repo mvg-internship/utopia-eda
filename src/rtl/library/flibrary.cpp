@@ -8,7 +8,6 @@
 
 #include "gate/model/gnet.h"
 #include "rtl/library/flibrary.h"
-#include "rtl/library/support.h"
 
 #include <cassert>
 
@@ -17,6 +16,45 @@ using namespace eda::gate::model;
 using namespace eda::rtl::model;
 
 namespace eda::rtl::library {
+
+void fillingWithZeros(const size_t size,
+                      GNet::GateIdList &in,
+                      GNet &net) {
+  while (size > in.size()) {
+    in.push_back(net.addZero());
+  }
+}
+
+void makeInputsEqual(const size_t outSize,
+                     GNet::GateIdList &x,
+                     GNet::GateIdList &y,
+                     GNet &net) {
+  if ((outSize >= x.size()) && (outSize >= y.size())) {
+    // Make x.size() and y.size() equal to the maximum of them
+    fillingWithZeros(x.size(), {y}, net);
+    fillingWithZeros(y.size(), {x}, net);
+  } else {
+    // Make x.size() and y.size() equal to the outSize
+    fillingWithZeros(outSize, {x}, net);
+    fillingWithZeros(outSize, {y}, net);
+    x.resize(outSize);
+    y.resize(outSize);
+  }
+}
+
+GNet::GateIdList leftShiftForGateIdList(const GNet::GateIdList &x,
+                                        const size_t shift,
+                                        GNet &net) {
+  GNet::GateIdList list(x.size() + shift);
+  size_t i;
+  for (i = 0; i < shift; i++) {
+    list[i] = net.addZero();
+  }
+  for (; i < list.size(); i++) {
+    list[i] = x[i - shift];
+  }
+  return list;
+}
 
 bool FLibraryDefault::supports(FuncSymbol func) const {
   return true;
@@ -27,7 +65,7 @@ FLibrary::Out FLibraryDefault::synth(size_t outSize,
                                      GNet &net) {
   assert(outSize == value.size());
 
-  Out out(outSize);
+  GNet::Out out(outSize);
   for (size_t i = 0; i < out.size(); i++) {
     out[i] = net.addGate((value[i] ? GateSymbol::ONE : GateSymbol::ZERO), {});
   }
@@ -40,7 +78,7 @@ FLibrary::Out FLibraryDefault::synth(size_t outSize,
                                      GNet &net) {
   assert(outSize == out.size());
 
-  Out targets(outSize);
+  GNet::Out targets(outSize);
   for (size_t i = 0; i < out.size(); i++) {
     targets[i] = net.addGate(GateSymbol::OUT, {Signal::always(out[i])});
   }
