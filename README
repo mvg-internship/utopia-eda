@@ -36,13 +36,10 @@ make
 sudo make install
 ```
 
-If you installed `CUDD` not in default directory then building `Utopia EDA`
-will require environment variable `CUDD_DIR` to contain the path to the
-`CUDD` installation directory.
-
-```
-export CUDD_DIR=<cudd-installation-dir>
-```
+If you want to install `CUDD` not in default directory by using
+`--prefix` option of configure script, then building `Utopia EDA`
+will require environment variable `CUDD_DIR` that contains the path
+to the `CUDD` actual installation directory.
 
 ### Compiling from Command Line
 
