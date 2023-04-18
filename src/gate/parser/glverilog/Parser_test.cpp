@@ -4,7 +4,6 @@
 #include <vector>
 #include "lex.yy.c"
 #include <algorithm>
-
 /*
 some defenicion in Verilog
 
@@ -355,6 +354,10 @@ kind_of_error parse_decl(token_t &tok, SymbolTable &table, std::string currentMo
 kind_of_error parse_expr(token_t &tok, SymbolTable &table, std::string currentModuleName, std::unordered_map<std::string, ModuleInfo> &modules) {
   kind_of_error rc = SUCCESS;
   std::string currentFuncName = yytext;
+  if(modules.find(currentFuncName) != modules.end()) {
+    std::cerr << "This name of function incorrect: "<< currentFuncName << std::endl << "line: " << yylineno << std::endl;
+      exit(EXIT_FAILURE);
+  }
   modules[currentFuncName] = {familyInfo::FUNCTION_, {}};
    std::cout << " Type of func: " << modules[currentFuncName].type << std::endl;
   ASSERT_NEXT_TOKEN(tok, STRING, FAILURE_IN_EXPR);

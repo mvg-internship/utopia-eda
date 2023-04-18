@@ -1,0 +1,524 @@
+//В этом тесте при инициализации модуля, заранее обьявленного в модуле Circuit432, была указана переменная T, которая не была указана при инициализации.
+
+
+type: 1 tok: module pl: 0 ln: 1
+  type: 13 tok: Circuit432 pl: 1 ln: 1
+  type: 12 tok: ( pl: 2 ln: 1
+ type: 13 tok: in4 pl: 3 ln: 1
+ parent name: Circuit432
+ type: 15 tok: , pl: 4 ln: 1
+  type: 13 tok: in17 pl: 5 ln: 1
+ parent name: Circuit432
+ type: 15 tok: , pl: 6 ln: 1
+  type: 13 tok: in30 pl: 7 ln: 1
+ parent name: Circuit432
+ type: 15 tok: , pl: 8 ln: 1
+  type: 13 tok: in43 pl: 9 ln: 1
+ parent name: Circuit432
+ type: 15 tok: , pl: 10 ln: 1
+  type: 13 tok: in56 pl: 11 ln: 1
+ parent name: Circuit432
+ type: 15 tok: , pl: 12 ln: 1
+  type: 13 tok: in69 pl: 13 ln: 1
+ parent name: Circuit432
+ type: 15 tok: , pl: 14 ln: 1
+  type: 13 tok: in82 pl: 15 ln: 1
+ parent name: Circuit432
+ type: 15 tok: , pl: 16 ln: 1
+  type: 13 tok: in95 pl: 17 ln: 1
+ parent name: Circuit432
+ type: 15 tok: , pl: 18 ln: 1
+  type: 13 tok: in108 pl: 19 ln: 1
+ parent name: Circuit432
+ type: 15 tok: , pl: 20 ln: 1
+                   type: 13 tok: in1 pl: 21 ln: 2
+ parent name: Circuit432
+ type: 15 tok: , pl: 22 ln: 2
+  type: 13 tok: in11 pl: 23 ln: 2
+ parent name: Circuit432
+ type: 15 tok: , pl: 24 ln: 2
+  type: 13 tok: in24 pl: 25 ln: 2
+ parent name: Circuit432
+ type: 15 tok: , pl: 26 ln: 2
+  type: 13 tok: in37 pl: 27 ln: 2
+ parent name: Circuit432
+ type: 15 tok: , pl: 28 ln: 2
+  type: 13 tok: in50 pl: 29 ln: 2
+ parent name: Circuit432
+ type: 15 tok: , pl: 30 ln: 2
+  type: 13 tok: in63 pl: 31 ln: 2
+ parent name: Circuit432
+ type: 15 tok: , pl: 32 ln: 2
+  type: 13 tok: in76 pl: 33 ln: 2
+ parent name: Circuit432
+ type: 15 tok: , pl: 34 ln: 2
+  type: 13 tok: in89 pl: 35 ln: 2
+ parent name: Circuit432
+ type: 15 tok: , pl: 36 ln: 2
+  type: 13 tok: in102 pl: 37 ln: 2
+ parent name: Circuit432
+ type: 15 tok: , pl: 38 ln: 2
+                   type: 13 tok: in8 pl: 39 ln: 3
+ parent name: Circuit432
+ type: 15 tok: , pl: 40 ln: 3
+  type: 13 tok: in21 pl: 41 ln: 3
+ parent name: Circuit432
+ type: 15 tok: , pl: 42 ln: 3
+  type: 13 tok: in34 pl: 43 ln: 3
+ parent name: Circuit432
+ type: 15 tok: , pl: 44 ln: 3
+  type: 13 tok: in47 pl: 45 ln: 3
+ parent name: Circuit432
+ type: 15 tok: , pl: 46 ln: 3
+  type: 13 tok: in60 pl: 47 ln: 3
+ parent name: Circuit432
+ type: 15 tok: , pl: 48 ln: 3
+  type: 13 tok: in73 pl: 49 ln: 3
+ parent name: Circuit432
+ type: 15 tok: , pl: 50 ln: 3
+  type: 13 tok: in86 pl: 51 ln: 3
+ parent name: Circuit432
+ type: 15 tok: , pl: 52 ln: 3
+  type: 13 tok: in99 pl: 53 ln: 3
+ parent name: Circuit432
+ type: 15 tok: , pl: 54 ln: 3
+  type: 13 tok: in112 pl: 55 ln: 3
+ parent name: Circuit432
+ type: 15 tok: , pl: 56 ln: 3
+                   type: 13 tok: in14 pl: 57 ln: 4
+ parent name: Circuit432
+ type: 15 tok: , pl: 58 ln: 4
+  type: 13 tok: in27 pl: 59 ln: 4
+ parent name: Circuit432
+ type: 15 tok: , pl: 60 ln: 4
+  type: 13 tok: in40 pl: 61 ln: 4
+ parent name: Circuit432
+ type: 15 tok: , pl: 62 ln: 4
+  type: 13 tok: in53 pl: 63 ln: 4
+ parent name: Circuit432
+ type: 15 tok: , pl: 64 ln: 4
+  type: 13 tok: in66 pl: 65 ln: 4
+ parent name: Circuit432
+ type: 15 tok: , pl: 66 ln: 4
+  type: 13 tok: in79 pl: 67 ln: 4
+ parent name: Circuit432
+ type: 15 tok: , pl: 68 ln: 4
+  type: 13 tok: in92 pl: 69 ln: 4
+ parent name: Circuit432
+ type: 15 tok: , pl: 70 ln: 4
+  type: 13 tok: in105 pl: 71 ln: 4
+ parent name: Circuit432
+ type: 15 tok: , pl: 72 ln: 4
+  type: 13 tok: in115 pl: 73 ln: 4
+ parent name: Circuit432
+ type: 15 tok: , pl: 74 ln: 4
+                   type: 13 tok: out223 pl: 75 ln: 5
+ parent name: Circuit432
+ type: 15 tok: , pl: 76 ln: 5
+  type: 13 tok: out329 pl: 77 ln: 5
+ parent name: Circuit432
+ type: 15 tok: , pl: 78 ln: 5
+  type: 13 tok: out370 pl: 79 ln: 5
+ parent name: Circuit432
+ type: 15 tok: , pl: 80 ln: 5
+                   type: 13 tok: out421 pl: 81 ln: 6
+ parent name: Circuit432
+ type: 15 tok: , pl: 82 ln: 6
+  type: 13 tok: out430 pl: 83 ln: 6
+ parent name: Circuit432
+ type: 15 tok: , pl: 84 ln: 6
+  type: 13 tok: out431 pl: 85 ln: 6
+ parent name: Circuit432
+ type: 15 tok: , pl: 86 ln: 6
+  type: 13 tok: out432 pl: 87 ln: 6
+ parent name: Circuit432
+ type: 11 tok: ) pl: 88 ln: 6
+ type: 7 tok: ; pl: 89 ln: 6
+   type: 3 tok: input pl: 90 ln: 8
+Parser_test.cpp:278: Module loop: token 'input' (3)
+          type: 9 tok: [ pl: 91 ln: 8
+ type: 14 tok: 8 pl: 92 ln: 8
+ type: 8 tok: : pl: 93 ln: 8
+ type: 14 tok: 0 pl: 94 ln: 8
+ type: 10 tok: ] pl: 95 ln: 8
+  type: 13 tok: in4 pl: 96 ln: 8
+ type: 15 tok: , pl: 97 ln: 8
+  type: 13 tok: in17 pl: 98 ln: 8
+ type: 15 tok: , pl: 99 ln: 8
+  type: 13 tok: in30 pl: 100 ln: 8
+ type: 15 tok: , pl: 101 ln: 8
+  type: 13 tok: in43 pl: 102 ln: 8
+ type: 15 tok: , pl: 103 ln: 8
+  type: 13 tok: in56 pl: 104 ln: 8
+ type: 15 tok: , pl: 105 ln: 8
+  type: 13 tok: in69 pl: 106 ln: 8
+ type: 15 tok: , pl: 107 ln: 8
+  type: 13 tok: in82 pl: 108 ln: 8
+ type: 15 tok: , pl: 109 ln: 8
+  type: 13 tok: in95 pl: 110 ln: 8
+ type: 15 tok: , pl: 111 ln: 8
+  type: 13 tok: in108 pl: 112 ln: 8
+ type: 15 tok: , pl: 113 ln: 8
+                 type: 13 tok: in1 pl: 114 ln: 9
+ type: 15 tok: , pl: 115 ln: 9
+  type: 13 tok: in11 pl: 116 ln: 9
+ type: 15 tok: , pl: 117 ln: 9
+  type: 13 tok: in24 pl: 118 ln: 9
+ type: 15 tok: , pl: 119 ln: 9
+  type: 13 tok: in37 pl: 120 ln: 9
+ type: 15 tok: , pl: 121 ln: 9
+  type: 13 tok: in50 pl: 122 ln: 9
+ type: 15 tok: , pl: 123 ln: 9
+  type: 13 tok: in63 pl: 124 ln: 9
+ type: 15 tok: , pl: 125 ln: 9
+  type: 13 tok: in76 pl: 126 ln: 9
+ type: 15 tok: , pl: 127 ln: 9
+  type: 13 tok: in89 pl: 128 ln: 9
+ type: 15 tok: , pl: 129 ln: 9
+  type: 13 tok: in102 pl: 130 ln: 9
+ type: 15 tok: , pl: 131 ln: 9
+                 type: 13 tok: in8 pl: 132 ln: 10
+ type: 15 tok: , pl: 133 ln: 10
+  type: 13 tok: in21 pl: 134 ln: 10
+ type: 15 tok: , pl: 135 ln: 10
+  type: 13 tok: in34 pl: 136 ln: 10
+ type: 15 tok: , pl: 137 ln: 10
+  type: 13 tok: in47 pl: 138 ln: 10
+ type: 15 tok: , pl: 139 ln: 10
+  type: 13 tok: in60 pl: 140 ln: 10
+ type: 15 tok: , pl: 141 ln: 10
+  type: 13 tok: in73 pl: 142 ln: 10
+ type: 15 tok: , pl: 143 ln: 10
+  type: 13 tok: in86 pl: 144 ln: 10
+ type: 15 tok: , pl: 145 ln: 10
+  type: 13 tok: in99 pl: 146 ln: 10
+ type: 15 tok: , pl: 147 ln: 10
+  type: 13 tok: in112 pl: 148 ln: 10
+ type: 15 tok: , pl: 149 ln: 10
+                 type: 13 tok: in14 pl: 150 ln: 11
+ type: 15 tok: , pl: 151 ln: 11
+  type: 13 tok: in27 pl: 152 ln: 11
+ type: 15 tok: , pl: 153 ln: 11
+  type: 13 tok: in40 pl: 154 ln: 11
+ type: 15 tok: , pl: 155 ln: 11
+  type: 13 tok: in53 pl: 156 ln: 11
+ type: 15 tok: , pl: 157 ln: 11
+  type: 13 tok: in66 pl: 158 ln: 11
+ type: 15 tok: , pl: 159 ln: 11
+  type: 13 tok: in79 pl: 160 ln: 11
+ type: 15 tok: , pl: 161 ln: 11
+  type: 13 tok: in92 pl: 162 ln: 11
+ type: 15 tok: , pl: 163 ln: 11
+  type: 13 tok: in105 pl: 164 ln: 11
+ type: 15 tok: , pl: 165 ln: 11
+  type: 13 tok: in115 pl: 166 ln: 11
+ type: 7 tok: ; pl: 167 ln: 11
+   type: 4 tok: output pl: 168 ln: 12
+Parser_test.cpp:278: Module loop: token 'output' (4)
+         type: 13 tok: out223 pl: 169 ln: 12
+ type: 15 tok: , pl: 170 ln: 12
+  type: 13 tok: out329 pl: 171 ln: 12
+ type: 15 tok: , pl: 172 ln: 12
+  type: 13 tok: out370 pl: 173 ln: 12
+ type: 15 tok: , pl: 174 ln: 12
+                 type: 13 tok: out421 pl: 175 ln: 13
+ type: 15 tok: , pl: 176 ln: 13
+  type: 13 tok: out430 pl: 177 ln: 13
+ type: 15 tok: , pl: 178 ln: 13
+  type: 13 tok: out431 pl: 179 ln: 13
+ type: 15 tok: , pl: 180 ln: 13
+  type: 13 tok: out432 pl: 181 ln: 13
+ type: 7 tok: ; pl: 182 ln: 13
+   type: 5 tok: wire pl: 183 ln: 15
+Parser_test.cpp:278: Module loop: token 'wire' (5)
+  type: 9 tok: [ pl: 184 ln: 15
+ type: 14 tok: 8 pl: 185 ln: 15
+ type: 8 tok: : pl: 186 ln: 15
+ type: 14 tok: 0 pl: 187 ln: 15
+ type: 10 tok: ] pl: 188 ln: 15
+     type: 13 tok: A pl: 189 ln: 15
+ parent name: Circuit432
+ type: 15 tok: , pl: 190 ln: 15
+  type: 13 tok: B pl: 191 ln: 15
+ parent name: Circuit432
+ type: 15 tok: , pl: 192 ln: 15
+  type: 13 tok: C pl: 193 ln: 15
+ parent name: Circuit432
+ type: 15 tok: , pl: 194 ln: 15
+  type: 13 tok: E pl: 195 ln: 15
+ parent name: Circuit432
+ type: 7 tok: ; pl: 196 ln: 15
+   type: 5 tok: wire pl: 197 ln: 16
+Parser_test.cpp:278: Module loop: token 'wire' (5)
+           type: 13 tok: PA pl: 198 ln: 16
+ parent name: Circuit432
+ type: 15 tok: , pl: 199 ln: 16
+  type: 13 tok: PB pl: 200 ln: 16
+ parent name: Circuit432
+ type: 15 tok: , pl: 201 ln: 16
+  type: 13 tok: PC pl: 202 ln: 16
+ parent name: Circuit432
+ type: 7 tok: ; pl: 203 ln: 16
+   type: 5 tok: wire pl: 204 ln: 17
+Parser_test.cpp:278: Module loop: token 'wire' (5)
+  type: 9 tok: [ pl: 205 ln: 17
+ type: 14 tok: 3 pl: 206 ln: 17
+ type: 8 tok: : pl: 207 ln: 17
+ type: 14 tok: 0 pl: 208 ln: 17
+ type: 10 tok: ] pl: 209 ln: 17
+     type: 13 tok: Chan pl: 210 ln: 17
+ parent name: Circuit432
+ type: 7 tok: ; pl: 211 ln: 17
+   type: 17 tok: assign pl: 212 ln: 19
+Parser_test.cpp:278: Module loop: token 'assign' (17)
+       type: 13 tok: E pl: 213 ln: 20
+Current bit value: 8
+ line: 20
+ type: 9 tok: [ pl: 214 ln: 20
+aa
+ type: 14 tok: 8 pl: 215 ln: 20
+ type: 8 tok: : pl: 216 ln: 20
+ type: 14 tok: 0 pl: 217 ln: 20
+ type: 10 tok: ] pl: 218 ln: 20
+  type: 16 tok: = pl: 219 ln: 20
+  type: 23 tok: { pl: 220 ln: 20
+  type: 13 tok: in4 pl: 221 ln: 20
+counter = 9
+  type: 15 tok: , pl: 222 ln: 20
+  type: 13 tok: in17 pl: 223 ln: 20
+counter = 1
+ type: 15 tok: , pl: 224 ln: 20
+  type: 13 tok: in30 pl: 225 ln: 20
+counter = 2
+ type: 15 tok: , pl: 226 ln: 20
+  type: 13 tok: in43 pl: 227 ln: 20
+counter = 3
+ type: 15 tok: , pl: 228 ln: 20
+  type: 13 tok: in56 pl: 229 ln: 20
+counter = 4
+ type: 15 tok: , pl: 230 ln: 20
+  type: 13 tok: in69 pl: 231 ln: 20
+counter = 5
+ type: 15 tok: , pl: 232 ln: 20
+  type: 13 tok: in82 pl: 233 ln: 20
+counter = 6
+ type: 15 tok: , pl: 234 ln: 20
+  type: 13 tok: in95 pl: 235 ln: 20
+counter = 7
+ type: 15 tok: , pl: 236 ln: 20
+  type: 13 tok: in108 pl: 237 ln: 20
+counter = 8
+  type: 24 tok: } pl: 238 ln: 20
+Parser_test.cpp462} end of lbracket case tok =24
+ type: 15 tok: , pl: 239 ln: 20
+       type: 13 tok: A pl: 240 ln: 21
+Current bit value: 8
+ line: 21
+ type: 9 tok: [ pl: 241 ln: 21
+aa
+ type: 14 tok: 8 pl: 242 ln: 21
+ type: 8 tok: : pl: 243 ln: 21
+ type: 14 tok: 0 pl: 244 ln: 21
+ type: 10 tok: ] pl: 245 ln: 21
+  type: 16 tok: = pl: 246 ln: 21
+  type: 23 tok: { pl: 247 ln: 21
+  type: 13 tok: in1 pl: 248 ln: 21
+counter = 9
+ type: 15 tok: , pl: 249 ln: 21
+  type: 13 tok: in11 pl: 250 ln: 21
+counter = 1
+ type: 15 tok: , pl: 251 ln: 21
+  type: 13 tok: in24 pl: 252 ln: 21
+counter = 2
+ type: 15 tok: , pl: 253 ln: 21
+  type: 13 tok: in37 pl: 254 ln: 21
+counter = 3
+ type: 15 tok: , pl: 255 ln: 21
+  type: 13 tok: in50 pl: 256 ln: 21
+counter = 4
+ type: 15 tok: , pl: 257 ln: 21
+  type: 13 tok: in63 pl: 258 ln: 21
+counter = 5
+ type: 15 tok: , pl: 259 ln: 21
+  type: 13 tok: in76 pl: 260 ln: 21
+counter = 6
+ type: 15 tok: , pl: 261 ln: 21
+  type: 13 tok: in89 pl: 262 ln: 21
+counter = 7
+ type: 15 tok: , pl: 263 ln: 21
+  type: 13 tok: in102 pl: 264 ln: 21
+counter = 8
+  type: 24 tok: } pl: 265 ln: 21
+Parser_test.cpp462} end of lbracket case tok =24
+ type: 15 tok: , pl: 266 ln: 21
+       type: 13 tok: B pl: 267 ln: 22
+Current bit value: 8
+ line: 22
+ type: 9 tok: [ pl: 268 ln: 22
+aa
+ type: 14 tok: 8 pl: 269 ln: 22
+ type: 8 tok: : pl: 270 ln: 22
+ type: 14 tok: 0 pl: 271 ln: 22
+ type: 10 tok: ] pl: 272 ln: 22
+  type: 16 tok: = pl: 273 ln: 22
+  type: 23 tok: { pl: 274 ln: 22
+  type: 13 tok: in8 pl: 275 ln: 22
+counter = 9
+ type: 15 tok: , pl: 276 ln: 22
+  type: 13 tok: in21 pl: 277 ln: 22
+counter = 1
+ type: 15 tok: , pl: 278 ln: 22
+  type: 13 tok: in34 pl: 279 ln: 22
+counter = 2
+ type: 15 tok: , pl: 280 ln: 22
+  type: 13 tok: in47 pl: 281 ln: 22
+counter = 3
+ type: 15 tok: , pl: 282 ln: 22
+  type: 13 tok: in60 pl: 283 ln: 22
+counter = 4
+ type: 15 tok: , pl: 284 ln: 22
+  type: 13 tok: in73 pl: 285 ln: 22
+counter = 5
+ type: 15 tok: , pl: 286 ln: 22
+  type: 13 tok: in86 pl: 287 ln: 22
+counter = 6
+ type: 15 tok: , pl: 288 ln: 22
+  type: 13 tok: in99 pl: 289 ln: 22
+counter = 7
+ type: 15 tok: , pl: 290 ln: 22
+  type: 13 tok: in112 pl: 291 ln: 22
+counter = 8
+  type: 24 tok: } pl: 292 ln: 22
+Parser_test.cpp462} end of lbracket case tok =24
+ type: 15 tok: , pl: 293 ln: 22
+       type: 13 tok: C pl: 294 ln: 23
+Current bit value: 8
+ line: 23
+ type: 9 tok: [ pl: 295 ln: 23
+aa
+ type: 14 tok: 8 pl: 296 ln: 23
+ type: 8 tok: : pl: 297 ln: 23
+ type: 14 tok: 0 pl: 298 ln: 23
+ type: 10 tok: ] pl: 299 ln: 23
+  type: 16 tok: = pl: 300 ln: 23
+  type: 23 tok: { pl: 301 ln: 23
+  type: 13 tok: in14 pl: 302 ln: 23
+counter = 9
+ type: 15 tok: , pl: 303 ln: 23
+  type: 13 tok: in27 pl: 304 ln: 23
+counter = 1
+ type: 15 tok: , pl: 305 ln: 23
+  type: 13 tok: in40 pl: 306 ln: 23
+counter = 2
+ type: 15 tok: , pl: 307 ln: 23
+  type: 13 tok: in53 pl: 308 ln: 23
+counter = 3
+ type: 15 tok: , pl: 309 ln: 23
+  type: 13 tok: in66 pl: 310 ln: 23
+counter = 4
+ type: 15 tok: , pl: 311 ln: 23
+  type: 13 tok: in79 pl: 312 ln: 23
+counter = 5
+ type: 15 tok: , pl: 313 ln: 23
+  type: 13 tok: in92 pl: 314 ln: 23
+counter = 6
+ type: 15 tok: , pl: 315 ln: 23
+  type: 13 tok: in105 pl: 316 ln: 23
+counter = 7
+ type: 15 tok: , pl: 317 ln: 23
+  type: 13 tok: in115 pl: 318 ln: 23
+counter = 8
+  type: 24 tok: } pl: 319 ln: 23
+Parser_test.cpp462} end of lbracket case tok =24
+ type: 15 tok: , pl: 320 ln: 23
+       type: 13 tok: PA pl: 321 ln: 24
+Current bit value: 1
+ line: 24
+  type: 16 tok: = pl: 322 ln: 24
+  type: 13 tok: out223 pl: 323 ln: 24
+counter = 1
+Parser_test.cpp469out223end of equals casetok =13
+ type: 15 tok: , pl: 324 ln: 24
+       type: 13 tok: PB pl: 325 ln: 25
+Current bit value: 1
+ line: 25
+  type: 16 tok: = pl: 326 ln: 25
+  type: 13 tok: out329 pl: 327 ln: 25
+counter = 1
+Parser_test.cpp469out329end of equals casetok =13
+ type: 15 tok: , pl: 328 ln: 25
+       type: 13 tok: PC pl: 329 ln: 26
+Current bit value: 1
+ line: 26
+  type: 16 tok: = pl: 330 ln: 26
+  type: 13 tok: out370 pl: 331 ln: 26
+counter = 1
+Parser_test.cpp469out370end of equals casetok =13
+ type: 15 tok: , pl: 332 ln: 26
+       type: 13 tok: Chan pl: 333 ln: 27
+Current bit value: 3
+ line: 27
+ type: 9 tok: [ pl: 334 ln: 27
+aa
+ type: 14 tok: 3 pl: 335 ln: 27
+ type: 8 tok: : pl: 336 ln: 27
+ type: 14 tok: 0 pl: 337 ln: 27
+ type: 10 tok: ] pl: 338 ln: 27
+  type: 16 tok: = pl: 339 ln: 27
+  type: 23 tok: { pl: 340 ln: 27
+  type: 13 tok: out421 pl: 341 ln: 27
+counter = 4
+ type: 15 tok: , pl: 342 ln: 27
+  type: 13 tok: out430 pl: 343 ln: 27
+counter = 1
+ type: 15 tok: , pl: 344 ln: 27
+  type: 13 tok: out431 pl: 345 ln: 27
+counter = 2
+ type: 15 tok: , pl: 346 ln: 27
+  type: 13 tok: out432 pl: 347 ln: 27
+counter = 3
+  type: 24 tok: } pl: 348 ln: 27
+Parser_test.cpp462} end of lbracket case tok =24
+ type: 7 tok: ; pl: 349 ln: 27
+          type: 13 tok: TopLevel432 pl: 350 ln: 29
+Parser_test.cpp:278: Module loop: token 'TopLevel432' (13)
+ Type of func: 6
+  type: 13 tok: Ckt432 pl: 351 ln: 29
+  type: 12 tok: ( pl: 352 ln: 29
+Parser_test.cpp:366: Parse expr begin: token '(' (12)
+ type: 13 tok: E pl: 353 ln: 29
+ type: 15 tok: , pl: 354 ln: 29
+Parser_test.cpp:504: ARG  loop: token ',' (15)
+  type: 13 tok: A pl: 355 ln: 29
+ type: 15 tok: , pl: 356 ln: 29
+Parser_test.cpp:504: ARG  loop: token ',' (15)
+  type: 13 tok: B pl: 357 ln: 29
+ type: 15 tok: , pl: 358 ln: 29
+Parser_test.cpp:504: ARG  loop: token ',' (15)
+  type: 13 tok: C pl: 359 ln: 29
+ type: 15 tok: , pl: 360 ln: 29
+Parser_test.cpp:504: ARG  loop: token ',' (15)
+  type: 13 tok: PA pl: 361 ln: 29
+ type: 15 tok: , pl: 362 ln: 29
+Parser_test.cpp:504: ARG  loop: token ',' (15)
+  type: 13 tok: PB pl: 363 ln: 29
+ type: 15 tok: , pl: 364 ln: 29
+Parser_test.cpp:504: ARG  loop: token ',' (15)
+  type: 13 tok: PC pl: 365 ln: 29
+ type: 15 tok: , pl: 366 ln: 29
+Parser_test.cpp:504: ARG  loop: token ',' (15)
+  type: 13 tok: Chan pl: 367 ln: 29
+ type: 11 tok: ) pl: 368 ln: 29
+Parser_test.cpp:504: ARG  loop: token ')' (11)
+ type: 7 tok: ; pl: 369 ln: 29
+ type: 2 tok: endmodule pl: 370 ln: 31
+Parser_test.cpp:368: Parse expr end: token 'endmodule' (2)
+Parser_test.cpp:233: Verilog loop: token 'endmodule' (2)
+  type: 1 tok: module pl: 371 ln: 35
+  type: 13 tok: TopLevel432 pl: 372 ln: 35
+ Type in modules: 6
+  type: 12 tok: ( pl: 373 ln: 35
+ type: 13 tok: T pl: 374 ln: 35
+ The first variable T
+This variable didn't declaration in function: T
+line: 35

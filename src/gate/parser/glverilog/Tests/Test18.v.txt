@@ -17,7 +17,7 @@ module Circuit432 (in4, in17, in30, in43, in56, in69, in82, in95, in108,
   wire [3:0]    Chan;
 
   assign
-      E[8:0] = { in4 , in17, in30, in43, in56, in69, in82, in95 },
+      E[8:0] = { in4 , in17, in30, in43, in56, in69, in82, in95, in108 },
       A[8:0] = { in1, in11, in24, in37, in50, in63, in76, in89, in102 },
       B[8:0] = { in8, in21, in34, in47, in60, in73, in86, in99, in112 },
       C[8:0] = { in14, in27, in40, in53, in66, in79, in92, in105, in115 },
@@ -77,7 +77,7 @@ module PriorityA(E, A, PA, X1);
   nand EAb7(EAb[7], Ab[7], E[7]); 
   nand EAb8(EAb[8], Ab[8], E[8]); 
 
-  and PAigate(PAi,EAb[0],EAb[1],EAb[2],EAb[3],EAb[4],EAb[5],EAb[6],EAb[7]);
+  and PAigate(PAi,EAb[0],EAb[1],EAb[2],EAb[3],EAb[4],EAb[5],EAb[6]);
   nand PAgate(PA,PAi,EAb[8]);
 
   xor X10(X1[0], PA, EAb[0]);

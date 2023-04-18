@@ -1,0 +1,1019 @@
+ //В этом тесте в модуле PriorityA в логическом вентеле and было указано меньше элементов, чем необходимо (EAb  был объявлен как 9-и битный, а указано 8 )
+ 
+ 
+ type: 15 tok: , pl: 157 ln: 11
+  type: 13 tok: in66 pl: 158 ln: 11
+ type: 15 tok: , pl: 159 ln: 11
+  type: 13 tok: in79 pl: 160 ln: 11
+ type: 15 tok: , pl: 161 ln: 11
+  type: 13 tok: in92 pl: 162 ln: 11
+ type: 15 tok: , pl: 163 ln: 11
+  type: 13 tok: in105 pl: 164 ln: 11
+ type: 15 tok: , pl: 165 ln: 11
+  type: 13 tok: in115 pl: 166 ln: 11
+ type: 7 tok: ; pl: 167 ln: 11
+   type: 4 tok: output pl: 168 ln: 12
+Parser_test.cpp:278: Module loop: token 'output' (4)
+         type: 13 tok: out223 pl: 169 ln: 12
+ type: 15 tok: , pl: 170 ln: 12
+  type: 13 tok: out329 pl: 171 ln: 12
+ type: 15 tok: , pl: 172 ln: 12
+  type: 13 tok: out370 pl: 173 ln: 12
+ type: 15 tok: , pl: 174 ln: 12
+                 type: 13 tok: out421 pl: 175 ln: 13
+ type: 15 tok: , pl: 176 ln: 13
+  type: 13 tok: out430 pl: 177 ln: 13
+ type: 15 tok: , pl: 178 ln: 13
+  type: 13 tok: out431 pl: 179 ln: 13
+ type: 15 tok: , pl: 180 ln: 13
+  type: 13 tok: out432 pl: 181 ln: 13
+ type: 7 tok: ; pl: 182 ln: 13
+   type: 5 tok: wire pl: 183 ln: 15
+Parser_test.cpp:278: Module loop: token 'wire' (5)
+  type: 9 tok: [ pl: 184 ln: 15
+ type: 14 tok: 8 pl: 185 ln: 15
+ type: 8 tok: : pl: 186 ln: 15
+ type: 14 tok: 0 pl: 187 ln: 15
+ type: 10 tok: ] pl: 188 ln: 15
+     type: 13 tok: A pl: 189 ln: 15
+ parent name: Circuit432
+ type: 15 tok: , pl: 190 ln: 15
+  type: 13 tok: B pl: 191 ln: 15
+ parent name: Circuit432
+ type: 15 tok: , pl: 192 ln: 15
+  type: 13 tok: C pl: 193 ln: 15
+ parent name: Circuit432
+ type: 15 tok: , pl: 194 ln: 15
+  type: 13 tok: E pl: 195 ln: 15
+ parent name: Circuit432
+ type: 7 tok: ; pl: 196 ln: 15
+   type: 5 tok: wire pl: 197 ln: 16
+Parser_test.cpp:278: Module loop: token 'wire' (5)
+           type: 13 tok: PA pl: 198 ln: 16
+ parent name: Circuit432
+ type: 15 tok: , pl: 199 ln: 16
+  type: 13 tok: PB pl: 200 ln: 16
+ parent name: Circuit432
+ type: 15 tok: , pl: 201 ln: 16
+  type: 13 tok: PC pl: 202 ln: 16
+ parent name: Circuit432
+ type: 7 tok: ; pl: 203 ln: 16
+   type: 5 tok: wire pl: 204 ln: 17
+Parser_test.cpp:278: Module loop: token 'wire' (5)
+  type: 9 tok: [ pl: 205 ln: 17
+ type: 14 tok: 3 pl: 206 ln: 17
+ type: 8 tok: : pl: 207 ln: 17
+ type: 14 tok: 0 pl: 208 ln: 17
+ type: 10 tok: ] pl: 209 ln: 17
+     type: 13 tok: Chan pl: 210 ln: 17
+ parent name: Circuit432
+ type: 7 tok: ; pl: 211 ln: 17
+   type: 17 tok: assign pl: 212 ln: 19
+Parser_test.cpp:278: Module loop: token 'assign' (17)
+       type: 13 tok: E pl: 213 ln: 20
+Current bit value: 8
+ line: 20
+ type: 9 tok: [ pl: 214 ln: 20
+aa
+ type: 14 tok: 8 pl: 215 ln: 20
+ type: 8 tok: : pl: 216 ln: 20
+ type: 14 tok: 0 pl: 217 ln: 20
+ type: 10 tok: ] pl: 218 ln: 20
+  type: 16 tok: = pl: 219 ln: 20
+  type: 23 tok: { pl: 220 ln: 20
+  type: 13 tok: in4 pl: 221 ln: 20
+counter = 9
+  type: 15 tok: , pl: 222 ln: 20
+  type: 13 tok: in17 pl: 223 ln: 20
+counter = 1
+ type: 15 tok: , pl: 224 ln: 20
+  type: 13 tok: in30 pl: 225 ln: 20
+counter = 2
+ type: 15 tok: , pl: 226 ln: 20
+  type: 13 tok: in43 pl: 227 ln: 20
+counter = 3
+ type: 15 tok: , pl: 228 ln: 20
+  type: 13 tok: in56 pl: 229 ln: 20
+counter = 4
+ type: 15 tok: , pl: 230 ln: 20
+  type: 13 tok: in69 pl: 231 ln: 20
+counter = 5
+ type: 15 tok: , pl: 232 ln: 20
+  type: 13 tok: in82 pl: 233 ln: 20
+counter = 6
+ type: 15 tok: , pl: 234 ln: 20
+  type: 13 tok: in95 pl: 235 ln: 20
+counter = 7
+ type: 15 tok: , pl: 236 ln: 20
+  type: 13 tok: in108 pl: 237 ln: 20
+counter = 8
+  type: 24 tok: } pl: 238 ln: 20
+Parser_test.cpp462} end of lbracket case tok =24
+ type: 15 tok: , pl: 239 ln: 20
+       type: 13 tok: A pl: 240 ln: 21
+Current bit value: 8
+ line: 21
+ type: 9 tok: [ pl: 241 ln: 21
+aa
+ type: 14 tok: 8 pl: 242 ln: 21
+ type: 8 tok: : pl: 243 ln: 21
+ type: 14 tok: 0 pl: 244 ln: 21
+ type: 10 tok: ] pl: 245 ln: 21
+  type: 16 tok: = pl: 246 ln: 21
+  type: 23 tok: { pl: 247 ln: 21
+  type: 13 tok: in1 pl: 248 ln: 21
+counter = 9
+ type: 15 tok: , pl: 249 ln: 21
+  type: 13 tok: in11 pl: 250 ln: 21
+counter = 1
+ type: 15 tok: , pl: 251 ln: 21
+  type: 13 tok: in24 pl: 252 ln: 21
+counter = 2
+ type: 15 tok: , pl: 253 ln: 21
+  type: 13 tok: in37 pl: 254 ln: 21
+counter = 3
+ type: 15 tok: , pl: 255 ln: 21
+  type: 13 tok: in50 pl: 256 ln: 21
+counter = 4
+ type: 15 tok: , pl: 257 ln: 21
+  type: 13 tok: in63 pl: 258 ln: 21
+counter = 5
+ type: 15 tok: , pl: 259 ln: 21
+  type: 13 tok: in76 pl: 260 ln: 21
+counter = 6
+ type: 15 tok: , pl: 261 ln: 21
+  type: 13 tok: in89 pl: 262 ln: 21
+counter = 7
+ type: 15 tok: , pl: 263 ln: 21
+  type: 13 tok: in102 pl: 264 ln: 21
+counter = 8
+  type: 24 tok: } pl: 265 ln: 21
+Parser_test.cpp462} end of lbracket case tok =24
+ type: 15 tok: , pl: 266 ln: 21
+       type: 13 tok: B pl: 267 ln: 22
+Current bit value: 8
+ line: 22
+ type: 9 tok: [ pl: 268 ln: 22
+aa
+ type: 14 tok: 8 pl: 269 ln: 22
+ type: 8 tok: : pl: 270 ln: 22
+ type: 14 tok: 0 pl: 271 ln: 22
+ type: 10 tok: ] pl: 272 ln: 22
+  type: 16 tok: = pl: 273 ln: 22
+  type: 23 tok: { pl: 274 ln: 22
+  type: 13 tok: in8 pl: 275 ln: 22
+counter = 9
+ type: 15 tok: , pl: 276 ln: 22
+  type: 13 tok: in21 pl: 277 ln: 22
+counter = 1
+ type: 15 tok: , pl: 278 ln: 22
+  type: 13 tok: in34 pl: 279 ln: 22
+counter = 2
+ type: 15 tok: , pl: 280 ln: 22
+  type: 13 tok: in47 pl: 281 ln: 22
+counter = 3
+ type: 15 tok: , pl: 282 ln: 22
+  type: 13 tok: in60 pl: 283 ln: 22
+counter = 4
+ type: 15 tok: , pl: 284 ln: 22
+  type: 13 tok: in73 pl: 285 ln: 22
+counter = 5
+ type: 15 tok: , pl: 286 ln: 22
+  type: 13 tok: in86 pl: 287 ln: 22
+counter = 6
+ type: 15 tok: , pl: 288 ln: 22
+  type: 13 tok: in99 pl: 289 ln: 22
+counter = 7
+ type: 15 tok: , pl: 290 ln: 22
+  type: 13 tok: in112 pl: 291 ln: 22
+counter = 8
+  type: 24 tok: } pl: 292 ln: 22
+Parser_test.cpp462} end of lbracket case tok =24
+ type: 15 tok: , pl: 293 ln: 22
+       type: 13 tok: C pl: 294 ln: 23
+Current bit value: 8
+ line: 23
+ type: 9 tok: [ pl: 295 ln: 23
+aa
+ type: 14 tok: 8 pl: 296 ln: 23
+ type: 8 tok: : pl: 297 ln: 23
+ type: 14 tok: 0 pl: 298 ln: 23
+ type: 10 tok: ] pl: 299 ln: 23
+  type: 16 tok: = pl: 300 ln: 23
+  type: 23 tok: { pl: 301 ln: 23
+  type: 13 tok: in14 pl: 302 ln: 23
+counter = 9
+ type: 15 tok: , pl: 303 ln: 23
+  type: 13 tok: in27 pl: 304 ln: 23
+counter = 1
+ type: 15 tok: , pl: 305 ln: 23
+  type: 13 tok: in40 pl: 306 ln: 23
+counter = 2
+ type: 15 tok: , pl: 307 ln: 23
+  type: 13 tok: in53 pl: 308 ln: 23
+counter = 3
+ type: 15 tok: , pl: 309 ln: 23
+  type: 13 tok: in66 pl: 310 ln: 23
+counter = 4
+ type: 15 tok: , pl: 311 ln: 23
+  type: 13 tok: in79 pl: 312 ln: 23
+counter = 5
+ type: 15 tok: , pl: 313 ln: 23
+  type: 13 tok: in92 pl: 314 ln: 23
+counter = 6
+ type: 15 tok: , pl: 315 ln: 23
+  type: 13 tok: in105 pl: 316 ln: 23
+counter = 7
+ type: 15 tok: , pl: 317 ln: 23
+  type: 13 tok: in115 pl: 318 ln: 23
+counter = 8
+  type: 24 tok: } pl: 319 ln: 23
+Parser_test.cpp462} end of lbracket case tok =24
+ type: 15 tok: , pl: 320 ln: 23
+       type: 13 tok: PA pl: 321 ln: 24
+Current bit value: 1
+ line: 24
+  type: 16 tok: = pl: 322 ln: 24
+  type: 13 tok: out223 pl: 323 ln: 24
+counter = 1
+Parser_test.cpp469out223end of equals casetok =13
+ type: 15 tok: , pl: 324 ln: 24
+       type: 13 tok: PB pl: 325 ln: 25
+Current bit value: 1
+ line: 25
+  type: 16 tok: = pl: 326 ln: 25
+  type: 13 tok: out329 pl: 327 ln: 25
+counter = 1
+Parser_test.cpp469out329end of equals casetok =13
+ type: 15 tok: , pl: 328 ln: 25
+       type: 13 tok: PC pl: 329 ln: 26
+Current bit value: 1
+ line: 26
+  type: 16 tok: = pl: 330 ln: 26
+  type: 13 tok: out370 pl: 331 ln: 26
+counter = 1
+Parser_test.cpp469out370end of equals casetok =13
+ type: 15 tok: , pl: 332 ln: 26
+       type: 13 tok: Chan pl: 333 ln: 27
+Current bit value: 3
+ line: 27
+ type: 9 tok: [ pl: 334 ln: 27
+aa
+ type: 14 tok: 3 pl: 335 ln: 27
+ type: 8 tok: : pl: 336 ln: 27
+ type: 14 tok: 0 pl: 337 ln: 27
+ type: 10 tok: ] pl: 338 ln: 27
+  type: 16 tok: = pl: 339 ln: 27
+  type: 23 tok: { pl: 340 ln: 27
+  type: 13 tok: out421 pl: 341 ln: 27
+counter = 4
+ type: 15 tok: , pl: 342 ln: 27
+  type: 13 tok: out430 pl: 343 ln: 27
+counter = 1
+ type: 15 tok: , pl: 344 ln: 27
+  type: 13 tok: out431 pl: 345 ln: 27
+counter = 2
+ type: 15 tok: , pl: 346 ln: 27
+  type: 13 tok: out432 pl: 347 ln: 27
+counter = 3
+  type: 24 tok: } pl: 348 ln: 27
+Parser_test.cpp462} end of lbracket case tok =24
+ type: 7 tok: ; pl: 349 ln: 27
+          type: 13 tok: TopLevel432 pl: 350 ln: 29
+Parser_test.cpp:278: Module loop: token 'TopLevel432' (13)
+ Type of func: 6
+  type: 13 tok: Ckt432 pl: 351 ln: 29
+  type: 12 tok: ( pl: 352 ln: 29
+Parser_test.cpp:366: Parse expr begin: token '(' (12)
+ type: 13 tok: E pl: 353 ln: 29
+ type: 15 tok: , pl: 354 ln: 29
+Parser_test.cpp:504: ARG  loop: token ',' (15)
+  type: 13 tok: A pl: 355 ln: 29
+ type: 15 tok: , pl: 356 ln: 29
+Parser_test.cpp:504: ARG  loop: token ',' (15)
+  type: 13 tok: B pl: 357 ln: 29
+ type: 15 tok: , pl: 358 ln: 29
+Parser_test.cpp:504: ARG  loop: token ',' (15)
+  type: 13 tok: C pl: 359 ln: 29
+ type: 15 tok: , pl: 360 ln: 29
+Parser_test.cpp:504: ARG  loop: token ',' (15)
+  type: 13 tok: PA pl: 361 ln: 29
+ type: 15 tok: , pl: 362 ln: 29
+Parser_test.cpp:504: ARG  loop: token ',' (15)
+  type: 13 tok: PB pl: 363 ln: 29
+ type: 15 tok: , pl: 364 ln: 29
+Parser_test.cpp:504: ARG  loop: token ',' (15)
+  type: 13 tok: PC pl: 365 ln: 29
+ type: 15 tok: , pl: 366 ln: 29
+Parser_test.cpp:504: ARG  loop: token ',' (15)
+  type: 13 tok: Chan pl: 367 ln: 29
+ type: 11 tok: ) pl: 368 ln: 29
+Parser_test.cpp:504: ARG  loop: token ')' (11)
+ type: 7 tok: ; pl: 369 ln: 29
+ type: 2 tok: endmodule pl: 370 ln: 31
+Parser_test.cpp:368: Parse expr end: token 'endmodule' (2)
+Parser_test.cpp:233: Verilog loop: token 'endmodule' (2)
+  type: 1 tok: module pl: 371 ln: 35
+  type: 13 tok: TopLevel432 pl: 372 ln: 35
+ Type in modules: 6
+  type: 12 tok: ( pl: 373 ln: 35
+ type: 13 tok: E pl: 374 ln: 35
+ The first variable E
+ parent name: TopLevel432
+ type: 15 tok: , pl: 375 ln: 35
+  type: 13 tok: A pl: 376 ln: 35
+ type: 15 tok: , pl: 377 ln: 35
+  type: 13 tok: B pl: 378 ln: 35
+ type: 15 tok: , pl: 379 ln: 35
+  type: 13 tok: C pl: 380 ln: 35
+ type: 15 tok: , pl: 381 ln: 35
+  type: 13 tok: PA pl: 382 ln: 35
+ type: 15 tok: , pl: 383 ln: 35
+  type: 13 tok: PB pl: 384 ln: 35
+ type: 15 tok: , pl: 385 ln: 35
+  type: 13 tok: PC pl: 386 ln: 35
+ type: 15 tok: , pl: 387 ln: 35
+  type: 13 tok: Chan pl: 388 ln: 35
+ type: 11 tok: ) pl: 389 ln: 35
+ type: 7 tok: ; pl: 390 ln: 35
+   type: 3 tok: input pl: 391 ln: 37
+Parser_test.cpp:278: Module loop: token 'input' (3)
+ type: 9 tok: [ pl: 392 ln: 37
+ type: 14 tok: 8 pl: 393 ln: 37
+ type: 8 tok: : pl: 394 ln: 37
+ type: 14 tok: 0 pl: 395 ln: 37
+ type: 10 tok: ] pl: 396 ln: 37
+         type: 13 tok: E pl: 397 ln: 37
+ type: 15 tok: , pl: 398 ln: 37
+  type: 13 tok: A pl: 399 ln: 37
+ type: 15 tok: , pl: 400 ln: 37
+  type: 13 tok: B pl: 401 ln: 37
+ type: 15 tok: , pl: 402 ln: 37
+  type: 13 tok: C pl: 403 ln: 37
+ type: 7 tok: ; pl: 404 ln: 37
+   type: 4 tok: output pl: 405 ln: 38
+Parser_test.cpp:278: Module loop: token 'output' (4)
+         type: 13 tok: PA pl: 406 ln: 38
+ type: 15 tok: , pl: 407 ln: 38
+  type: 13 tok: PB pl: 408 ln: 38
+ type: 15 tok: , pl: 409 ln: 38
+  type: 13 tok: PC pl: 410 ln: 38
+ type: 7 tok: ; pl: 411 ln: 38
+   type: 4 tok: output pl: 412 ln: 39
+Parser_test.cpp:278: Module loop: token 'output' (4)
+ type: 9 tok: [ pl: 413 ln: 39
+ type: 14 tok: 3 pl: 414 ln: 39
+ type: 8 tok: : pl: 415 ln: 39
+ type: 14 tok: 0 pl: 416 ln: 39
+ type: 10 tok: ] pl: 417 ln: 39
+  type: 13 tok: Chan pl: 418 ln: 39
+ type: 7 tok: ; pl: 419 ln: 39
+   type: 5 tok: wire pl: 420 ln: 40
+Parser_test.cpp:278: Module loop: token 'wire' (5)
+ type: 9 tok: [ pl: 421 ln: 40
+ type: 14 tok: 8 pl: 422 ln: 40
+ type: 8 tok: : pl: 423 ln: 40
+ type: 14 tok: 0 pl: 424 ln: 40
+ type: 10 tok: ] pl: 425 ln: 40
+  type: 13 tok: X1 pl: 426 ln: 40
+ parent name: TopLevel432
+ type: 15 tok: , pl: 427 ln: 40
+  type: 13 tok: X2 pl: 428 ln: 40
+ parent name: TopLevel432
+ type: 15 tok: , pl: 429 ln: 40
+  type: 13 tok: I pl: 430 ln: 40
+ parent name: TopLevel432
+ type: 7 tok: ; pl: 431 ln: 40
+   type: 13 tok: PriorityA pl: 432 ln: 42
+Parser_test.cpp:278: Module loop: token 'PriorityA' (13)
+ Type of func: 6
+  type: 13 tok: M1 pl: 433 ln: 42
+ type: 12 tok: ( pl: 434 ln: 42
+Parser_test.cpp:366: Parse expr begin: token '(' (12)
+ type: 13 tok: E pl: 435 ln: 42
+ type: 15 tok: , pl: 436 ln: 42
+Parser_test.cpp:504: ARG  loop: token ',' (15)
+  type: 13 tok: A pl: 437 ln: 42
+ type: 15 tok: , pl: 438 ln: 42
+Parser_test.cpp:504: ARG  loop: token ',' (15)
+  type: 13 tok: PA pl: 439 ln: 42
+ type: 15 tok: , pl: 440 ln: 42
+Parser_test.cpp:504: ARG  loop: token ',' (15)
+  type: 13 tok: X1 pl: 441 ln: 42
+ type: 11 tok: ) pl: 442 ln: 42
+Parser_test.cpp:504: ARG  loop: token ')' (11)
+ type: 7 tok: ; pl: 443 ln: 42
+   type: 13 tok: PriorityB pl: 444 ln: 43
+Parser_test.cpp:368: Parse expr end: token 'PriorityB' (13)
+Parser_test.cpp:278: Module loop: token 'PriorityB' (13)
+ Type of func: 6
+  type: 13 tok: M2 pl: 445 ln: 43
+ type: 12 tok: ( pl: 446 ln: 43
+Parser_test.cpp:366: Parse expr begin: token '(' (12)
+ type: 13 tok: E pl: 447 ln: 43
+ type: 15 tok: , pl: 448 ln: 43
+Parser_test.cpp:504: ARG  loop: token ',' (15)
+  type: 13 tok: X1 pl: 449 ln: 43
+ type: 15 tok: , pl: 450 ln: 43
+Parser_test.cpp:504: ARG  loop: token ',' (15)
+  type: 13 tok: B pl: 451 ln: 43
+ type: 15 tok: , pl: 452 ln: 43
+Parser_test.cpp:504: ARG  loop: token ',' (15)
+  type: 13 tok: PB pl: 453 ln: 43
+ type: 15 tok: , pl: 454 ln: 43
+Parser_test.cpp:504: ARG  loop: token ',' (15)
+  type: 13 tok: X2 pl: 455 ln: 43
+ type: 11 tok: ) pl: 456 ln: 43
+Parser_test.cpp:504: ARG  loop: token ')' (11)
+ type: 7 tok: ; pl: 457 ln: 43
+   type: 13 tok: PriorityC pl: 458 ln: 44
+Parser_test.cpp:368: Parse expr end: token 'PriorityC' (13)
+Parser_test.cpp:278: Module loop: token 'PriorityC' (13)
+ Type of func: 6
+  type: 13 tok: M3 pl: 459 ln: 44
+ type: 12 tok: ( pl: 460 ln: 44
+Parser_test.cpp:366: Parse expr begin: token '(' (12)
+ type: 13 tok: E pl: 461 ln: 44
+ type: 15 tok: , pl: 462 ln: 44
+Parser_test.cpp:504: ARG  loop: token ',' (15)
+  type: 13 tok: X1 pl: 463 ln: 44
+ type: 15 tok: , pl: 464 ln: 44
+Parser_test.cpp:504: ARG  loop: token ',' (15)
+  type: 13 tok: X2 pl: 465 ln: 44
+ type: 15 tok: , pl: 466 ln: 44
+Parser_test.cpp:504: ARG  loop: token ',' (15)
+  type: 13 tok: C pl: 467 ln: 44
+ type: 15 tok: , pl: 468 ln: 44
+Parser_test.cpp:504: ARG  loop: token ',' (15)
+  type: 13 tok: PC pl: 469 ln: 44
+ type: 11 tok: ) pl: 470 ln: 44
+Parser_test.cpp:504: ARG  loop: token ')' (11)
+ type: 7 tok: ; pl: 471 ln: 44
+   type: 13 tok: EncodeChan pl: 472 ln: 45
+Parser_test.cpp:368: Parse expr end: token 'EncodeChan' (13)
+Parser_test.cpp:278: Module loop: token 'EncodeChan' (13)
+ Type of func: 6
+  type: 13 tok: M4 pl: 473 ln: 45
+ type: 12 tok: ( pl: 474 ln: 45
+Parser_test.cpp:366: Parse expr begin: token '(' (12)
+ type: 13 tok: E pl: 475 ln: 45
+ type: 15 tok: , pl: 476 ln: 45
+Parser_test.cpp:504: ARG  loop: token ',' (15)
+  type: 13 tok: A pl: 477 ln: 45
+ type: 15 tok: , pl: 478 ln: 45
+Parser_test.cpp:504: ARG  loop: token ',' (15)
+  type: 13 tok: B pl: 479 ln: 45
+ type: 15 tok: , pl: 480 ln: 45
+Parser_test.cpp:504: ARG  loop: token ',' (15)
+  type: 13 tok: C pl: 481 ln: 45
+ type: 15 tok: , pl: 482 ln: 45
+Parser_test.cpp:504: ARG  loop: token ',' (15)
+  type: 13 tok: PA pl: 483 ln: 45
+ type: 15 tok: , pl: 484 ln: 45
+Parser_test.cpp:504: ARG  loop: token ',' (15)
+  type: 13 tok: PB pl: 485 ln: 45
+ type: 15 tok: , pl: 486 ln: 45
+Parser_test.cpp:504: ARG  loop: token ',' (15)
+  type: 13 tok: PC pl: 487 ln: 45
+ type: 15 tok: , pl: 488 ln: 45
+Parser_test.cpp:504: ARG  loop: token ',' (15)
+  type: 13 tok: I pl: 489 ln: 45
+ type: 11 tok: ) pl: 490 ln: 45
+Parser_test.cpp:504: ARG  loop: token ')' (11)
+ type: 7 tok: ; pl: 491 ln: 45
+   type: 13 tok: DecodeChan pl: 492 ln: 46
+Parser_test.cpp:368: Parse expr end: token 'DecodeChan' (13)
+Parser_test.cpp:278: Module loop: token 'DecodeChan' (13)
+ Type of func: 6
+  type: 13 tok: M5 pl: 493 ln: 46
+ type: 12 tok: ( pl: 494 ln: 46
+Parser_test.cpp:366: Parse expr begin: token '(' (12)
+ type: 13 tok: I pl: 495 ln: 46
+ type: 15 tok: , pl: 496 ln: 46
+Parser_test.cpp:504: ARG  loop: token ',' (15)
+  type: 13 tok: Chan pl: 497 ln: 46
+ type: 11 tok: ) pl: 498 ln: 46
+Parser_test.cpp:504: ARG  loop: token ')' (11)
+ type: 7 tok: ; pl: 499 ln: 46
+ type: 2 tok: endmodule pl: 500 ln: 48
+Parser_test.cpp:368: Parse expr end: token 'endmodule' (2)
+Parser_test.cpp:233: Verilog loop: token 'endmodule' (2)
+  type: 1 tok: module pl: 501 ln: 52
+  type: 13 tok: PriorityA pl: 502 ln: 52
+ Type in modules: 6
+ type: 12 tok: ( pl: 503 ln: 52
+ type: 13 tok: E pl: 504 ln: 52
+ The first variable E
+ parent name: PriorityA
+ type: 15 tok: , pl: 505 ln: 52
+  type: 13 tok: A pl: 506 ln: 52
+ type: 15 tok: , pl: 507 ln: 52
+  type: 13 tok: PA pl: 508 ln: 52
+ type: 15 tok: , pl: 509 ln: 52
+  type: 13 tok: X1 pl: 510 ln: 52
+ type: 11 tok: ) pl: 511 ln: 52
+ type: 7 tok: ; pl: 512 ln: 52
+   type: 3 tok: input pl: 513 ln: 54
+Parser_test.cpp:278: Module loop: token 'input' (3)
+ type: 9 tok: [ pl: 514 ln: 54
+ type: 14 tok: 8 pl: 515 ln: 54
+ type: 8 tok: : pl: 516 ln: 54
+ type: 14 tok: 0 pl: 517 ln: 54
+ type: 10 tok: ] pl: 518 ln: 54
+  type: 13 tok: E pl: 519 ln: 54
+ type: 15 tok: , pl: 520 ln: 54
+  type: 13 tok: A pl: 521 ln: 54
+ type: 7 tok: ; pl: 522 ln: 54
+   type: 4 tok: output pl: 523 ln: 55
+Parser_test.cpp:278: Module loop: token 'output' (4)
+      type: 13 tok: PA pl: 524 ln: 55
+ type: 7 tok: ; pl: 525 ln: 55
+   type: 4 tok: output pl: 526 ln: 56
+Parser_test.cpp:278: Module loop: token 'output' (4)
+ type: 9 tok: [ pl: 527 ln: 56
+ type: 14 tok: 8 pl: 528 ln: 56
+ type: 8 tok: : pl: 529 ln: 56
+ type: 14 tok: 0 pl: 530 ln: 56
+ type: 10 tok: ] pl: 531 ln: 56
+  type: 13 tok: X1 pl: 532 ln: 56
+ type: 7 tok: ; pl: 533 ln: 56
+     type: 5 tok: wire pl: 534 ln: 58
+Parser_test.cpp:278: Module loop: token 'wire' (5)
+  type: 9 tok: [ pl: 535 ln: 58
+ type: 14 tok: 8 pl: 536 ln: 58
+ type: 8 tok: : pl: 537 ln: 58
+ type: 14 tok: 0 pl: 538 ln: 58
+ type: 10 tok: ] pl: 539 ln: 58
+  type: 13 tok: Ab pl: 540 ln: 58
+ parent name: PriorityA
+ type: 15 tok: , pl: 541 ln: 58
+  type: 13 tok: EAb pl: 542 ln: 58
+ parent name: PriorityA
+ type: 7 tok: ; pl: 543 ln: 58
+   type: 18 tok: not pl: 544 ln: 60
+Parser_test.cpp:278: Module loop: token 'not' (18)
+  type: 13 tok: Ab0 pl: 545 ln: 60
+current area: PriorityA
+ type: 12 tok: ( pl: 546 ln: 60
+Parser_test.cpp:387: Parse expr begin: token '(' (12)
+ type: 13 tok: Ab pl: 547 ln: 60
+ type: 9 tok: [ pl: 548 ln: 60
+Parser_test.cpp:398: ARG  loop: token '[' (9)
+ type: 14 tok: 0 pl: 549 ln: 60
+ type: 10 tok: ] pl: 550 ln: 60
+ type: 15 tok: , pl: 551 ln: 60
+  type: 13 tok: A pl: 552 ln: 60
+ type: 9 tok: [ pl: 553 ln: 60
+Parser_test.cpp:398: ARG  loop: token '[' (9)
+ type: 14 tok: 0 pl: 554 ln: 60
+ type: 10 tok: ] pl: 555 ln: 60
+ type: 11 tok: ) pl: 556 ln: 60
+ type: 7 tok: ; pl: 557 ln: 60
+   type: 18 tok: not pl: 558 ln: 61
+Parser_test.cpp:415: Parse expr end: token 'not' (18)
+Parser_test.cpp:278: Module loop: token 'not' (18)
+  type: 13 tok: Ab1 pl: 559 ln: 61
+current area: PriorityA
+ type: 12 tok: ( pl: 560 ln: 61
+Parser_test.cpp:387: Parse expr begin: token '(' (12)
+ type: 13 tok: Ab pl: 561 ln: 61
+ type: 9 tok: [ pl: 562 ln: 61
+Parser_test.cpp:398: ARG  loop: token '[' (9)
+ type: 14 tok: 1 pl: 563 ln: 61
+ type: 10 tok: ] pl: 564 ln: 61
+ type: 15 tok: , pl: 565 ln: 61
+  type: 13 tok: A pl: 566 ln: 61
+ type: 9 tok: [ pl: 567 ln: 61
+Parser_test.cpp:398: ARG  loop: token '[' (9)
+ type: 14 tok: 1 pl: 568 ln: 61
+ type: 10 tok: ] pl: 569 ln: 61
+ type: 11 tok: ) pl: 570 ln: 61
+ type: 7 tok: ; pl: 571 ln: 61
+   type: 18 tok: not pl: 572 ln: 62
+Parser_test.cpp:415: Parse expr end: token 'not' (18)
+Parser_test.cpp:278: Module loop: token 'not' (18)
+  type: 13 tok: Ab2 pl: 573 ln: 62
+current area: PriorityA
+ type: 12 tok: ( pl: 574 ln: 62
+Parser_test.cpp:387: Parse expr begin: token '(' (12)
+ type: 13 tok: Ab pl: 575 ln: 62
+ type: 9 tok: [ pl: 576 ln: 62
+Parser_test.cpp:398: ARG  loop: token '[' (9)
+ type: 14 tok: 2 pl: 577 ln: 62
+ type: 10 tok: ] pl: 578 ln: 62
+ type: 15 tok: , pl: 579 ln: 62
+  type: 13 tok: A pl: 580 ln: 62
+ type: 9 tok: [ pl: 581 ln: 62
+Parser_test.cpp:398: ARG  loop: token '[' (9)
+ type: 14 tok: 2 pl: 582 ln: 62
+ type: 10 tok: ] pl: 583 ln: 62
+ type: 11 tok: ) pl: 584 ln: 62
+ type: 7 tok: ; pl: 585 ln: 62
+   type: 18 tok: not pl: 586 ln: 63
+Parser_test.cpp:415: Parse expr end: token 'not' (18)
+Parser_test.cpp:278: Module loop: token 'not' (18)
+  type: 13 tok: Ab3 pl: 587 ln: 63
+current area: PriorityA
+ type: 12 tok: ( pl: 588 ln: 63
+Parser_test.cpp:387: Parse expr begin: token '(' (12)
+ type: 13 tok: Ab pl: 589 ln: 63
+ type: 9 tok: [ pl: 590 ln: 63
+Parser_test.cpp:398: ARG  loop: token '[' (9)
+ type: 14 tok: 3 pl: 591 ln: 63
+ type: 10 tok: ] pl: 592 ln: 63
+ type: 15 tok: , pl: 593 ln: 63
+  type: 13 tok: A pl: 594 ln: 63
+ type: 9 tok: [ pl: 595 ln: 63
+Parser_test.cpp:398: ARG  loop: token '[' (9)
+ type: 14 tok: 3 pl: 596 ln: 63
+ type: 10 tok: ] pl: 597 ln: 63
+ type: 11 tok: ) pl: 598 ln: 63
+ type: 7 tok: ; pl: 599 ln: 63
+   type: 18 tok: not pl: 600 ln: 64
+Parser_test.cpp:415: Parse expr end: token 'not' (18)
+Parser_test.cpp:278: Module loop: token 'not' (18)
+  type: 13 tok: Ab4 pl: 601 ln: 64
+current area: PriorityA
+ type: 12 tok: ( pl: 602 ln: 64
+Parser_test.cpp:387: Parse expr begin: token '(' (12)
+ type: 13 tok: Ab pl: 603 ln: 64
+ type: 9 tok: [ pl: 604 ln: 64
+Parser_test.cpp:398: ARG  loop: token '[' (9)
+ type: 14 tok: 4 pl: 605 ln: 64
+ type: 10 tok: ] pl: 606 ln: 64
+ type: 15 tok: , pl: 607 ln: 64
+  type: 13 tok: A pl: 608 ln: 64
+ type: 9 tok: [ pl: 609 ln: 64
+Parser_test.cpp:398: ARG  loop: token '[' (9)
+ type: 14 tok: 4 pl: 610 ln: 64
+ type: 10 tok: ] pl: 611 ln: 64
+ type: 11 tok: ) pl: 612 ln: 64
+ type: 7 tok: ; pl: 613 ln: 64
+   type: 18 tok: not pl: 614 ln: 65
+Parser_test.cpp:415: Parse expr end: token 'not' (18)
+Parser_test.cpp:278: Module loop: token 'not' (18)
+  type: 13 tok: Ab5 pl: 615 ln: 65
+current area: PriorityA
+ type: 12 tok: ( pl: 616 ln: 65
+Parser_test.cpp:387: Parse expr begin: token '(' (12)
+ type: 13 tok: Ab pl: 617 ln: 65
+ type: 9 tok: [ pl: 618 ln: 65
+Parser_test.cpp:398: ARG  loop: token '[' (9)
+ type: 14 tok: 5 pl: 619 ln: 65
+ type: 10 tok: ] pl: 620 ln: 65
+ type: 15 tok: , pl: 621 ln: 65
+  type: 13 tok: A pl: 622 ln: 65
+ type: 9 tok: [ pl: 623 ln: 65
+Parser_test.cpp:398: ARG  loop: token '[' (9)
+ type: 14 tok: 5 pl: 624 ln: 65
+ type: 10 tok: ] pl: 625 ln: 65
+ type: 11 tok: ) pl: 626 ln: 65
+ type: 7 tok: ; pl: 627 ln: 65
+   type: 18 tok: not pl: 628 ln: 66
+Parser_test.cpp:415: Parse expr end: token 'not' (18)
+Parser_test.cpp:278: Module loop: token 'not' (18)
+  type: 13 tok: Ab6 pl: 629 ln: 66
+current area: PriorityA
+ type: 12 tok: ( pl: 630 ln: 66
+Parser_test.cpp:387: Parse expr begin: token '(' (12)
+ type: 13 tok: Ab pl: 631 ln: 66
+ type: 9 tok: [ pl: 632 ln: 66
+Parser_test.cpp:398: ARG  loop: token '[' (9)
+ type: 14 tok: 6 pl: 633 ln: 66
+ type: 10 tok: ] pl: 634 ln: 66
+ type: 15 tok: , pl: 635 ln: 66
+  type: 13 tok: A pl: 636 ln: 66
+ type: 9 tok: [ pl: 637 ln: 66
+Parser_test.cpp:398: ARG  loop: token '[' (9)
+ type: 14 tok: 6 pl: 638 ln: 66
+ type: 10 tok: ] pl: 639 ln: 66
+ type: 11 tok: ) pl: 640 ln: 66
+ type: 7 tok: ; pl: 641 ln: 66
+   type: 18 tok: not pl: 642 ln: 67
+Parser_test.cpp:415: Parse expr end: token 'not' (18)
+Parser_test.cpp:278: Module loop: token 'not' (18)
+  type: 13 tok: Ab7 pl: 643 ln: 67
+current area: PriorityA
+ type: 12 tok: ( pl: 644 ln: 67
+Parser_test.cpp:387: Parse expr begin: token '(' (12)
+ type: 13 tok: Ab pl: 645 ln: 67
+ type: 9 tok: [ pl: 646 ln: 67
+Parser_test.cpp:398: ARG  loop: token '[' (9)
+ type: 14 tok: 7 pl: 647 ln: 67
+ type: 10 tok: ] pl: 648 ln: 67
+ type: 15 tok: , pl: 649 ln: 67
+  type: 13 tok: A pl: 650 ln: 67
+ type: 9 tok: [ pl: 651 ln: 67
+Parser_test.cpp:398: ARG  loop: token '[' (9)
+ type: 14 tok: 7 pl: 652 ln: 67
+ type: 10 tok: ] pl: 653 ln: 67
+ type: 11 tok: ) pl: 654 ln: 67
+ type: 7 tok: ; pl: 655 ln: 67
+   type: 18 tok: not pl: 656 ln: 68
+Parser_test.cpp:415: Parse expr end: token 'not' (18)
+Parser_test.cpp:278: Module loop: token 'not' (18)
+  type: 13 tok: Ab8 pl: 657 ln: 68
+current area: PriorityA
+ type: 12 tok: ( pl: 658 ln: 68
+Parser_test.cpp:387: Parse expr begin: token '(' (12)
+ type: 13 tok: Ab pl: 659 ln: 68
+ type: 9 tok: [ pl: 660 ln: 68
+Parser_test.cpp:398: ARG  loop: token '[' (9)
+ type: 14 tok: 8 pl: 661 ln: 68
+ type: 10 tok: ] pl: 662 ln: 68
+ type: 15 tok: , pl: 663 ln: 68
+  type: 13 tok: A pl: 664 ln: 68
+ type: 9 tok: [ pl: 665 ln: 68
+Parser_test.cpp:398: ARG  loop: token '[' (9)
+ type: 14 tok: 8 pl: 666 ln: 68
+ type: 10 tok: ] pl: 667 ln: 68
+ type: 11 tok: ) pl: 668 ln: 68
+ type: 7 tok: ; pl: 669 ln: 68
+       type: 19 tok: nand pl: 670 ln: 70
+Parser_test.cpp:415: Parse expr end: token 'nand' (19)
+Parser_test.cpp:278: Module loop: token 'nand' (19)
+  type: 13 tok: EAb0 pl: 671 ln: 70
+current area: PriorityA
+ type: 12 tok: ( pl: 672 ln: 70
+Parser_test.cpp:387: Parse expr begin: token '(' (12)
+ type: 13 tok: EAb pl: 673 ln: 70
+ type: 9 tok: [ pl: 674 ln: 70
+Parser_test.cpp:398: ARG  loop: token '[' (9)
+ type: 14 tok: 0 pl: 675 ln: 70
+ type: 10 tok: ] pl: 676 ln: 70
+ type: 15 tok: , pl: 677 ln: 70
+  type: 13 tok: Ab pl: 678 ln: 70
+ type: 9 tok: [ pl: 679 ln: 70
+Parser_test.cpp:398: ARG  loop: token '[' (9)
+ type: 14 tok: 0 pl: 680 ln: 70
+ type: 10 tok: ] pl: 681 ln: 70
+ type: 15 tok: , pl: 682 ln: 70
+  type: 13 tok: E pl: 683 ln: 70
+ type: 9 tok: [ pl: 684 ln: 70
+Parser_test.cpp:398: ARG  loop: token '[' (9)
+ type: 14 tok: 0 pl: 685 ln: 70
+ type: 10 tok: ] pl: 686 ln: 70
+ type: 11 tok: ) pl: 687 ln: 70
+ type: 7 tok: ; pl: 688 ln: 70
+    type: 19 tok: nand pl: 689 ln: 71
+Parser_test.cpp:415: Parse expr end: token 'nand' (19)
+Parser_test.cpp:278: Module loop: token 'nand' (19)
+  type: 13 tok: EAb1 pl: 690 ln: 71
+current area: PriorityA
+ type: 12 tok: ( pl: 691 ln: 71
+Parser_test.cpp:387: Parse expr begin: token '(' (12)
+ type: 13 tok: EAb pl: 692 ln: 71
+ type: 9 tok: [ pl: 693 ln: 71
+Parser_test.cpp:398: ARG  loop: token '[' (9)
+ type: 14 tok: 1 pl: 694 ln: 71
+ type: 10 tok: ] pl: 695 ln: 71
+ type: 15 tok: , pl: 696 ln: 71
+  type: 13 tok: Ab pl: 697 ln: 71
+ type: 9 tok: [ pl: 698 ln: 71
+Parser_test.cpp:398: ARG  loop: token '[' (9)
+ type: 14 tok: 1 pl: 699 ln: 71
+ type: 10 tok: ] pl: 700 ln: 71
+ type: 15 tok: , pl: 701 ln: 71
+  type: 13 tok: E pl: 702 ln: 71
+ type: 9 tok: [ pl: 703 ln: 71
+Parser_test.cpp:398: ARG  loop: token '[' (9)
+ type: 14 tok: 1 pl: 704 ln: 71
+ type: 10 tok: ] pl: 705 ln: 71
+ type: 11 tok: ) pl: 706 ln: 71
+ type: 7 tok: ; pl: 707 ln: 71
+    type: 19 tok: nand pl: 708 ln: 72
+Parser_test.cpp:415: Parse expr end: token 'nand' (19)
+Parser_test.cpp:278: Module loop: token 'nand' (19)
+  type: 13 tok: EAb2 pl: 709 ln: 72
+current area: PriorityA
+ type: 12 tok: ( pl: 710 ln: 72
+Parser_test.cpp:387: Parse expr begin: token '(' (12)
+ type: 13 tok: EAb pl: 711 ln: 72
+ type: 9 tok: [ pl: 712 ln: 72
+Parser_test.cpp:398: ARG  loop: token '[' (9)
+ type: 14 tok: 2 pl: 713 ln: 72
+ type: 10 tok: ] pl: 714 ln: 72
+ type: 15 tok: , pl: 715 ln: 72
+  type: 13 tok: Ab pl: 716 ln: 72
+ type: 9 tok: [ pl: 717 ln: 72
+Parser_test.cpp:398: ARG  loop: token '[' (9)
+ type: 14 tok: 2 pl: 718 ln: 72
+ type: 10 tok: ] pl: 719 ln: 72
+ type: 15 tok: , pl: 720 ln: 72
+  type: 13 tok: E pl: 721 ln: 72
+ type: 9 tok: [ pl: 722 ln: 72
+Parser_test.cpp:398: ARG  loop: token '[' (9)
+ type: 14 tok: 2 pl: 723 ln: 72
+ type: 10 tok: ] pl: 724 ln: 72
+ type: 11 tok: ) pl: 725 ln: 72
+ type: 7 tok: ; pl: 726 ln: 72
+    type: 19 tok: nand pl: 727 ln: 73
+Parser_test.cpp:415: Parse expr end: token 'nand' (19)
+Parser_test.cpp:278: Module loop: token 'nand' (19)
+  type: 13 tok: EAb3 pl: 728 ln: 73
+current area: PriorityA
+ type: 12 tok: ( pl: 729 ln: 73
+Parser_test.cpp:387: Parse expr begin: token '(' (12)
+ type: 13 tok: EAb pl: 730 ln: 73
+ type: 9 tok: [ pl: 731 ln: 73
+Parser_test.cpp:398: ARG  loop: token '[' (9)
+ type: 14 tok: 3 pl: 732 ln: 73
+ type: 10 tok: ] pl: 733 ln: 73
+ type: 15 tok: , pl: 734 ln: 73
+  type: 13 tok: Ab pl: 735 ln: 73
+ type: 9 tok: [ pl: 736 ln: 73
+Parser_test.cpp:398: ARG  loop: token '[' (9)
+ type: 14 tok: 3 pl: 737 ln: 73
+ type: 10 tok: ] pl: 738 ln: 73
+ type: 15 tok: , pl: 739 ln: 73
+  type: 13 tok: E pl: 740 ln: 73
+ type: 9 tok: [ pl: 741 ln: 73
+Parser_test.cpp:398: ARG  loop: token '[' (9)
+ type: 14 tok: 3 pl: 742 ln: 73
+ type: 10 tok: ] pl: 743 ln: 73
+ type: 11 tok: ) pl: 744 ln: 73
+ type: 7 tok: ; pl: 745 ln: 73
+    type: 19 tok: nand pl: 746 ln: 74
+Parser_test.cpp:415: Parse expr end: token 'nand' (19)
+Parser_test.cpp:278: Module loop: token 'nand' (19)
+  type: 13 tok: EAb4 pl: 747 ln: 74
+current area: PriorityA
+ type: 12 tok: ( pl: 748 ln: 74
+Parser_test.cpp:387: Parse expr begin: token '(' (12)
+ type: 13 tok: EAb pl: 749 ln: 74
+ type: 9 tok: [ pl: 750 ln: 74
+Parser_test.cpp:398: ARG  loop: token '[' (9)
+ type: 14 tok: 4 pl: 751 ln: 74
+ type: 10 tok: ] pl: 752 ln: 74
+ type: 15 tok: , pl: 753 ln: 74
+  type: 13 tok: Ab pl: 754 ln: 74
+ type: 9 tok: [ pl: 755 ln: 74
+Parser_test.cpp:398: ARG  loop: token '[' (9)
+ type: 14 tok: 4 pl: 756 ln: 74
+ type: 10 tok: ] pl: 757 ln: 74
+ type: 15 tok: , pl: 758 ln: 74
+  type: 13 tok: E pl: 759 ln: 74
+ type: 9 tok: [ pl: 760 ln: 74
+Parser_test.cpp:398: ARG  loop: token '[' (9)
+ type: 14 tok: 4 pl: 761 ln: 74
+ type: 10 tok: ] pl: 762 ln: 74
+ type: 11 tok: ) pl: 763 ln: 74
+ type: 7 tok: ; pl: 764 ln: 74
+    type: 19 tok: nand pl: 765 ln: 75
+Parser_test.cpp:415: Parse expr end: token 'nand' (19)
+Parser_test.cpp:278: Module loop: token 'nand' (19)
+  type: 13 tok: EAb5 pl: 766 ln: 75
+current area: PriorityA
+ type: 12 tok: ( pl: 767 ln: 75
+Parser_test.cpp:387: Parse expr begin: token '(' (12)
+ type: 13 tok: EAb pl: 768 ln: 75
+ type: 9 tok: [ pl: 769 ln: 75
+Parser_test.cpp:398: ARG  loop: token '[' (9)
+ type: 14 tok: 5 pl: 770 ln: 75
+ type: 10 tok: ] pl: 771 ln: 75
+ type: 15 tok: , pl: 772 ln: 75
+  type: 13 tok: Ab pl: 773 ln: 75
+ type: 9 tok: [ pl: 774 ln: 75
+Parser_test.cpp:398: ARG  loop: token '[' (9)
+ type: 14 tok: 5 pl: 775 ln: 75
+ type: 10 tok: ] pl: 776 ln: 75
+ type: 15 tok: , pl: 777 ln: 75
+  type: 13 tok: E pl: 778 ln: 75
+ type: 9 tok: [ pl: 779 ln: 75
+Parser_test.cpp:398: ARG  loop: token '[' (9)
+ type: 14 tok: 5 pl: 780 ln: 75
+ type: 10 tok: ] pl: 781 ln: 75
+ type: 11 tok: ) pl: 782 ln: 75
+ type: 7 tok: ; pl: 783 ln: 75
+    type: 19 tok: nand pl: 784 ln: 76
+Parser_test.cpp:415: Parse expr end: token 'nand' (19)
+Parser_test.cpp:278: Module loop: token 'nand' (19)
+  type: 13 tok: EAb6 pl: 785 ln: 76
+current area: PriorityA
+ type: 12 tok: ( pl: 786 ln: 76
+Parser_test.cpp:387: Parse expr begin: token '(' (12)
+ type: 13 tok: EAb pl: 787 ln: 76
+ type: 9 tok: [ pl: 788 ln: 76
+Parser_test.cpp:398: ARG  loop: token '[' (9)
+ type: 14 tok: 6 pl: 789 ln: 76
+ type: 10 tok: ] pl: 790 ln: 76
+ type: 15 tok: , pl: 791 ln: 76
+  type: 13 tok: Ab pl: 792 ln: 76
+ type: 9 tok: [ pl: 793 ln: 76
+Parser_test.cpp:398: ARG  loop: token '[' (9)
+ type: 14 tok: 6 pl: 794 ln: 76
+ type: 10 tok: ] pl: 795 ln: 76
+ type: 15 tok: , pl: 796 ln: 76
+  type: 13 tok: E pl: 797 ln: 76
+ type: 9 tok: [ pl: 798 ln: 76
+Parser_test.cpp:398: ARG  loop: token '[' (9)
+ type: 14 tok: 6 pl: 799 ln: 76
+ type: 10 tok: ] pl: 800 ln: 76
+ type: 11 tok: ) pl: 801 ln: 76
+ type: 7 tok: ; pl: 802 ln: 76
+    type: 19 tok: nand pl: 803 ln: 77
+Parser_test.cpp:415: Parse expr end: token 'nand' (19)
+Parser_test.cpp:278: Module loop: token 'nand' (19)
+  type: 13 tok: EAb7 pl: 804 ln: 77
+current area: PriorityA
+ type: 12 tok: ( pl: 805 ln: 77
+Parser_test.cpp:387: Parse expr begin: token '(' (12)
+ type: 13 tok: EAb pl: 806 ln: 77
+ type: 9 tok: [ pl: 807 ln: 77
+Parser_test.cpp:398: ARG  loop: token '[' (9)
+ type: 14 tok: 7 pl: 808 ln: 77
+ type: 10 tok: ] pl: 809 ln: 77
+ type: 15 tok: , pl: 810 ln: 77
+  type: 13 tok: Ab pl: 811 ln: 77
+ type: 9 tok: [ pl: 812 ln: 77
+Parser_test.cpp:398: ARG  loop: token '[' (9)
+ type: 14 tok: 7 pl: 813 ln: 77
+ type: 10 tok: ] pl: 814 ln: 77
+ type: 15 tok: , pl: 815 ln: 77
+  type: 13 tok: E pl: 816 ln: 77
+ type: 9 tok: [ pl: 817 ln: 77
+Parser_test.cpp:398: ARG  loop: token '[' (9)
+ type: 14 tok: 7 pl: 818 ln: 77
+ type: 10 tok: ] pl: 819 ln: 77
+ type: 11 tok: ) pl: 820 ln: 77
+ type: 7 tok: ; pl: 821 ln: 77
+    type: 19 tok: nand pl: 822 ln: 78
+Parser_test.cpp:415: Parse expr end: token 'nand' (19)
+Parser_test.cpp:278: Module loop: token 'nand' (19)
+  type: 13 tok: EAb8 pl: 823 ln: 78
+current area: PriorityA
+ type: 12 tok: ( pl: 824 ln: 78
+Parser_test.cpp:387: Parse expr begin: token '(' (12)
+ type: 13 tok: EAb pl: 825 ln: 78
+ type: 9 tok: [ pl: 826 ln: 78
+Parser_test.cpp:398: ARG  loop: token '[' (9)
+ type: 14 tok: 8 pl: 827 ln: 78
+ type: 10 tok: ] pl: 828 ln: 78
+ type: 15 tok: , pl: 829 ln: 78
+  type: 13 tok: Ab pl: 830 ln: 78
+ type: 9 tok: [ pl: 831 ln: 78
+Parser_test.cpp:398: ARG  loop: token '[' (9)
+ type: 14 tok: 8 pl: 832 ln: 78
+ type: 10 tok: ] pl: 833 ln: 78
+ type: 15 tok: , pl: 834 ln: 78
+  type: 13 tok: E pl: 835 ln: 78
+ type: 9 tok: [ pl: 836 ln: 78
+Parser_test.cpp:398: ARG  loop: token '[' (9)
+ type: 14 tok: 8 pl: 837 ln: 78
+ type: 10 tok: ] pl: 838 ln: 78
+ type: 11 tok: ) pl: 839 ln: 78
+ type: 7 tok: ; pl: 840 ln: 78
+    type: 20 tok: and pl: 841 ln: 80
+Parser_test.cpp:415: Parse expr end: token 'and' (20)
+Parser_test.cpp:278: Module loop: token 'and' (20)
+  type: 13 tok: PAigate pl: 842 ln: 80
+current area: PriorityA
+ type: 12 tok: ( pl: 843 ln: 80
+Parser_test.cpp:387: Parse expr begin: token '(' (12)
+ type: 13 tok: PAi pl: 844 ln: 80
+ type: 15 tok: , pl: 845 ln: 80
+Parser_test.cpp:398: ARG  loop: token ',' (15)
+ type: 13 tok: EAb pl: 846 ln: 80
+ type: 9 tok: [ pl: 847 ln: 80
+Parser_test.cpp:398: ARG  loop: token '[' (9)
+ type: 14 tok: 0 pl: 848 ln: 80
+ type: 10 tok: ] pl: 849 ln: 80
+ type: 15 tok: , pl: 850 ln: 80
+ type: 13 tok: EAb pl: 851 ln: 80
+ type: 9 tok: [ pl: 852 ln: 80
+Parser_test.cpp:398: ARG  loop: token '[' (9)
+ type: 14 tok: 1 pl: 853 ln: 80
+ type: 10 tok: ] pl: 854 ln: 80
+ type: 15 tok: , pl: 855 ln: 80
+ type: 13 tok: EAb pl: 856 ln: 80
+ type: 9 tok: [ pl: 857 ln: 80
+Parser_test.cpp:398: ARG  loop: token '[' (9)
+ type: 14 tok: 2 pl: 858 ln: 80
+ type: 10 tok: ] pl: 859 ln: 80
+ type: 15 tok: , pl: 860 ln: 80
+ type: 13 tok: EAb pl: 861 ln: 80
+ type: 9 tok: [ pl: 862 ln: 80
+Parser_test.cpp:398: ARG  loop: token '[' (9)
+ type: 14 tok: 3 pl: 863 ln: 80
+ type: 10 tok: ] pl: 864 ln: 80
+ type: 15 tok: , pl: 865 ln: 80
+ type: 13 tok: EAb pl: 866 ln: 80
+ type: 9 tok: [ pl: 867 ln: 80
+Parser_test.cpp:398: ARG  loop: token '[' (9)
+ type: 14 tok: 4 pl: 868 ln: 80
+ type: 10 tok: ] pl: 869 ln: 80
+ type: 15 tok: , pl: 870 ln: 80
+ type: 13 tok: EAb pl: 871 ln: 80
+ type: 9 tok: [ pl: 872 ln: 80
+Parser_test.cpp:398: ARG  loop: token '[' (9)
+ type: 14 tok: 5 pl: 873 ln: 80
+ type: 10 tok: ] pl: 874 ln: 80
+ type: 15 tok: , pl: 875 ln: 80
+ type: 13 tok: EAb pl: 876 ln: 80
+ type: 9 tok: [ pl: 877 ln: 80
+Parser_test.cpp:398: ARG  loop: token '[' (9)
+ type: 14 tok: 6 pl: 878 ln: 80
+ type: 10 tok: ] pl: 879 ln: 80
+ type: 11 tok: ) pl: 880 ln: 80
+Count of arguments of this logic gate is wrong: PAigate
+line: 80

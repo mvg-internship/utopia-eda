@@ -36,6 +36,13 @@ output  { return OUTPUT; }
 wire    { return WIRE; }
 reg     { return REG; }
 assign  { return ASSIGN; }
+not     { return NOT; }
+nand    { return NAND; }
+and     { return AND; }
+xor     { return XOR; }
+nor     { return NOR; }
+
+
 
 ";"     { return SEMICOLON; }
 ":"     { return COLON; }
