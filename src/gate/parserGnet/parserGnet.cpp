@@ -367,7 +367,7 @@ static void createOutput(
 }
 
 bool translateModuleToGNet(
-    const RTlil::Module* m,
+    const RTlil::Module *m,
     eda::gate::model::GNet &net) {
   std::map<size_t, GateId> inputs;
   std::map<size_t, std::pair<size_t, size_t>> cell;
@@ -394,9 +394,9 @@ void translateDesignToGNet(
     bool isMem = translateModuleToGNet(Module, *net);
     net->sortTopologically();
     if (isMem) {
-      vec.memNets.push_back(*net);
+      vec.memNets.push_back(std::move(net));
     } else {
-      vec.combNets.push_back(*net);
+      vec.combNets.push_back(std::move(net));
     }
   }
 }
@@ -411,7 +411,7 @@ void translateLibertyToDesign(
 }
 
 std::vector<uint64_t> truthTab(
-    std::unique_ptr<const eda::gate::model::GNet> net) {
+    const GModel::GNet *net) {
   static Simulator simulator;
   Gate::LinkList in, out;
   for (auto link: net->sourceLinks()) {

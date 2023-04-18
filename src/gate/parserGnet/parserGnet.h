@@ -14,12 +14,12 @@
 #include <vector>
 
 struct NetData {
-    std::vector<eda::gate::model::GNet> combNets;
-    std::vector<eda::gate::model::GNet> memNets;
+    std::vector<std::unique_ptr<eda::gate::model::GNet>> combNets;
+    std::vector<std::unique_ptr<eda::gate::model::GNet>> memNets;
 };
 
 void translateModuleToGNet(
-    const Yosys::RTLIL::Module &m,
+    const Yosys::RTLIL::Module *m,
     NetData &net);
 
 void translateDesignToGNet(
@@ -31,4 +31,4 @@ void translateLibertyToDesign(
     NetData &vec);
 
 std::vector<uint64_t> truthTab(
-    std::unique_ptr<const eda::gate::model::GNet> net);
+    const eda::gate::model::GNet *net);
