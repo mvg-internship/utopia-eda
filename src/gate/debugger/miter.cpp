@@ -18,13 +18,13 @@ bool areMiterable(GNet *net1, GNet *net2, Hints &hints) {
 
   for (auto sourceLink : net1->sourceLinks()) {
     if (hints.sourceBinding.get()->find(sourceLink) == hints.sourceBinding.get()->end()) {
-      CHECK(false) << "Incorrect correspondence structure\n";
+      CHECK(false) << "Unable to find source with id " << sourceLink.target << '\n';
       return false;
     }
   }
   for (auto targetLink : net1->targetLinks()) {
     if (hints.targetBinding.get()->find(targetLink) == hints.sourceBinding.get()->end()) {
-      CHECK(false) << "Incorrect correspondence structure\n";
+      CHECK(false) << "Unable to find target with id " << targetLink.source << '\n';
       return false;
     }
   }

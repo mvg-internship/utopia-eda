@@ -25,7 +25,7 @@ using SignalList = model::Gate::SignalList;
 
 /** 
  *  \brief Constructs a miter for the specified nets.
- *  @param hints Stores correspondence between gates. 
+ *  @param hints Gate-to-gate mapping between nets. 
  *  @return The miter.
  */
 GNet *miter(GNet *net1, GNet *net2, Hints &hints);

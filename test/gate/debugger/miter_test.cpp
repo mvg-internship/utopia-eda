@@ -17,21 +17,24 @@ using namespace eda::gate::model;
 TEST(MiterTest, MiterStructureTest) {
   GNet* net = new GNet();
   SignalList inps1;
-  for (int i = 0; i < 100; i++) {
+  int nAndInputs = 100;
+  for (int i = 0; i < nAndInputs; i++) {
     GateId inId1 = net->addIn();
     inps1.push_back(Signal::always(inId1));
   }
   GateId andId = net->addGate(GateSymbol::AND, inps1);
   GateId outId = net->addOut(andId);
   SignalList inps2;
-  for (int i = 0; i < 100; i++) {
+  int nNorInputs = 100;
+  for (int i = 0; i < nNorInputs; i++) {
     GateId inId2 = net->addIn();
     inps2.push_back(Signal::always(inId2));
   }
   GateId norId = net->addGate(GateSymbol::NOR, inps2);
   net->addOut(norId);
+  int nOrOutputs = 100;
   GateId orId = net->addGate(GateSymbol::OR, inps1);
-  for (int i = 0; i < 100; i++) {
+  for (int i = 0; i < nOrOutputs; i++) {
     outId = net->addOut(orId);
   }
   net->addOut(orId);
@@ -42,14 +45,12 @@ TEST(MiterTest, MiterStructureTest) {
 
   // Input-to-input correspondence.
   for (auto oldSourceLink : net->sourceLinks()) {
-    
     auto newSourceId = testMap[oldSourceLink.target];
     ibind.insert({oldSourceLink, Gate::Link(newSourceId)});
   }
 
   // Output-to-output correspondence.
   for (auto oldTargetLink : net->targetLinks()) {
-
     auto newTargetId = testMap[oldTargetLink.source];
     obind.insert({oldTargetLink, Gate::Link(newTargetId)});
   }
