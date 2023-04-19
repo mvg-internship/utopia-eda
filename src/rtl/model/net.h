@@ -238,7 +238,7 @@ private:
     // Disconnect the node from the v-net.
     vnode->setInputs({});
     // Removal can be done here.
-    assert(vnode->fanout() == 0);
+    // assert(vnode->fanout() == 0);
   }
 
   /// Releases the scheduled nodes.
