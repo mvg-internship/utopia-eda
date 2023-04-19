@@ -2,7 +2,7 @@
 //
 // Part of the Utopia EDA Project, under the Apache License v2.0
 // SPDX-License-Identifier: Apache-2.0
-// Copyright 2021 ISP RAS (http://www.ispras.ru)
+// Copyright 2022 ISP RAS (http://www.ispras.ru)
 //
 //===----------------------------------------------------------------------===//
 
@@ -29,8 +29,6 @@ bool adderTest(FuncSymbol func, const size_t size) {
 
   for (size_t n = 0; n < size; n++) {
     term1.push_back(net.addIn());
-  }
-  for (size_t n = 0; n < size; n++) {
     term2.push_back(net.addIn());
   }
 
