@@ -22,6 +22,7 @@ endif()
 enable_testing()
 
 add_executable(utest
+  gate/debugger/bdd_checker_test.cpp
   gate/debugger/checker_test.cpp
   gate/debugger/miter_test.cpp
   gate/model/gnet_test.cpp

@@ -1,4 +1,5 @@
 add_library(Gate OBJECT
+  debugger/bdd_checker.cpp
   debugger/encoder.cpp
   debugger/checker.cpp
   debugger/miter.cpp
