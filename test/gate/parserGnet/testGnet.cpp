@@ -1,62 +1,65 @@
 #include "gate/parserGnet/parserGnet.h"
 #include "gtest/gtest.h"
 
+#include <filesystem>
+
 namespace GModel = eda::gate::model;
 
 using eda::gate::model::GateSymbol;
 using GateId = eda::gate::model::Gate::Id;
 
-static std::unique_ptr<GModel::GNet> createLogicGate1(
+static std::unique_ptr<GModel::GNet> createLogicGate(
     GateSymbol symbol) {
   std::unique_ptr<GModel::GNet> net = std::make_unique<GModel::GNet>();
   GateId a = net->addIn();
-  GateId out = net->addGate(symbol, a);
+  GateId out;
+  if (symbol != GateSymbol::NOP && symbol != GateSymbol::NOT) {
+    GateId b = net->addIn();
+    out = net->addGate(symbol, a, b);
+  } else {
+    out = net->addGate(symbol, a);
+  }
   net->addOut(out);
   net->sortTopologically();
   return net;
 }
 
-static std::unique_ptr<GModel::GNet> createLogicGate2(
-    GateSymbol symbol) {
-  std::unique_ptr<GModel::GNet> net = std::make_unique<GModel::GNet>();
-  GateId a = net->addIn();
-  GateId b = net->addIn();
-  GateId out = net->addGate(symbol, a, b);
-  net->addOut(out);
-  net->sortTopologically();
-  return net;
+inline static NetData libertyGnet() {
+  NetData vec;
+  const std::filesystem::path subCatalog = "test/data/gate/parserGnet";
+  const std::filesystem::path homePath = std::string(getenv("UTOPIA_HOME"));
+  const std::filesystem::path prefixPath = homePath / subCatalog;
+  const std::string filenames = prefixPath / "normal1.lib";
+  translateLibertyToDesign(filenames, vec);
+  return vec;
 }
 
-static void fillSource(NetData &source) {
-  auto bufGate = createLogicGate1(GateSymbol::NOP);
-  auto notGate = createLogicGate1(GateSymbol::NOT);
-  auto xorGate = createLogicGate2(GateSymbol::XOR);
-  auto orGate = createLogicGate2(GateSymbol::OR);
-  auto andGate = createLogicGate2(GateSymbol::AND);
-  source.combNets.push_back(std::move(bufGate));
-  source.combNets.push_back(std::move(notGate));
-  source.combNets.push_back(std::move(xorGate));
-  source.combNets.push_back(std::move(orGate));
-  source.combNets.push_back(std::move(andGate));
+TEST(testGnet, Buf) {
+  auto vec = libertyGnet();
+  auto bufGate = createLogicGate(GateSymbol::NOP);
+  EXPECT_EQ(buildTruthTab(bufGate.get()), buildTruthTab(vec.combNets[0].get()));
 }
 
-std::vector<uint64_t> fillTable(const NetData& vec) {
-    std::vector<uint64_t> table;
-    for (const auto &it: vec.combNets) {
-        auto result = truthTab(it.get());
-        table.insert(table.end(), result.begin(), result.end());
-    }
-    return table;
+TEST(testGnet, Not) {
+  auto vec = libertyGnet();
+  auto notGate = createLogicGate(GateSymbol::NOT);
+  EXPECT_EQ(buildTruthTab(notGate.get()), buildTruthTab(vec.combNets[1].get()));
 }
 
-static bool equalTable() {
-  NetData vec, source;
-  fillSource(source);
-  translateLibertyToDesign("normal1.lib", vec);
-  return fillTable(vec) == fillTable(source);
+TEST(testGnet, Xor) {
+  auto vec = libertyGnet();
+  auto xorGate = createLogicGate(GateSymbol::XOR);
+  EXPECT_EQ(buildTruthTab(xorGate.get()), buildTruthTab(vec.combNets[2].get()));
 }
 
-TEST(testGnet, equalTable) {
-  EXPECT_TRUE(equalTable());
+TEST(testGnet, Or) {
+  auto vec = libertyGnet();
+  auto orGate = createLogicGate(GateSymbol::OR);
+  EXPECT_EQ(buildTruthTab(orGate.get()), buildTruthTab(vec.combNets[3].get()));
 }
 
+TEST(testGnet, And) {
+  auto vec = libertyGnet();
+  auto andGate = createLogicGate(GateSymbol::AND);
+  EXPECT_EQ(buildTruthTab(andGate.get()), buildTruthTab(vec.combNets[4].get()));
+}

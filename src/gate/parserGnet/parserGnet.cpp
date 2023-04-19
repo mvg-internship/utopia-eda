@@ -6,7 +6,6 @@
 #include "parserGnet.h"
 #include "gate/simulator/simulator.h"
 
-#include <deque>
 #include <string>
 
 namespace GModel = eda::gate::model;
@@ -34,16 +33,16 @@ static void fillInputs(
     const YLib::dict<RTlil::IdString, RTlil::Wire*> &wires,
     GModel::GNet &net,
     std::map<size_t, GateId> &inputs) {
-  std::deque<int> tmp;
+  std::vector<size_t> tmp;
   for (auto [name, wire]: wires) {
     size_t index = name.index_;
     if (wire->port_input) {
-      tmp.push_front(index);
+      tmp.push_back(index);
     }
   }
-  for (auto index : tmp) {
+  for (auto index = tmp.rbegin(); index != tmp.rend(); ++index) {
     GateId inputId = net.addIn();
-    inputs.emplace(index, inputId);
+    inputs.emplace(*index, inputId);
   }
 }
 
@@ -366,9 +365,10 @@ static void createOutput(
   }
 }
 
+///Returns true - if the Module is memory, else - false
 bool translateModuleToGNet(
     const RTlil::Module *m,
-    eda::gate::model::GNet &net) {
+    GModel::GNet &net) {
   std::map<size_t, GateId> inputs;
   std::map<size_t, std::pair<size_t, size_t>> cell;
   std::map<size_t, GateSymbol> typeFunc;
@@ -387,9 +387,9 @@ bool translateModuleToGNet(
 }
 
 void translateDesignToGNet(
-    const RTlil::Design &des,
+    const RTlil::Design *des,
     NetData &vec) {
-  for (auto [IdString, Module]: des.modules_) {
+  for (auto [IdString, Module]: des->modules_) {
     std::unique_ptr<GModel::GNet> net = std::make_unique<GModel::GNet>();
     bool isMem = translateModuleToGNet(Module, *net);
     net->sortTopologically();
@@ -402,15 +402,16 @@ void translateDesignToGNet(
 }
 
 void translateLibertyToDesign(
-    const char* namefile,
+    const std::string namefile,
     NetData &vec) {
   static YosysManager mgr;
   RTlil::Design design;
   Yosys::run_frontend(namefile, "liberty", &design, nullptr);
-  translateDesignToGNet(design, vec);
+  translateDesignToGNet(&design, vec);
 }
 
-std::vector<uint64_t> truthTab(
+///Returns vector of means, where vector[0] is mean for 1st out of Gnet and etc.
+std::vector<uint64_t> buildTruthTab(
     const GModel::GNet *net) {
   static Simulator simulator;
   Gate::LinkList in, out;

@@ -18,17 +18,17 @@ struct NetData {
     std::vector<std::unique_ptr<eda::gate::model::GNet>> memNets;
 };
 
-void translateModuleToGNet(
+bool translateModuleToGNet(
     const Yosys::RTLIL::Module *m,
-    NetData &net);
+    eda::gate::model::GNet &net);
 
 void translateDesignToGNet(
-    const Yosys::RTLIL::Design &des,
+    const Yosys::RTLIL::Design *des,
     NetData &vec);
 
 void translateLibertyToDesign(
-    const char* namefile,
+    const std::string namefile,
     NetData &vec);
 
-std::vector<uint64_t> truthTab(
+std::vector<uint64_t> buildTruthTab(
     const eda::gate::model::GNet *net);
