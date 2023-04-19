@@ -54,8 +54,8 @@ void toGraphMl::printer (std::ostream &output, const GNet &model) {
                << link.input
                << "</data>\n"
                << "</edge>\n";
-        // If that isn't target node in the graph, 
-        // then draw it and mark it in red
+        // If the target node isn't in the graph, 
+        // then draw it and mark it red
         if (!model.hasNode(link.target)) {
           output << "<node id=\""
                  << link.target
@@ -67,7 +67,7 @@ void toGraphMl::printer (std::ostream &output, const GNet &model) {
         }
       }
       else {
-        // If that isn't source node in the graph, 
+        // If the source node isn't in the graph, 
         // then draw it and mark it in green
         if (!model.hasNode(link.source)) {
           const std::string link_description =
