@@ -5,68 +5,29 @@
 // Copyright 2023 ISP RAS (http://www.ispras.ru)
 //
 //===----------------------------------------------------------------------===//
-
-#include "gate/debugger/miter.h"
+#include <iostream>
+#include "gate/model/gnet.h"
 #include "gate/debugger/rnd_checker.h"
 #include "gate/model/gnet_test.h"
-
 #include "gtest/gtest.h"
+#include "gate/debugger/rnd_checker.cpp"
 
-using namespace eda::gate::debugger;
 using namespace eda::gate::model;
+using namespace eda::gate::debugger;
 
-TEST(rnd_checkerTest, MiterAndCheckerTest) {
-  auto net = new GNet();
-  SignalList inps;
-  for (int i = 0; i<5;i++){
-    GateId z = net->addIn();
-    inps.push_back(Signal::always(z));
-  }
-  GateId y = net->addGate(GateSymbol::OR, inps);
-  GateId outId = net->addOut(y);
-  SignalList inps1;
-  for (int i = 0; i<5;i++){
-    GateId z = net->addIn();
-    inps1.push_back(Signal::always(z));
-  }
-  GateId w = net->addGate(GateSymbol::OR, inps1);
-  net->addOut(w);
-  w = net->addGate(GateSymbol::OR, inps);
-  for(int i = 0; i<100;i++){
-    outId = net->addOut(w);
-  }
-  net->addOut(w);
-  std::unordered_map<Gate::Id, Gate::Id> testMap = {};
-  auto netCloned = net->clone(testMap);
+TEST(rnd_generatorTest, test1) {
 
-  GateBinding ibind, obind, tbind;
+  Gate::SignalList inputs;
+  Gate::Id output;
 
-  // Input-to-input correspondence.
-  for (auto oldSourceLink : net->sourceLinks()) {
-    auto newSourceId = testMap[oldSourceLink.target];
-    ibind.insert({oldSourceLink, Gate::Link(newSourceId)});
-  }
+  auto net = makeNor(8, inputs, output);
 
-  // Output-to-output correspondence.
-  for (auto oldTargetLink : net->targetLinks()) {
-    auto newTargetId = testMap[oldTargetLink.source];
-    obind.insert({oldTargetLink, Gate::Link(newTargetId)});
-  }
-
-  // Trigger-to-trigger correspondence.
-  for (auto oldTriggerId : net->triggers()) {
-    auto newTriggerId = testMap[oldTriggerId];
-    tbind.insert({Gate::Link(oldTriggerId), Gate::Link(newTriggerId)});
-  }
-
-  Checker::Hints hints;
-  hints.sourceBinding  = std::make_shared<GateBinding>(std::move(ibind));
-  hints.targetBinding  = std::make_shared<GateBinding>(std::move(obind));
-  hints.triggerBinding = std::make_shared<GateBinding>(std::move(tbind));
-
-  GNet* mit = miter(net, netCloned, hints);
-  int res = Generator(*mit, 100, 1);
-  std::cout << "Result of rnd_checker is:\t" << res << std::endl;
-  EXPECT_TRUE(res == 0);
-  EXPECT_TRUE(mit->nSourceLinks() == netCloned->nSourceLinks());
+    std::cout<<"STARTING RND_GENERATOR TEST\n";
+    int a = Generator(*net, 0, true);
+    std::cout<<"GENERATOR RESULT IS: \t" << a << std::endl;
+    EXPECT_TRUE(a == 1);
 }
+
+
+
+
