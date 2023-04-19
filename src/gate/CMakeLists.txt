@@ -5,9 +5,11 @@ add_library(Gate OBJECT
   model/gate.cpp
   model/gnet.cpp
   model/gsymbol.cpp
+  optimizer/rwdatabase.cpp
   premapper/aigmapper.cpp
   premapper/premapper.cpp
   simulator/simulator.cpp
+  transformer/bdd.cpp
   transformer/hmetis.cpp
   parserGnet/parserGnet.cpp
 )
@@ -17,6 +19,8 @@ target_include_directories(Gate PUBLIC ${PROJECT_SOURCE_DIR}/src)
 target_link_libraries(Gate
   PUBLIC
     minisat-lib-static
+    Cudd::Cudd
+    sqlite3
 
   PRIVATE
     Utopia::Util

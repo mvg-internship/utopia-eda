@@ -31,6 +31,8 @@ enum FuncSymbol {
   ADD,
   /// Subtraction: OUT = X - Y.
   SUB,
+  /// Multiplication: OUT = X * Y.
+  MUL,
   /// Multiplexor: OUT = MUX(C[1], ..., C[n]; X[1], ..., X[n]).
   MUX
 
