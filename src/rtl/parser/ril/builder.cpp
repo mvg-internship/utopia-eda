@@ -6,10 +6,11 @@
 //
 //===----------------------------------------------------------------------===//
 
+#include "rtl/parser/ril/builder.h"
+
+#include <cassert>
 #include <iostream>
 #include <unordered_map>
-
-#include "rtl/parser/ril/builder.h"
 
 using namespace eda::rtl;
 
@@ -79,9 +80,9 @@ std::unique_ptr<Net> Builder::create() {
       if (def_count[assign.out] > 1) {
         use_nodes[assign.out] = net->addPhi(v->second);
       } else if (v->second.kind() == Variable::WIRE) {
-        use_nodes[assign.out] = net->addFun(v->second, assign.func, {});
+        use_nodes[assign.out] = net->addFun(v->second, assign.func);
       } else {
-        use_nodes[assign.out] = net->addReg(v->second, VNode::Signal::always(VNode::INVALID));
+        use_nodes[assign.out] = net->addReg(v->second);
       }
     }
   }
@@ -90,7 +91,9 @@ std::unique_ptr<Net> Builder::create() {
   std::unordered_map<std::string, VNode::Id> val_nodes;
 
   for (const auto &proc: _model.procs) {
-    VNode::Signal event(proc.event, !proc.signal.empty() ? use_nodes[proc.signal] : VNode::INVALID);
+    VNode::Id triggerId = !proc.signal.empty() ?
+        use_nodes[proc.signal] : VNode::INVALID;
+    VNode::Signal event(proc.event, triggerId);
 
     VNode::List guard;
     VNode::List action;
@@ -105,17 +108,17 @@ std::unique_ptr<Net> Builder::create() {
 
       for (const auto &in: assign.in) {
         if (in.at(0) == '0') {
-	  VNode::Id cnodeId = VNode::INVALID;
+	  VNode::Id valueId = VNode::INVALID;
           auto i = val_nodes.find(in);
 
 	  if (i != val_nodes.end()) {
-            cnodeId = i->second;
+            valueId = i->second;
           } else {
-            cnodeId = net->addVal(to_var(in), to_value(in));
-	    val_nodes[in] = cnodeId;
+            valueId = net->addVal(to_var(in), to_value(in));
+	    val_nodes[in] = valueId;
           }
 
-	  inputs.push_back(VNode::Signal::always(cnodeId));
+	  inputs.push_back(VNode::Signal::always(valueId));
           break;
         }
 
@@ -133,6 +136,7 @@ std::unique_ptr<Net> Builder::create() {
       } else if (v->second.kind() == Variable::WIRE) {
         vnodeId = net->addFun(v->second, assign.func, inputs);
       } else {
+        assert(!inputs.empty());
 	vnodeId = net->addReg(v->second, inputs.front());
       }
 
