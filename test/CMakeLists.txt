@@ -30,6 +30,7 @@ add_executable(utest
   gate/transformer/bdd_test.cpp
   lib/minisat/minisat_test.cpp
   rtl/parser/ril/ril_test.cpp
+  rtl/library/arithmetic_test.cpp
   util/fm_test.cpp
   test_main.cpp
 )
