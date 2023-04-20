@@ -60,6 +60,7 @@ void toGraphMl::printer (std::ostream &output, const GNet &model) {
     "\" edgedefault=\"directed\">\n";
   const auto &allGates = model.gates();
   for (auto *const gate: allGates) {
+    // Output a description of the nodes of the graph and maks it black
     printNode(output, gate->id(), "black");
     const auto &allLinksFromGate = gate->links();
     for (const auto link: allLinksFromGate) {
