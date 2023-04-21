@@ -45,7 +45,11 @@ void Net::create() {
     }
   }
 
+  // Release useless nodes.
+  applyRelease();
+
   _vnodesTemp.clear();
+  _pnodes.clear();
 
   sortTopologically();
   _isCreated = true;
@@ -56,7 +60,7 @@ void Net::create() {
 // if (g[n]) { w <= f[n](...) }    w[n] <= f[n](...)
 void Net::muxWireDefines(VNode *phi, const VNode::List &defines) {
   const size_t n = defines.size();
-  assert(n > 0);
+  assert(n != 0);
 
   // No multiplexing is required.
   if (n == 1) {
@@ -81,10 +85,12 @@ void Net::muxWireDefines(VNode *phi, const VNode::List &defines) {
     // Guards come first: mux(g[1], ..., g[n]; w[1], ..., w[n]).
     inputs[i] = oldVNode->pnode()->guard().back()->always();
     inputs[i + n] = newVNode->always();
+
+    scheduleRelease(oldVNode);
   }
 
   // Connect the wire w/ the multiplexor: w <= mux{ g[i] -> w[i] }.
-  phi->replaceWith(VNode::MUX, phi->var(), {}, FuncSymbol::NOP, inputs, {});
+  phi->replaceWith(VNode::MUX, phi->var(), FuncSymbol::NOP, inputs, {});
   addVNodeFinal(phi);
 }
 
@@ -94,11 +100,15 @@ void Net::muxWireDefines(VNode *phi, const VNode::List &defines) {
 void Net::muxRegDefines(VNode *phi, const VNode::List &defines) {
   std::vector<std::pair<Signal, VNode::List>> groups = groupRegDefines(defines);
 
+  const size_t n = groups.size();
+  assert(n != 0);
+
   Variable output = phi->var();
 
-  SignalList signals;
-  SignalList inputs;
+  // Control signals c[1], ..., c[n] and data signals d[1], ..., d[n].
+  SignalList inputs(2 * n);
 
+  size_t i = 0;
   for (const auto &[signal, defines]: groups) {
     // Create a wire w for the given signal.
     const VNode *vnode = VNode::get(signal.node());
@@ -109,12 +119,13 @@ void Net::muxRegDefines(VNode *phi, const VNode::List &defines) {
     VNode *mux = createMux(wire, defines);
     addVNodeFinal(mux);
 
-    signals.push_back(signal);
-    inputs.push_back(mux->always());
+    inputs[i] = signal;
+    inputs[i + n] = mux->always();
+    i++;
   }
 
   // Connect the register w/ the multiplexor(s) via the wire(s): r <= w.
-  phi->replaceWith(VNode::REG, output, signals, FuncSymbol::NOP, inputs, {});
+  phi->replaceWith(VNode::REG, output, FuncSymbol::NOP, inputs, {});
   addVNodeFinal(phi);
 }
 
@@ -163,7 +174,10 @@ VNode *Net::createMux(const Variable &output, const VNode::List &defines) {
   // Multiplexor is not required.
   if (n == 1) {
     VNode *vnode = defines.front();
-    return new VNode(VNode::FUN, output, {}, FuncSymbol::NOP, { vnode->input(0) }, {}); 
+    SignalList inputs{vnode->input(0)};
+
+    scheduleRelease(vnode);
+    return new VNode(VNode::FUN, output, FuncSymbol::NOP, inputs, {}); 
   }
 
   // Compose the mux inputs { g[i] -> w[i] }.
@@ -176,10 +190,12 @@ VNode *Net::createMux(const Variable &output, const VNode::List &defines) {
     // Guards come first: mux(g[1], ..., g[n]; w[1], ..., w[n]).
     inputs[i] = vnode->pnode()->guard().back()->always();
     inputs[i + n] = vnode->input(0);
+
+    scheduleRelease(vnode);
   }
 
   // Create a multiplexor: w <= mux{ g[i] -> w[i] }.
-  return new VNode(VNode::MUX, output, {}, FuncSymbol::NOP, inputs, {});
+  return new VNode(VNode::MUX, output, FuncSymbol::NOP, inputs, {});
 }
 
 void Net::sortTopologically() {
