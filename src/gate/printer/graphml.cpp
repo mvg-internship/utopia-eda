@@ -10,21 +10,27 @@
 
 namespace eda::printer::graphMl {
 
-void toGraphMl::printNode(std::ostream &output, uint32_t id,
+std::map <std::string, std::string> toGraphMl::colours = {
+  {"red", "red"}, 
+  {"green", "green"}, 
+  {"black", "black"}
+};
+
+void toGraphMl::printNode(std::ostream &output, uint32_t nodeId,
  std::string colour) {
   output << 
     "<node id=\"" <<
-    id <<
+    nodeId <<
     "\">\n" <<
     "<data key=\"sv" <<
-    id <<
+    nodeId <<
     "\">" <<
     colours[colour] <<
     "</data>\n" <<
     "</node>\n";
 }
 
-void toGraphMl::printEdge(std::ostream &output, Link link) {
+void toGraphMl::printEdge(std::ostream &output, const Link &link) {
   const std::string link_description = linkToString(link);
   output << 
     "<edge id=\"l" <<
