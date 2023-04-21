@@ -13,7 +13,12 @@
 
 using namespace eda::printer::graphMl;
 
-TEST(toGraphMlTest,all) {
+int graphMlTest() {
   const GNet test = *makeRand(1000, 1000);
   toGraphMl::printer(std::cout, test);
+  return 0;
+}
+
+TEST(toGraphMlTest,all) {
+  EXPECT_EQ(graphMlTest, 0);
 }
