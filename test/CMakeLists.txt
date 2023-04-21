@@ -22,10 +22,10 @@ endif()
 enable_testing()
 
 add_executable(utest
-  gate/parserGnet/testGnet.cpp
   gate/debugger/checker_test.cpp
   gate/model/gnet_test.cpp
   gate/optimizer/rwdatabase_test.cpp
+  gate/parserGnet/testGnet.cpp
   gate/printer/graphml_test.cpp
   gate/simulator/simulator_test.cpp
   gate/transformer/bdd_test.cpp
