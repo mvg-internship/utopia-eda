@@ -36,34 +36,31 @@ make
 sudo make install
 ```
 
-If you installed `CUDD` not in default directory then building `Utopia EDA`
-will require environment variable `CUDD_DIR` to contain the path to the
-`CUDD` installation directory.
+If you want to install `CUDD` not in default directory by using
+`--prefix` option of configure script, then building `Utopia EDA`
+will require environment variable `CUDD_DIR` that contains the path
+to the `CUDD` actual installation directory.
 
-```
-export CUDD_DIR=<cudd-installation-dir>
-```
+### Configuring with `Yosys`
 
-### Compiling from Command Line
-
-```
-cmake -S . -B build # -G Ninja etc.
-cd build
-make # ninja, etc.
-```
-
-### Configuring with `yosys`
-
-1. Get `yosys` source code from the [^yosys] into `<yosys-dir>`
+1. Get `Yosys` source code from the [^yosys] into `<yosys-dir>`
 2. Make sure your system meets the requirements listed in `<yosys-dir>/README.md`
 3. Edit `<yosys-dir>/Makefile`
     - set `ENABLE_LIBYOSYS` to 1
-4. Configure and build `yosys` as described in the `<yosys-dir>/README.md`
-5. Configure `Utopia` to find `yosys`
+4. Build and install `Yosys` as described in the `<yosys-dir>/README.md`
+5. Configure `Utopia` to find `Yosys`
     - add `-DYosys_ROOT=<yosys-dir>` to the `cmake` invocation
     - e.g. `cmake -S <utopia-source-dir> -B <utopia-build-dir> -DYosys_ROOT=<yosys-dir>`
 
 [^yosys]: https://github.com/YosysHQ/yosys
+
+### Compiling from Command Line
+
+```
+cmake -S . -B build -DYosys_ROOT=<yosys-dir># -G Ninja etc., see section above
+cd build
+make # ninja, etc.
+```
 
 ### Running from Command Line
 

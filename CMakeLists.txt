@@ -12,6 +12,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(Cudd_ROOT $ENV{CUDD_DIR})
 
 find_package(Cudd REQUIRED)
+find_package(Yosys REQUIRED)
 
 add_subdirectory(lib)
 add_subdirectory(src)

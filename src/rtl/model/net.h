@@ -48,7 +48,7 @@ public:
   size_t psize() const { return _pnodes.size(); }
   const PNode::List &pnodes() const { return _pnodes; }
 
-  /// Returns the number of connections (w/o control signals).
+  /// Returns the number of connections.
   size_t nConnects() const { return _nConnects; }
 
   VNodeIdSet getSourceIds() const { return _sources; }
@@ -56,37 +56,47 @@ public:
 
   /// Creates and adds a S-node (S = source).
   VNodeId addSrc(const Variable &var) {
-    return addVNode(VNode::SRC, var, {}, FuncSymbol::NOP, {}, {});
+    return addVNode(VNode::SRC, var, FuncSymbol::NOP, {}, {});
   }
 
   /// Creates and adds a C-node (C = constant).
   VNodeId addVal(const Variable &var,
                  const std::vector<bool> value) {
-    return addVNode(VNode::VAL, var, {}, FuncSymbol::NOP, {}, value);
+    return addVNode(VNode::VAL, var, FuncSymbol::NOP, {}, value);
   }
 
-  /// Creates and adds an F-node (S = function).
+  /// Creates and adds an F-node (F = function).
   VNodeId addFun(const Variable &var,
                  FuncSymbol func,
                  const SignalList &inputs) {
-    return addVNode(VNode::FUN, var, {}, func, inputs, {});
+    return addVNode(VNode::FUN, var, func, inputs, {});
+  }
+
+  /// Creates and adds an unconnected F-node.
+  VNodeId addFun(const Variable &var, FuncSymbol func) {
+    return addVNode(VNode::FUN, var, func, {}, {});
   }
 
   /// Creates and adds a Phi-node (unspecified multiplexor).
   VNodeId addPhi(const Variable &var) {
-    return addVNode(VNode::MUX, var, {}, FuncSymbol::NOP, {}, {});
+    return addVNode(VNode::MUX, var, FuncSymbol::NOP, {}, {});
   }
 
   /// Creates and adds an M-node (M = multiplexor).
   VNodeId addMux(const Variable &var,
                  const SignalList &inputs) {
-    return addVNode(VNode::MUX, var, {}, FuncSymbol::NOP, inputs, {});
+    return addVNode(VNode::MUX, var, FuncSymbol::NOP, inputs, {});
   }
 
   /// Creates and adds an R-node (R = register).
   VNodeId addReg(const Variable &var,
                  const Signal &input) {
-    return addVNode(VNode::REG, var, {}, FuncSymbol::NOP, { input }, {});
+    return addVNode(VNode::REG, var, FuncSymbol::NOP, { input }, {});
+  }
+
+  /// Creates and adds an unconnected R-node.
+  VNodeId addReg(const Variable &var) {
+    return addVNode(VNode::REG, var, FuncSymbol::NOP, {}, {});
   }
 
   /// Creates and adds a combinational P-node.
@@ -105,8 +115,8 @@ public:
   /// Updates the given V-node.
   void update(VNodeId vnodeId, const SignalList &inputs) {
     auto *vnode = VNode::get(vnodeId);
-    vnode->replaceWith(vnode->kind(), vnode->var(), vnode->signals(),
-                       vnode->func(), inputs, vnode->value());
+    vnode->replaceWith(
+        vnode->kind(), vnode->var(), vnode->func(), inputs, vnode->value());
   }
 
   /// Creates the V-net according to the P-net
@@ -181,13 +191,12 @@ private:
 
   VNodeId addVNode(VNode::Kind kind,
                    const Variable &var,
-                   const SignalList &signals,
                    FuncSymbol func,
                    const SignalList &inputs,
                    const std::vector<bool> &value) {
-    return addVNode(new VNode(kind, var, signals, func, inputs, value));
+    return addVNode(new VNode(kind, var, func, inputs, value));
   }
- 
+
   VNodeId addVNode(VNode *vnode) {
     assert(!_isCreated);
     auto &usage = _vnodesTemp[vnode->var().name()];
@@ -219,6 +228,27 @@ private:
     _vnodes.push_back(vnode);
   }
 
+  /// Schedules release of the given node.
+  void scheduleRelease(VNode *vnode) {
+    _released.push_back(vnode);
+  }
+
+  /// Releases the given node.
+  void release(VNode *vnode) {
+    // Disconnect the node from the v-net.
+    vnode->setInputs({});
+    // Removal can be done here.
+    // assert(vnode->fanout() == 0);
+  }
+
+  /// Releases the scheduled nodes.
+  void applyRelease() {
+    for (auto *vnode : _released) {
+      release(vnode);
+    }
+    _released.clear();
+  }
+
   void sortTopologically();
 
   //===--------------------------------------------------------------------===//
@@ -237,6 +267,9 @@ private:
 
   /// Maps a variable x to the <phi(x), {def(x), ..., def(x)}> structure.
   std::unordered_map<std::string, std::pair<VNode*, VNode::List>> _vnodesTemp;
+
+  /// Nodes to be released (not used anymore).
+  VNode::List _released;
 
   /// Number of connections.
   size_t _nConnects;
