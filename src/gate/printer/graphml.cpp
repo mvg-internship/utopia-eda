@@ -93,6 +93,6 @@ void toGraphMl::printer (std::ostream &output, const GNet &model) {
   output << 
   "</graph>\n" <<
   "</graphml>";
-  }
+}
 
 }; //namespace eda::printer::graphMl
