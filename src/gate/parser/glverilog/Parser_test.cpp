@@ -246,7 +246,7 @@ GNet buildGnet(SymbolTable& symbolTable, GNet& net, std::string currentModuleNam
   for ( auto& entry : symbolTable.table) {
      SymbolTable::Symbol& symbol = entry.second;
     if(symbol.parentName != currentModuleName) {
-      break;
+      continue;
     }
     if (symbol.child == familyInfo::INPUT_) {
      symbol.gateId = net.addIn();
@@ -256,7 +256,7 @@ GNet buildGnet(SymbolTable& symbolTable, GNet& net, std::string currentModuleNam
   for (auto it = symbolTable.table.begin(); it != symbolTable.table.end(); ++it) {
     const SymbolTable::Symbol& symbol = it->second;
     if(symbol.parentName != currentModuleName) {
-      break;
+      continue;
     }
 
     if(symbol.child == familyInfo::LOGIC_GATE_) {
@@ -308,7 +308,7 @@ GNet buildGnet(SymbolTable& symbolTable, GNet& net, std::string currentModuleNam
   for (const auto& entry : symbolTable.table) {
     const SymbolTable::Symbol& symbol = entry.second;
     if(symbol.parentName != currentModuleName) {
-      break;
+      continue;
     }
     if (symbol.child == familyInfo::OUTPUT_) {
       net.addOut(symbol.gateId);
@@ -318,7 +318,7 @@ GNet buildGnet(SymbolTable& symbolTable, GNet& net, std::string currentModuleNam
 }
 
 kind_of_error parse_gatelevel_verilog() {
-
+  
   token_t tok = START;
   kind_of_error rc = SUCCESS;
   SymbolTable table;
@@ -338,7 +338,7 @@ kind_of_error parse_module(token_t &tok, SymbolTable &table, std::unordered_map<
   int bit = 1;
   ASSERT_NEXT_TOKEN(tok, STRING, FAILURE_IN_MODULE_NAME); // Имя модуля
   std::string currentModuleName = yytext;
-  
+  GNet net;
   if(modules.find(currentModuleName) == modules.end()) {
     //Старый случай. Ничего не меняется. Единственное что - теперь мы сохраняем этот modulename в нашу новую структуру
     modules[currentModuleName] = {familyInfo::MODULE_, {}};
@@ -397,6 +397,7 @@ kind_of_error parse_module(token_t &tok, SymbolTable &table, std::unordered_map<
     }
   }
 
+  buildGnet(table,net,currentModuleName,modules);
   //table.clearTable();
   return rc;
 }
