@@ -1,0 +1,44 @@
+module PriorityA(E, A, PA, X1);
+
+  input E, A;
+  output X1, PA;
+  
+  wire Ab, EAb;
+
+  not Ab0(Ab, A);
+  and PAigate(PAi,EAb);
+  nand EAb0(EAb, Ab, E); 
+  xor X10(X1, PA, EAb);
+
+endmodule /* PriorityA */
+
+module TopLevel432 (T, A, B, C, PA, PB, PC, Chan);
+
+  input	T, A, B, C;
+  output PA, PB, PC, Chan;
+  wire X1, X2, I;
+
+  PriorityA M1(T, A, PA, X1);
+
+endmodule /* TopLevel432 */
+
+module Circuit432 (in4, in1, in8, in14, out223, out329, out370, out421);
+
+  input in4, in1, in8, in14;
+  output out223, out329, out370, out421;
+
+  wire A, B, C, E, PA, PB, PC, Chan;
+
+  assign
+      E = in4,
+      A = in1,
+      B = in8,
+      C = in14,
+      PA = out223,
+      PB = out329,
+      PC = out370,
+      Chan = out421;
+	
+ TopLevel432 Ckt432 (E, A, B, C, PA, PB, PC, Chan);
+
+endmodule /* Circuit432 */

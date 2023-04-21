@@ -55,6 +55,11 @@ enum token_t
   ASSIGN_,
   FUNCTION_,
   FUNC_INI_,
+  NOT_,
+  NAND_,
+  AND_,
+  XOR_,
+  NOR_,
   LOGIC_GATE_
 };
 #endif

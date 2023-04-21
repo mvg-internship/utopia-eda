@@ -7,6 +7,9 @@
 #include "token.h"
 #include "headerFile"
 #include <gate/model/gnet.h>
+#include <gate/model/gate.h>
+#include <gate/model/gsymbol.h>
+
 /*
 some defenicion in Verilog
 
@@ -21,33 +24,13 @@ name ?[NUM]?; // тут мы будем проверять, есть ли дал
 опциональна
 */
 
-//     enum kind_of_error
-// {
-//   SUCCESS,
-//   FAILURE_IN_MODULE_NAME,
-//   FAILURE_IN_PARSE_NAME_LIST,
-//   FAILURE_IN_DECL,
-//   FAILURE_IN_MODULE_INCAPTULATION,
-//   FAILURE_IN_EXPR,
-//   FAILURE_IN_ARG,
-//   FAILURE_IN_ASSIGN,
-//   FAILURE_IN_GATE_LEVEL_VERILOG
-// };
-
-//     enum familyInfo
-// {
-//   VOID_,
-//   MODULE_,
-//   INPUT_,
-//   OUTPUT_,
-//   WIRE_,
-//   ASSIGN_,
-//   FUNCTION_,
-//   FUNC_INI_,
-//   LOGIC_GATE_
-// };
-
 extern "C" YY_DECL;
+
+using GNet = eda::gate::model::GNet;
+using Signal = eda::gate::model::Gate::Signal;
+using Gate = eda::gate::model::Gate;
+using GateSymbol = eda::gate::model::GateSymbol;
+
 
 struct ModuleInfo {
   familyInfo type;
@@ -59,18 +42,19 @@ struct ModuleInfo {
   }
 };
 
-class SymbolTable {
-private:
+struct SymbolTable {
+
   struct Symbol {
     familyInfo  parent;
     familyInfo  child;
     std::string parentName;
     std::string childName;
     int bit;
+    Gate::Id gateId;
   };
   std::unordered_map<std::string, Symbol> table;
 
-public:
+
   void addSymbol(const std::string &name, 
                  familyInfo parent = VOID_,
                  familyInfo child = VOID_) {
@@ -198,14 +182,14 @@ void AsserrtVariable(const std::string &name,
 
     break;
   case FUNC_INI_:
-    if(table.findParentName(name) == familyNames && table.findParent(name) == WIRE_) {
+    if(table.findChildName(name) != familyNames ) {
+      table.changeChildName(yytext, familyNames);
+      std::cout <<"current fu name: "<< familyNames << std::endl;
+     //std::cout <<"First element of module for this fu: " <<modules[familyNames].variables[0] << std::endl;
     } else {
-      std::cerr << "You can't use this variable hear: " << name
-                << " parent type: " << table.findParent(name)
-                << " parent name: " << table.findParentName(name)
-                << " child type: " << table.findChild(name) << std::endl
-                << "line: " << yylineno << std::endl;
+      std::cerr << "This variable: " << name << " declarated twice" << std::endl << "line: " << yylineno << std::endl;
       exit(EXIT_FAILURE);
+      
     }
     break;  
   case LOGIC_GATE_:
@@ -253,6 +237,86 @@ token_t get_next_token() {
   return val;
 }
 
+
+
+
+//GNet net;
+
+GNet buildGnet(SymbolTable& symbolTable, GNet& net, std::string currentModuleName, std::unordered_map<std::string, ModuleInfo> &modules) {
+  for ( auto& entry : symbolTable.table) {
+     SymbolTable::Symbol& symbol = entry.second;
+    if(symbol.parentName != currentModuleName) {
+      break;
+    }
+    if (symbol.child == familyInfo::INPUT_) {
+     symbol.gateId = net.addIn();
+    }
+  }
+
+  for (auto it = symbolTable.table.begin(); it != symbolTable.table.end(); ++it) {
+    const SymbolTable::Symbol& symbol = it->second;
+    if(symbol.parentName != currentModuleName) {
+      break;
+    }
+
+    if(symbol.child == familyInfo::LOGIC_GATE_) {
+      std::vector<Signal> ids;
+      auto arg = symbol.gateId;
+      auto _type = symbol.child;
+    
+      for(auto idsIt = modules[it->first].variables.begin(); idsIt != modules[it->first].variables.end();++idsIt ) {
+        // auto tmp = idsIt->
+        symbolTable.table[it->first].gateId ;
+        ids.push_back(Signal::always(symbolTable.table[it->first].gateId));
+      }
+      it++;
+      switch (_type) {
+      case NOT_:
+        net.setGate(arg, GateSymbol::NOT, ids);
+        break;
+      case AND_:
+        net.setGate(arg, GateSymbol::AND, ids);
+        break;
+      case NAND_:
+        net.setGate(arg, GateSymbol::NAND, ids);
+        break;
+      case NOR_:
+        net.setGate(arg, GateSymbol::NOR, ids);
+        break;
+      case XOR_:
+        net.setGate(arg, GateSymbol::XOR, ids);
+        break;
+      //case
+      default:
+        break;
+      }
+    }
+     
+    // if (symbol.child != familyInfo::INPUT_ && symbol.child != familyInfo::OUTPUT_ && symbol.child == familyInfo::DEFINED) {
+    //   std::vector<Signal> ids;
+    //   auto arg = symbol.gateId;
+    //   auto _type = symbol.child;
+    //   //for(auto idsIt = modules[])
+    //   for (auto newIt = std::next(it); newIt != symbolTable.table.end() && newIt->second.childName == currentFuncName; ++newIt) {
+    //     ids.push_back(Signal::always(newIt->second.gateId));
+    //     it = newIt;
+    //   }
+      
+     
+    }
+
+  for (const auto& entry : symbolTable.table) {
+    const SymbolTable::Symbol& symbol = entry.second;
+    if(symbol.parentName != currentModuleName) {
+      break;
+    }
+    if (symbol.child == familyInfo::OUTPUT_) {
+      net.addOut(symbol.gateId);
+    }
+  }
+  return net;
+}
+
 kind_of_error parse_gatelevel_verilog() {
 
   token_t tok = START;
@@ -282,6 +346,7 @@ kind_of_error parse_module(token_t &tok, SymbolTable &table, std::unordered_map<
     ASSERT_NEXT_TOKEN(tok, STRING, FAILURE_IN_MODULE_NAME);
     table.addSymbol(yytext, MODULE_);
     table.changeParentName(yytext, currentModuleName);
+    modules[currentModuleName].variables.push_back(yytext);
     std::cout << " parent name: " << table.findParentName(yytext) << std::endl;
     rc = parse_name_list(tok, RBRACE, MODULE_, table, currentModuleName, modules, bit, VOID_);
     ASSERT_NEXT_TOKEN(tok, SEMICOLON, FAILURE_IN_MODULE_NAME);
@@ -302,7 +367,7 @@ kind_of_error parse_module(token_t &tok, SymbolTable &table, std::unordered_map<
     std::cerr << "Module name "<< yytext <<" using twice"<<std::endl;
     exit(EXIT_FAILURE);
   }
-  table.findChildName(yytext);
+  //table.findChildName(yytext);
 
   while (rc == SUCCESS && tok != ENDMODULE) {
     DEBUGTOKEN(tok, "Module loop");
@@ -385,11 +450,8 @@ kind_of_error parse_decl(token_t &tok, SymbolTable &table, std::string currentMo
 kind_of_error parse_expr(token_t &tok, SymbolTable &table, std::string currentModuleName, std::unordered_map<std::string, ModuleInfo> &modules) {
   kind_of_error rc = SUCCESS;
   std::string currentFuncName = yytext;
-  if(modules.find(currentFuncName) != modules.end()) {
-    std::cerr << "This name of function incorrect: "<< currentFuncName << std::endl << "line: " << yylineno << std::endl;
-      exit(EXIT_FAILURE);
-  }
-  modules[currentFuncName] = {familyInfo::FUNCTION_, {}};
+
+  //modules[currentFuncName] = {familyInfo::FUNCTION_, {}};
    std::cout << " Type of func: " << modules[currentFuncName].type << std::endl;
   ASSERT_NEXT_TOKEN(tok, STRING, FAILURE_IN_EXPR);
   ASSERT_NEXT_TOKEN(tok, LBRACE, FAILURE_IN_EXPR);
@@ -524,12 +586,18 @@ kind_of_error parse_arg(token_t &tok, SymbolTable &table, std::string currentMod
   int bit = 1;
   while (tok != RBRACE && rc == SUCCESS) {
     ASSERT_NEXT_TOKEN(tok, STRING, FAILURE_IN_ARG); 
-    if(modules[currentFuncName].find_in_vector(modules[currentFuncName].variables, yytext) != modules[currentFuncName].variables.end()){
-      std::cerr << "This variable: " << yytext << " declarated twice" << std::endl << "line: " << yylineno << std::endl;
+      std::cout <<"First element of module for this fu: " <<modules[currentFuncName].variables[0] << std::endl;
+    if(modules[currentModuleName].find_in_vector(modules[currentModuleName].variables, yytext) == modules[currentModuleName].variables.end()){
+      std::cerr << "You can't use this variable hear: " << yytext
+                << " parent type: " << table.findParent(yytext)
+                << " parent name: " << table.findParentName(yytext)
+                << " child type: " << table.findChild(yytext) << std::endl
+                << "line: " << yylineno << std::endl;
       exit(EXIT_FAILURE);
     }
-    AsserrtVariable(yytext,FUNC_INI_, table, currentModuleName, modules, bit, VOID_);
-    modules[currentFuncName].variables.push_back(yytext);
+    
+    AsserrtVariable(yytext,FUNC_INI_, table, currentFuncName, modules, bit, VOID_);
+    
     tok = get_next_token();
     DEBUGTOKEN(tok, "ARG  loop");
 
@@ -574,6 +642,8 @@ kind_of_error parse_name_list(token_t &tok,
   }
   return rc;
 }
+
+
 
 int main(int argc, char *argv[]) {
   yyin = fopen(argv[1], "r");
