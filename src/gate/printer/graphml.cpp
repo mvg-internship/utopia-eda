@@ -56,11 +56,11 @@ const std::string toGraphMl::linkToString (const Link &link) {
 void toGraphMl::printer (std::ostream &output, const GNet &model) {
   // Document header
   output <<
-    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" <<
-    "<graphml xmlns=\"http://graphml.graphdrawing.org/xmlns\"" <<
-    "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"" <<
-    "xsi:schemaLocation=\"http://graphml.graphdrawing.org/xmlns" <<
-    "http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd\">" <<
+    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" <<
+    "<graphml xmlns=\"http://graphml.graphdrawing.org/xmlns\"\n" <<
+    "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" <<
+    "xsi:schemaLocation=\"http://graphml.graphdrawing.org/xmlns\n" <<
+    "http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd\">\n" <<
     "<graph id=\"G" <<
     model.id() <<
     "\" edgedefault=\"directed\">\n";
@@ -76,14 +76,14 @@ void toGraphMl::printer (std::ostream &output, const GNet &model) {
         // If the target node isn't in the graph, 
         // then draw it and mark it red
         if (!model.hasNode(link.target)) {
-          printNode(output, gate->id(), "red");
+          printNode(output, link.target, "red");
         }
       }
       else {
         // If the source node isn't in the graph, 
         // then draw it and mark it in green
         if (!model.hasNode(link.source)) {
-          printNode(output, gate->id(), "green");
+          printNode(output, link.source, "green");
           printEdge(output, link);
         }
       }
