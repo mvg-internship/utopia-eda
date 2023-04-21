@@ -20,5 +20,5 @@ int graphMlTest() {
 }
 
 TEST(toGraphMlTest,all) {
-  EXPECT_EQ(graphMlTest, 0);
+  EXPECT_EQ(graphMlTest(), 0);
 }
