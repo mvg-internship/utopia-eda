@@ -81,6 +81,7 @@ public:
   using GateId      = Gate::Id;
   using GateIdList  = std::vector<GateId>;
   using GateIdSet   = std::unordered_set<GateId>;
+  using GateIdMap   = std::unordered_map<GateId, GateId>;
   using SubnetId    = unsigned;
   using SubnetIdSet = std::set<SubnetId>;
   using Link        = Gate::Link;
