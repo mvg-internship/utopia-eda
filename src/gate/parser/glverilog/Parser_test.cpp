@@ -247,23 +247,37 @@ token_t get_next_token() {
   return val;
 }
 
+/* GNet buildGnet(SymbolTable& symbolTable, std::string currentModuleName) {
+  for( auto& entry : symbolTable.table) {
+    SymbolTable::Symbol& symbol = entry.second;
+    if(symbol.parentName != currentModuleName) {
+      continue;
+    }
 
+    
+  }
+}
+ */
 
 
 //GNet net;
 
-/* GNet buildGnet(SymbolTable& symbolTable, GNet& net, std::string currentModuleName, std::unordered_map<std::string, ModuleInfo> &modules) {
+GNet buildGnet(SymbolTable& symbolTable, GNet& net, std::string currentModuleName, std::unordered_map<std::string, ModuleInfo> &modules) {
+  std::unordered_map<std::string, Gate::Id> gates;
   for(auto& entry : symbolTable.table) {
      SymbolTable::Symbol& symbol = entry.second;
     if(symbol.parentName != currentModuleName) {
       continue;
     }
     if(symbol.child == familyInfo::INPUT_) {
-     symbol.gateId = net.addIn();
+     gates.insert(std::make_pair(static_cast<std::string>(entry.first), net.addIn()));
+     //symbol.gateId = net.addIn();
+    } else {
+      gates.insert(std::make_pair(static_cast<std::string>(entry.first), net.newGate()));
     }
   }
 
-  for (auto it = symbolTable.table.begin(); it != symbolTable.table.end(); ++it) {
+  for (auto it = symbolTable.table.begin(); it != symbolTable.table.end(); it++) {
     SymbolTable::Symbol& symbol = it->second;
     if(symbol.parentName != currentModuleName) {
       continue;
@@ -271,20 +285,21 @@ token_t get_next_token() {
 
     if(symbol.parent == familyInfo::LOGIC_GATE_) {
       std::vector<Signal> ids;
-      auto arg = symbol.gateId;
+      auto arg = gates[static_cast<std::string>(modules[it->first].variables.front())];
       auto _type = symbol.child;
 
-      switch (_type) {
-      case NOT_:
-        symbolTable.table["c"].gateId = net.addNot(symbolTable.table["d"].gateId);
-        break;
-      default:
-        break;
-      }
+      // switch (_type) {
+      // case NOT_:
+      //   symbolTable.table["c"].gateId = net.addNot(symbolTable.table["d"].gateId);
+      //   break;
+      // default:
+      //   break;
+      // }
     
       for(auto idsIt = modules[it->first].variables.begin(); idsIt != modules[it->first].variables.end();++idsIt ) {
         // auto tmp = idsIt->
-        symbolTable.table[it->first].gateId ;
+        //symbolTable.table[it->first].gateId ;
+        auto fId = gates.find(static_cast<std::string>());
         ids.push_back(Signal::always(symbolTable.table[it->first].gateId));
       }
       for(int i; i < modules[it->first].counter; i++){
@@ -292,23 +307,24 @@ token_t get_next_token() {
       }
       switch (_type) {
       case NOT_:
-        arg = net.addGate(GateSymbol::NOT,ids);
+        //arg = net.addGate(GateSymbol::NOT,ids);
+        net.setGate(arg, GateSymbol::NOT, ids);
         break;
       case AND_:
-        arg = net.addGate(GateSymbol::AND,ids);
-        //net.setGate(arg, GateSymbol::AND, ids);
+        //arg = net.addGate(GateSymbol::AND,ids);
+        net.setGate(arg, GateSymbol::AND, ids);
         break;
       case NAND_:
-        arg = net.addGate(GateSymbol::NAND,ids);
-        //net.setGate(arg, GateSymbol::NAND, ids);
+        //arg = net.addGate(GateSymbol::NAND,ids);
+        net.setGate(arg, GateSymbol::NAND, ids);
         break;
       case NOR_:
-        arg = net.addGate(GateSymbol::NOR,ids);
-        //net.setGate(arg, GateSymbol::NOR, ids);
+        //arg = net.addGate(GateSymbol::NOR,ids);
+        net.setGate(arg, GateSymbol::NOR, ids);
         break;
       case XOR_:
-        arg = net.addGate(GateSymbol::XOR,ids);
-        //net.setGate(arg, GateSymbol::XOR, ids);
+        //arg = net.addGate(GateSymbol::XOR,ids);
+        net.setGate(arg, GateSymbol::XOR, ids);
         break;
       //case
       default:
@@ -339,7 +355,7 @@ token_t get_next_token() {
     }
   }
   return net;
-} */
+}
 
 kind_of_error parse_gatelevel_verilog() {
   
@@ -514,6 +530,7 @@ kind_of_error parse_expr(token_t &tok, SymbolTable &table, std::string currentMo
   token_t tmp = tok;
   ASSERT_NEXT_TOKEN(tok, STRING, FAILURE_IN_EXPR);
   currentLogicGateName = yytext;
+  //table.addSymbol(yytext,LOGIC_GATE_,familyType);
   if(modules.find(currentLogicGateName) != modules.end() && modules[currentLogicGateName].area == currentModuleName) {
     std::cerr << "This name alredy exsist: "<< currentLogicGateName << std::endl << "line: " << yylineno << std::endl;
       exit(EXIT_FAILURE);
