@@ -7,8 +7,10 @@ add_library(Gate OBJECT
   model/gsymbol.cpp
   optimizer/rwdatabase.cpp
   premapper/aigmapper.cpp
-  premapper/premapper.cpp
   premapper/migmapper.cpp
+  premapper/premapper.cpp
+  premapper/xagmapper.cpp
+  premapper/xmgmapper.cpp
   simulator/simulator.cpp
   transformer/bdd.cpp
   transformer/hmetis.cpp
