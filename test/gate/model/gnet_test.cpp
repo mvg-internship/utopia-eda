@@ -102,6 +102,13 @@ std::shared_ptr<GNet> makeAndn(unsigned N,
   return makeNetn(GateSymbol::AND, N, inputs, outputId);
 }
 
+// Maj(x1, x2, ..., xN).
+std::shared_ptr<GNet> makeMaj(unsigned N,
+                              Gate::SignalList &inputs,
+                              Gate::Id &outputId) {
+  return makeNet(GateSymbol::MAJ, N, inputs, outputId);
+}
+
 // Random hierarchical network.
 std::shared_ptr<GNet> makeRand(std::size_t nGates,
                                std::size_t nSubnets) {
@@ -213,6 +220,13 @@ std::shared_ptr<GNet> makeRand(std::size_t nGates,
   } // for: top-level.
 
   return net;
+}
+
+void dump(const GNet &net) {
+  std::cout << net << '\n';
+  std::cout << "N=" << net.nGates() << '\n';
+  std::cout << "I=" << net.nSourceLinks() << '\n';
+  std::cout << "O=" << net.nTargetLinks() << '\n';
 }
 
 TEST(GNetTest, GNetOrTest) {
