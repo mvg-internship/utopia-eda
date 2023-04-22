@@ -9,7 +9,9 @@
 #pragma once
 
 #include "CLI/CLI.hpp"
+#include "gate/debugger/classLEC.h"
 #include "nlohmann/json.hpp"
+
 
 #include <fstream>
 #include <iostream>
@@ -17,6 +19,10 @@
 #include <vector>
 
 using Json = nlohmann::json;
+NLOHMANN_JSON_SERIALIZE_ENUM( eda::gate::debugger::LecType, {
+  {eda::gate::debugger::RND, "rnd"},
+  {eda::gate::debugger::DFL, "dfl"},
+})
 
 class AppOptions {
 public:
@@ -81,6 +87,12 @@ protected:
       value = json[key].get<std::string>();
     }
   }
+template<class T>
+static void get(Json json, const std::string &key, T &value) {
+  if (json.contains(key)) {
+    value = json[key].get<T>();
+  }
+}
 
   Json toJson(const CLI::App *app) const {
     Json json;
@@ -117,9 +129,22 @@ protected:
   const bool isRoot;
   CLI::App *options;
 };
-
+using LecType = eda::gate::debugger::LecType;
+static constexpr const char *LEC_TYPE = "lec-type";
 struct RtlOptions final : public AppOptions {
+  eda::gate::debugger::LecType lecType = LecType::DFL;
+
+
+
+
   static constexpr const char *ID = "rtl";
+
+
+
+  const std::map<std::string, LecType> lecTypeMap {
+    {"rnd", LecType::RND},
+    {"dfl", LecType::DFL},
+  };
 
   RtlOptions(AppOptions &parent):
       AppOptions(parent, ID, "Logical synthesis") {
@@ -132,6 +157,8 @@ struct RtlOptions final : public AppOptions {
     return options->remaining();
   }
 };
+
+eda::gate::debugger::LecType lecType = LecType::DFL;
 
 struct HlsOptions final : public AppOptions {
   static constexpr const char *ID = "hls";
@@ -147,6 +174,9 @@ struct HlsOptions final : public AppOptions {
       AppOptions(parent, ID, "High-level synthesis") {
 
     // Named options.
+    options->add_option(cli(LEC_TYPE), lecType, "Type of LEC")
+           ->expected(1);
+
     options->add_option(cli(OUTPUT_DIR),  outDir,  "Output directory")
            ->expected(1);
     options->add_option(cli(OUTPUT_DOT),  outDot,  "Output DOT file")
@@ -169,6 +199,7 @@ struct HlsOptions final : public AppOptions {
   }
 
   void fromJson(Json json) override {
+    get(json, LEC_TYPE, lecType);
     get(json, OUTPUT_DIR,  outDir);
     get(json, OUTPUT_DOT,  outDot);
     get(json, OUTPUT_MLIR, outMlir);

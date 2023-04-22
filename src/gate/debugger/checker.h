@@ -7,13 +7,16 @@
 //===----------------------------------------------------------------------===//
 
 #pragma once
-
+#include "gate/debugger/classLEC.h"
 #include "gate/debugger/context.h"
 #include "gate/debugger/encoder.h"
 #include "gate/model/gnet.h"
+#include "gate/premapper/premapper.h"
+#include "util/singleton.h"
 
 #include <memory>
 #include <unordered_map>
+
 
 namespace eda::gate::debugger {
 
@@ -21,14 +24,19 @@ namespace eda::gate::debugger {
  * \brief Implements a logic equivalence checker (LEC).
  * \author <a href="mailto:kamkin@ispras.ru">Alexander Kamkin</a>
  */
-class Checker final {
+
+
+class Checker : public LEC, public util::Singleton<Checker> {
+friend class util::Singleton<Checker>;
+
+public:
   using Gate = eda::gate::model::Gate;
   using GNet = eda::gate::model::GNet;
 
-public:
   using GateBinding = std::unordered_map<Gate::Link, Gate::Link>;
-  using SubnetBinding = std::unordered_map<GNet::SubnetId, GNet::SubnetId>;
   using GateConnect = Context::GateConnect;
+  using GateIdMap = eda::gate::premapper::PreMapper::GateIdMap;
+  using SubnetBinding = std::unordered_map<GNet::SubnetId, GNet::SubnetId>;
 
   /// Represents LEC hints.
   struct Hints final {
@@ -78,6 +86,10 @@ public:
   bool areEqual(const GNet &lhs,
                 const GNet &rhs,
                 const Hints &hints) const;
+  
+  bool areEqual(GNet &lhs,
+                GNet &rhs,
+                GateIdMap &gmap) override;
 
 private:
   /// Checks logic equivalence of two hierarchical nets.
@@ -130,5 +142,7 @@ private:
 	     const GateBinding &ibind,
 	     const GateBinding &obind) const;
 };
+
+//Checker &getChecker(LecType lec);
 
 } // namespace eda::gate::debugger

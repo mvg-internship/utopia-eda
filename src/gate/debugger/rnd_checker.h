@@ -7,10 +7,11 @@
 //===----------------------------------------------------------------------===//
 
 #pragma once
-
+#include "checker.h"
 #include "gate/model/gnet.h"
 #include "gate/simulator/simulator.h"
 #include "rtl/library/flibrary.h"
+
 
 #include <cassert>
 #include <cmath>

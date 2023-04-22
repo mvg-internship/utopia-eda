@@ -3,6 +3,11 @@ add_library(Gate OBJECT
   debugger/checker.cpp
   debugger/rnd_checker.cpp
   debugger/symexec.cpp
+  debugger/miter.cpp
+  debugger/classRND.cpp
+  debugger/bdd_checker.cpp
+  debugger/classBDD.cpp
+  debugger/classLEC.cpp
   model/gate.cpp
   model/gnet.cpp
   model/gsymbol.cpp
