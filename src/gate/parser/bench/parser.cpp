@@ -283,12 +283,12 @@ void parseBenchFile() {
 
 int main(int argc, char* argv[]) {
 
-  std::cout << "DKKD " << net << "NETENTNTNTNNTENTNTNNETNENTENTN";
+  std::cout<< net ;
 
   for (int i = 1; i < argc; i++) {
     yyin = fopen( argv[i], "r" );
     parseBenchFile();
-    std::cout << " end check\n\n";
+    std::cout << "end check\n\n";
     fclose(yyin);
   }
     return 0;
