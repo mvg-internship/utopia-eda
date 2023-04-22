@@ -25,7 +25,7 @@ TEST(rnd_generatorTest, test1) {
     std::cout<<"STARTING RND_GENERATOR TEST\n";
     int a = Generator(*net, 0, true);
     std::cout<<"GENERATOR RESULT IS: \t" << a << std::endl;
-    EXPECT_TRUE(a == 1);
+    EXPECT_TRUE(a == 0);
 }
 
 

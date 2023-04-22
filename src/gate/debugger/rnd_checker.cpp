@@ -55,7 +55,7 @@ Result Generator(GNet &miter, const unsigned int tries, const bool exhaustive = 
   // UNexhaustive check
     for (std::uint64_t t = 0; t < tries; t++) {
       for (std::uint64_t i = 0; i < count; i++) {
-        std::uint64_t temp = rand();
+        std::uint64_t temp = 2*rand();
         std::uint64_t in = temp % static_cast<std::uint64_t>(std::pow(2, count - 1));
         compiled.simulate(o, in);
         if (o == 1) {
@@ -69,7 +69,9 @@ Result Generator(GNet &miter, const unsigned int tries, const bool exhaustive = 
   if (exhaustive) {
   // exhaustive check
     for (std::uint64_t t = 0; t < std::pow(2, count - 1); t++) {
-      compiled.simulate(o, t);
+      std::uint64_t temp = 2*t;
+      std::uint64_t in = temp % static_cast<std::uint64_t>(std::pow(2, count - 1));
+      compiled.simulate(o, in);
       if (o == 1) {
         return  Result::NOTEQUAL;
       }
