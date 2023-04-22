@@ -5,12 +5,14 @@ add_library(Gate OBJECT
   model/gate.cpp
   model/gnet.cpp
   model/gsymbol.cpp
+  optimizer/rwdatabase.cpp
   premapper/aigmapper.cpp
   premapper/premapper.cpp
   premapper/migmapper.cpp
   simulator/simulator.cpp
   transformer/bdd.cpp
   transformer/hmetis.cpp
+  parserGnet/parserGnet.cpp
 )
 add_library(Utopia::Gate ALIAS Gate)
 
@@ -19,7 +21,9 @@ target_link_libraries(Gate
   PUBLIC
     minisat-lib-static
     Cudd::Cudd
+    sqlite3
 
   PRIVATE
     Utopia::Util
+    Yosys::Yosys
 )

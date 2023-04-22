@@ -392,7 +392,7 @@ Gate::Id MigMapper::mapMaj(const Gate::SignalList &newInputs, size_t n0,
   if (n != 0) {
     inputs.reserve(quantity);
     const auto valId = mapVal((n > 0), newNet);
-    for (absN; absN > 0; absN--) {
+    for (; absN > 0; absN--) {
       inputs.push_back(Gate::Signal::always(valId));
     }
   }
@@ -489,9 +489,7 @@ Gate::Id MigMapper::mapMaj(const Gate::SignalList &newInputs, size_t n0,
                                               toTakeFrom[j],
                                               toTakeFrom[j + 2]});
       const auto externalMaj = newNet.addGate(GateSymbol::MAJ,
-                                             {inputs[counter],
-                                              toTakeFrom[j + 1],
-                                           Gate::Signal::always(internalMaj)});
+          {inputs[counter], toTakeFrom[j + 1], Gate::Signal::always(internalMaj)}); // need fix
       toFitIn[j] = Gate::Signal::always(externalMaj);
     } // end inner cycle
     std::swap(toFitIn, toTakeFrom);

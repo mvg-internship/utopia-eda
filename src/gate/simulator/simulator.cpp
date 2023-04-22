@@ -2,11 +2,12 @@
 //
 // Part of the Utopia EDA Project, under the Apache License v2.0
 // SPDX-License-Identifier: Apache-2.0
-// Copyright 2022 ISP RAS (http://www.ispras.ru)
+// Copyright 2022-2023 ISP RAS (http://www.ispras.ru)
 //
 //===----------------------------------------------------------------------===//
 
 #include "gate/simulator/simulator.h"
+#include "util/assert.h"
 
 namespace eda::gate::simulator {
 
@@ -32,7 +33,8 @@ Compiled::OP Compiled::getOp(const Gate &gate) const {
   case GateSymbol::LATCH : return getLatch(n);
   case GateSymbol::DFF   : return getDff(n);
   case GateSymbol::DFFrs : return getDffrs(n);
-  default: assert(false);
+  default: uassert(false,
+                   "Unsupported func symbol: " << gate.func() << std::endl);
   }
 
   return getZero(0);
@@ -88,7 +90,7 @@ Compiled::Compiled(const GNet &net,
     gindex[link] = i++;
   }
 
-  // Determine the output indices. 
+  // Determine the output indices.
   i = 0;
   for (const auto link : out) {
     outputs[i++] = gindex[link];

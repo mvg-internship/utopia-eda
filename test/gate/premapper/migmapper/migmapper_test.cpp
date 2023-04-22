@@ -18,7 +18,7 @@
 
 using Checker = eda::gate::debugger::Checker;
 using GateBinding = Checker::GateBinding;
-using GateIdMap = MigMapper::GateIdMap;
+using GateIdMap = eda::gate::premapper::MigMapper::GateIdMap;
 using Hints = Checker::Hints;
 using Link = eda::gate::model::Gate::Link;
 using MigMapper = eda::gate::premapper::MigMapper;

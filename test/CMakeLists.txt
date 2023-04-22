@@ -24,11 +24,13 @@ enable_testing()
 add_executable(utest
   gate/debugger/checker_test.cpp
   gate/model/gnet_test.cpp
-  gate/premapper/migmapper/migmapper_test.cpp
+  gate/optimizer/rwdatabase_test.cpp
+  gate/parserGnet/testGnet.cpp
   gate/simulator/simulator_test.cpp
   gate/transformer/bdd_test.cpp
   lib/minisat/minisat_test.cpp
   rtl/parser/ril/ril_test.cpp
+  rtl/library/arithmetic_test.cpp
   util/fm_test.cpp
   test_main.cpp
 )
@@ -37,6 +39,7 @@ target_include_directories(utest PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(utest
   PRIVATE
     Utopia::Lib
+    Yosys::Yosys
     gtest_main
     easyloggingpp
 )

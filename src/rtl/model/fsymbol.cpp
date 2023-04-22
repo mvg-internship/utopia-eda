@@ -28,6 +28,8 @@ std::ostream &operator <<(std::ostream &out, FuncSymbol func) {
     return out << "+";
   case FuncSymbol::SUB:
     return out << "-";
+  case FuncSymbol::MUL:
+    return out << "*";
   case FuncSymbol::MUX:
     return out << "mux";
   }
