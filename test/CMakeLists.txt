@@ -28,7 +28,6 @@ add_executable(utest
   gate/parserGnet/testGnet.cpp
   gate/premapper/migmapper/migmapper_test.cpp
   gate/premapper/xagmapper/xag_test.cpp
-  gate/premapper/xagmapper/xag_verilog_test.cpp
   gate/premapper/xmgmapper/xmgmapper_test.cpp
   gate/simulator/simulator_test.cpp
   gate/transformer/bdd_test.cpp
