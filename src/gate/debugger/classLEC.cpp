@@ -8,11 +8,14 @@
 
 #include "classLEC.h"
 #include "checker.h"
+#include "classBDD.h"
 #include "classRND.h"
+
 
 namespace eda::gate::debugger {
 LEC &getChecker(LecType lec) {
   switch(lec) {
+    case LecType::BdD: return BDDChecker::get();
     case LecType::DFL: return Checker::get();
     case LecType::RND: return RndChecker::get();
     default: return Checker::get();

@@ -22,6 +22,7 @@ using Json = nlohmann::json;
 NLOHMANN_JSON_SERIALIZE_ENUM( eda::gate::debugger::LecType, {
   {eda::gate::debugger::RND, "rnd"},
   {eda::gate::debugger::DFL, "dfl"},
+  {eda::gate::debugger::BdD, "bdd"},
 })
 
 class AppOptions {
@@ -144,6 +145,7 @@ struct RtlOptions final : public AppOptions {
   const std::map<std::string, LecType> lecTypeMap {
     {"rnd", LecType::RND},
     {"dfl", LecType::DFL},
+    {"bdd", LecType::BdD},
   };
 
   RtlOptions(AppOptions &parent):
