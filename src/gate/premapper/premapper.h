@@ -2,7 +2,7 @@
 //
 // Part of the Utopia EDA Project, under the Apache License v2.0
 // SPDX-License-Identifier: Apache-2.0
-// Copyright 2022 ISP RAS (http://www.ispras.ru)
+// Copyright 2022-2023 ISP RAS (http://www.ispras.ru)
 //
 //===----------------------------------------------------------------------===//
 
@@ -17,7 +17,7 @@ namespace eda::gate::premapper {
 
 /**
  * \brief Interface of a pre-mapper, which maps a netlist to the IR (e.g., AIG).
- * \author <a href="mailto:kamkin@ispras.ru">Alexander Kamkin</a>
+ * \author <a href="mailto:nsromanov_1@edu.hse.ru">Nikita Romanov</a>
  */
 class PreMapper {
 protected:
@@ -39,6 +39,36 @@ public:
   }
 
 protected:
+  virtual Gate::Id mapIn (GNet &newNet) const = 0;
+  virtual Gate::Id mapOut(const Gate::SignalList &newInputs,
+                          size_t n0, size_t n1, GNet &newNet) const = 0;
+
+  virtual Gate::Id mapVal(bool value, GNet &newNet) const = 0;
+
+  virtual Gate::Id mapNop(const Gate::SignalList &newInputs,
+                          bool sign, GNet &newNet) const = 0;
+  virtual Gate::Id mapNop(const Gate::SignalList &newInputs,
+                          size_t n0, size_t n1,
+                          bool sign, GNet &newNet) const = 0;
+
+  virtual Gate::Id mapAnd(const Gate::SignalList &newInputs,
+                          bool sign, GNet &newNet) const = 0;
+  virtual Gate::Id mapAnd(const Gate::SignalList &newInputs,
+                          size_t n0, size_t n1,
+                          bool sign, GNet &newNet) const = 0;
+
+  virtual Gate::Id mapOr (const Gate::SignalList &newInputs,
+                          bool sign, GNet &newNet) const = 0;
+  virtual Gate::Id mapOr (const Gate::SignalList &newInputs,
+                          size_t n0, size_t n1,
+                          bool sign, GNet &newNet) const = 0;
+
+  virtual Gate::Id mapXor(const Gate::SignalList &newInputs,
+                          bool sign, GNet &newNet) const = 0;
+  virtual Gate::Id mapXor(const Gate::SignalList &newInputs,
+                          size_t n0, size_t n1,
+                          bool sign, GNet &newNet) const = 0;
+
   PreMapper() {}
   virtual ~PreMapper() {}
 
@@ -51,5 +81,23 @@ protected:
                            const GateIdMap &oldToNewGates,
                            GNet &newNet) const;
 };
+
+/**
+ * \brief Defines functional bases are supported by pre-mappers.
+ * \author <a href="mailto:smolov@ispras.ru">Sergey Smolov</a>
+ */
+enum PreBasis {
+  /// And-Inverter Graph
+  AIG,
+  /// Maj-Inverter Graph
+  MIG,
+  /// Xor-And-Inverter Graph
+  XAG,
+  /// Xor-Majority-Inverter Graph
+  XMG
+};
+
+/// Returns pre-mapper for the specified functional basis.
+PreMapper &getPreMapper(PreBasis basis);
 
 } // namespace eda::gate::premapper

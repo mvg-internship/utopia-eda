@@ -6,6 +6,7 @@
 //
 //===----------------------------------------------------------------------===//
 
+#include "gate/model/utils.h"
 #include "gate/premapper/migmapper.h"
 
 #include <cassert>
@@ -17,32 +18,6 @@ using GNet = eda::gate::model::GNet;
 
 namespace eda::gate::premapper {
 
-Gate::SignalList getNewInputs(const Gate &oldGate,
-                              const MigMapper::GateIdMap &oldToNewGates,
-                              size_t &n0, size_t &n1) {
-  const auto k = oldGate.arity();
-
-  Gate::SignalList newInputs;
-  newInputs.reserve(k);
-
-  n0 = n1 = 0;
-  for (auto input : oldGate.inputs()) {
-    if (model::isValue(input)) {
-      const auto isZero = model::isZero(input);
-      n0 += (isZero ? 1 : 0);
-      n1 += (isZero ? 0 : 1);
-    } else {
-      const auto i = oldToNewGates.find(input.node());
-      assert((i != oldToNewGates.end()) && "Input node at the end\n");
-
-      const auto newInputId = i->second;
-      newInputs.push_back(Gate::Signal::always(newInputId));
-    }
-  }
-
-  return newInputs;
-}
-
 Gate::Id MigMapper::mapGate(const Gate &oldGate,
                             const GateIdMap &oldToNewGates,
                             GNet &newNet) const {
@@ -53,7 +28,7 @@ Gate::Id MigMapper::mapGate(const Gate &oldGate,
 
   size_t n0;
   size_t n1;
-  auto newInputs = getNewInputs(oldGate, oldToNewGates, n0, n1);
+  auto newInputs = model::getNewInputs(oldGate, oldToNewGates, n0, n1);
 
   switch (oldGate.func()) {
   case GateSymbol::IN   : return mapIn (                          newNet);
@@ -167,8 +142,7 @@ Gate::Id MigMapper::mapAnd(const Gate::SignalList &newInputs,
       gateId = mapVal(!sign, newNet);
     } else {
       // AND(x,y).
-      gateId = newNet.addGate(GateSymbol::MAJ, 
-                             {x, y, Gate::Signal::always(valId)});
+      gateId = newNet.addMaj(x, y, Gate::Signal::always(valId));
     }
 
     inputs.push_back(Gate::Signal::always(gateId));
@@ -215,8 +189,7 @@ Gate::Id MigMapper::mapOr(const Gate::SignalList &newInputs,
         gateId = mapVal(sign, newNet);
       } else {
         // OR(x,y).
-        gateId = newNet.addGate(GateSymbol::MAJ,
-                               {x, y, Gate::Signal::always(valId)});
+        gateId = newNet.addMaj(x, y, Gate::Signal::always(valId));
       }
 
       inputs.push_back(Gate::Signal::always(gateId));
@@ -294,60 +267,41 @@ Gate::Id MigMapper::mapXor(const Gate::SignalList &newInputs,
 
 Gate::Id majorityOfFive(const Gate::SignalList &newInputs, GNet &newNet) {
   // <xyztu> = <<xyz>t<<xyu>uz>>
-  const auto xyzId = newNet.addGate(GateSymbol::MAJ,
-                                   {newInputs[0],
-                                    newInputs[1], 
-                                    newInputs[2]});
-  const auto xyuId = newNet.addGate(GateSymbol::MAJ,
-                                   {newInputs[0],
-                                    newInputs[1],
-                                    newInputs[4]});
+  const auto xyzId = newNet.addMaj(newInputs[0], newInputs[1], newInputs[2]);
+  const auto xyuId = newNet.addMaj(newInputs[0], newInputs[1], newInputs[4]);
   // <<xyu>uz>
-  const auto muzId = newNet.addGate(GateSymbol::MAJ,
-                                   {newInputs[4],
-                                    newInputs[2],
-                                    Gate::Signal::always(xyuId)});
-  return newNet.addGate(GateSymbol::MAJ,
-                       {Gate::Signal::always(xyzId), 
-                        newInputs[3],
-                        Gate::Signal::always(muzId)});
+  const auto muzId = newNet.addMaj(newInputs[4],
+                                   newInputs[2],
+                                   Gate::Signal::always(xyuId));
+  return newNet.addMaj(Gate::Signal::always(xyzId), 
+                       newInputs[3],
+                       Gate::Signal::always(muzId));
 }
 
 Gate::Id majorityOfSeven(const Gate::SignalList &newInputs, GNet &newNet) {
   // <xyztufr> = <y<u<xzt><NOT(u)fr>><t<ufr><xzNOT(t)>>>
-  const auto xztId = newNet.addGate(GateSymbol::MAJ,
-                                   {newInputs[0],
-                                    newInputs[2],
-                                    newInputs[3]});
+  const auto xztId = newNet.addMaj(newInputs[0], newInputs[2], newInputs[3]);
   const auto notUId = newNet.addNot(newInputs[4]);
-  const auto notUfrId = newNet.addGate(GateSymbol::MAJ,
-                                      {newInputs[5],
-                                       newInputs[6],
-                                       Gate::Signal::always(notUId)});
-  const auto ufrId = newNet.addGate(GateSymbol::MAJ,
-                                   {newInputs[4],
-                                    newInputs[5], 
-                                    newInputs[6]});
+  const auto notUfrId = newNet.addMaj(newInputs[5],
+                                      newInputs[6],
+                                      Gate::Signal::always(notUId));
+  const auto ufrId = newNet.addMaj(newInputs[4], newInputs[5], newInputs[6]);
   const auto notTId = newNet.addNot(newInputs[3]);
-  const auto xzNotTId = newNet.addGate(GateSymbol::MAJ,
-                                      {newInputs[0],
-                                       newInputs[2],
-                                       Gate::Signal::always(notTId)});
+  const auto xzNotTId = newNet.addMaj(newInputs[0],
+                                      newInputs[2],
+                                      Gate::Signal::always(notTId));
   // <u<xzt><NOT(u)fr>>
-  const auto uxztufrId = newNet.addGate(GateSymbol::MAJ,
-                                       {newInputs[4],
-                                        Gate::Signal::always(xztId),
-                                        Gate::Signal::always(notUfrId)});
+  const auto uxztufrId = newNet.addMaj(newInputs[4],
+                                       Gate::Signal::always(xztId),
+                                       Gate::Signal::always(notUfrId));
   // <t<ufr><xzNOT(t)>>
-  const auto tufrxztId = newNet.addGate(GateSymbol::MAJ,
-                                       {newInputs[3],
-                                        Gate::Signal::always(ufrId),
-                                        Gate::Signal::always(xzNotTId)});
+  const auto tufrxztId = newNet.addMaj(newInputs[3],
+                                       Gate::Signal::always(ufrId),
+                                       Gate::Signal::always(xzNotTId));
   // <xyztufr>
-  return newNet.addGate(GateSymbol::MAJ,
-                       {newInputs[1], 
-                        Gate::Signal::always(uxztufrId), 
-                        Gate::Signal::always(tufrxztId)});
+  return newNet.addMaj(newInputs[1], 
+                       Gate::Signal::always(uxztufrId), 
+                       Gate::Signal::always(tufrxztId));
 }
 
 Gate::Id MigMapper::mapMaj(const Gate::SignalList &newInputs, size_t n0, 
@@ -404,48 +358,46 @@ Gate::Id MigMapper::mapMaj(const Gate::SignalList &newInputs, size_t n0,
   }
   const size_t halfQuan = (quantity + 1) / 2;
 
-  // Majority of n to several majority of 3
-  // Example of "rhombus" for majority function of 9:
-  //              1.1
-  //              / \ 
-  //           2.1  2.2
-  //           / \  / \ 
-  //         3.1  3.2  3.3
-  //         / \  / \  / \ 
-  //       4.1  4.2  4.3  4.4
-  //       / \  / \  / \  / \ 
-  // |--5.1  5.2  5.3  5.4  5.5--|
-  // |     \ /  \ /  \ /  \ /    |
-  // |-----6.1  6.2  6.3  6.4----|
-  // |        \ /  \ /  \ /      |
-  // F--------7.1  7.2  7.3------T
-  //             \      /
-  //          <-7x, 8x, 9x>
+  /** 
+  * Majority of n to several majority of 3
+  * Example of "rhombus" for majority function of 9:
+  *              1.1
+  *              / \ 
+  *           2.1  2.2
+  *           / \  / \ 
+  *         3.1  3.2  3.3
+  *         / \  / \  / \ 
+  *       4.1  4.2  4.3  4.4
+  *       / \  / \  / \  / \ 
+  * |--5.1  5.2  5.3  5.4  5.5--|
+  * |     \ /  \ /  \ /  \ /    |
+  * |-----6.1  6.2  6.3  6.4----|
+  * |        \ /  \ /  \ /      |
+  * F--------7.1  7.2  7.3------T
+  *             \      /
+  *          <-7x, 8x, 9x>     
+  */
   Gate::SignalList toFitIn(halfQuan);
   Gate::SignalList toTakeFrom(halfQuan);
   const size_t nLastArg = quantity - 1;
   const size_t nPenultimateArg = quantity - 2;
   const size_t nBeforePenultimateArg = quantity - 3;
   const auto notArgId = newNet.addNot(inputs[nBeforePenultimateArg]);
-  const auto baseMaj1 = newNet.addGate(GateSymbol::MAJ,
-                                      {Gate::Signal::always(notArgId),
-                                       inputs[nPenultimateArg],
-                                       inputs[nLastArg]});
-  const auto baseMaj2 = newNet.addGate(GateSymbol::MAJ,
-                                      {inputs[nBeforePenultimateArg],
-                                       inputs[nPenultimateArg],
-                                       inputs[nLastArg]});
+  const auto baseMaj1 = newNet.addMaj(Gate::Signal::always(notArgId),
+                                      inputs[nPenultimateArg],
+                                      inputs[nLastArg]);
+  const auto baseMaj2 = newNet.addMaj(inputs[nBeforePenultimateArg],
+                                      inputs[nPenultimateArg],
+                                      inputs[nLastArg]);
   toTakeFrom[1] = Gate::Signal::always(baseMaj2);
   const auto zeroId = newNet.addZero();
   const auto oneId  = newNet.addNot(Gate::Signal::always(zeroId));
-  const auto startMaj1 = newNet.addGate(GateSymbol::MAJ,
-                                       {inputs[nBeforePenultimateArg],
-                                        Gate::Signal::always(zeroId),
-                                        Gate::Signal::always(baseMaj1)});
-  const auto startMaj2 = newNet.addGate(GateSymbol::MAJ,
-                                       {inputs[nBeforePenultimateArg],
-                                        Gate::Signal::always(oneId),
-                                        Gate::Signal::always(baseMaj1)});
+  const auto startMaj1 = newNet.addMaj(inputs[nBeforePenultimateArg],
+                                       Gate::Signal::always(zeroId),
+                                       Gate::Signal::always(baseMaj1));
+  const auto startMaj2 = newNet.addMaj(inputs[nBeforePenultimateArg],
+                                       Gate::Signal::always(oneId),
+                                       Gate::Signal::always(baseMaj1));
   toTakeFrom[0] = Gate::Signal::always(startMaj1);
   toTakeFrom[2] = Gate::Signal::always(startMaj2);
   // the layer size
@@ -454,23 +406,20 @@ Gate::Id MigMapper::mapMaj(const Gate::SignalList &newInputs, size_t n0,
   for (size_t i = nBeforePenultimateArg; i >= halfQuan; i--) {
     // begin outer cycle
     // the cycle for a layer
-    const auto firstMaj = newNet.addGate(GateSymbol::MAJ,
-                                        {inputs[i - 1],
-                                         Gate::Signal::always(zeroId),
-                                         toTakeFrom[0]});
+    const auto firstMaj = newNet.addMaj(inputs[i - 1],
+                                        Gate::Signal::always(zeroId),
+                                        toTakeFrom[0]);
     toFitIn[0] = Gate::Signal::always(firstMaj);
     for (size_t j = 1; j < layerSize - 1; j++) {
       // begin inner cycle
-      const auto intermedMaj = newNet.addGate(GateSymbol::MAJ,
-                                             {inputs[i - 1],
-                                              toTakeFrom[j - 1],
-                                              toTakeFrom[j]});
+      const auto intermedMaj = newNet.addMaj(inputs[i - 1],
+                                             toTakeFrom[j - 1],
+                                             toTakeFrom[j]);
       toFitIn[j] = Gate::Signal::always(intermedMaj);
     } // end inner cycle
-    const auto lastMaj = newNet.addGate(GateSymbol::MAJ,
-                                       {inputs[i - 1],
-                                        Gate::Signal::always(oneId),
-                                        toTakeFrom[layerSize - 2]});
+    const auto lastMaj = newNet.addMaj(inputs[i - 1],
+                                       Gate::Signal::always(oneId),
+                                       toTakeFrom[layerSize - 2]);
     toFitIn[layerSize - 1] = Gate::Signal::always(lastMaj);
     layerSize++;
     std::swap(toFitIn, toTakeFrom);
@@ -484,12 +433,12 @@ Gate::Id MigMapper::mapMaj(const Gate::SignalList &newInputs, size_t n0,
     // the cycle for a layer
     for (size_t j = 0; j < counter; j++) {
       // begin inner cycle
-      const auto internalMaj = newNet.addGate(GateSymbol::MAJ,
-                                             {inputs[counter - 1],
-                                              toTakeFrom[j],
-                                              toTakeFrom[j + 2]});
-      const auto externalMaj = newNet.addGate(GateSymbol::MAJ,
-          {inputs[counter], toTakeFrom[j + 1], Gate::Signal::always(internalMaj)}); // need fix
+      const auto internalMaj = newNet.addMaj(inputs[counter - 1],
+                                             toTakeFrom[j],
+                                             toTakeFrom[j + 2]);
+      const auto externalMaj = newNet.addMaj(inputs[counter],
+                                             toTakeFrom[j + 1],
+                                             Gate::Signal::always(internalMaj));
       toFitIn[j] = Gate::Signal::always(externalMaj);
     } // end inner cycle
     std::swap(toFitIn, toTakeFrom);
@@ -497,20 +446,17 @@ Gate::Id MigMapper::mapMaj(const Gate::SignalList &newInputs, size_t n0,
   } // end outer cycle
   if (counter == 1) {
     // counter was for odd layers
-    const auto internalMaj = newNet.addGate(GateSymbol::MAJ,
-                                           {inputs[0],
-                                            toTakeFrom[0],
-                                            toTakeFrom[2]});
-    return newNet.addGate(GateSymbol::MAJ,
-                         {inputs[1], 
-                          toTakeFrom[1],
-                          Gate::Signal::always(internalMaj)});
+    const auto internalMaj = newNet.addMaj(inputs[0],
+                                           toTakeFrom[0],
+                                           toTakeFrom[2]);
+    return newNet.addMaj(inputs[1], 
+                         toTakeFrom[1],
+                         Gate::Signal::always(internalMaj));
   }
   // counter was for even layers
-  return newNet.addGate(GateSymbol::MAJ,
-                       {inputs[0],
-                        toTakeFrom[0],
-                        toTakeFrom[1]});
+  return newNet.addMaj(inputs[0],
+                       toTakeFrom[0],
+                       toTakeFrom[1]);
 }
 
 } // namespace eda::gate::premapper

@@ -342,6 +342,32 @@ public:
   void setGate(GateId gid, GateSymbol func, GateId lhs, GateId rhs) {
     setGate(gid, func, Signal::always(lhs), Signal::always(rhs));
   }
+  
+  /// Adds a majority function.
+  GateId addMaj(const Signal &lhs, const Signal &mhs, const Signal &rhs) {
+    return addGate(GateSymbol::MAJ, SignalList{lhs, mhs, rhs});
+  }
+
+  /// Adds a majority function.
+  GateId addMaj(GateId lhs, GateId mhs, GateId rhs) {
+    return addGate(GateSymbol::MAJ, SignalList{Signal::always(lhs),
+                                               Signal::always(mhs),
+                                               Signal::always(rhs)});
+  }
+
+  /// Changes the given gate to the majority function.
+  void setMaj(GateId gid, const Signal &lhs,
+                          const Signal &mhs,
+                          const Signal &rhs) {
+    setGate(gid, GateSymbol::MAJ, SignalList{lhs, mhs, rhs});
+  }
+
+  /// Changes the given gate to the majority function.
+  void setMaj(GateId gid, GateId lhs, GateId mhs, GateId rhs) {
+    setGate(gid, GateSymbol::MAJ, SignalList{Signal::always(lhs),
+                                             Signal::always(mhs),
+                                             Signal::always(rhs)});
+  }
 
   DEFINE_GATE0_METHODS(GateSymbol::IN,   addIn,   setIn)
   DEFINE_GATE1_METHODS(GateSymbol::OUT,  addOut,  setOut)

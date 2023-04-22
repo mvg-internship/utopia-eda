@@ -1,7 +1,7 @@
 #include "gate/debugger/checker.h"
 #include "gate/model/gnet_test.h"
 
-#include "gate/premapper/migmapper.h"
+#include "gate/premapper/xmgmapper.h"
 
 #include "gtest/gtest.h"
 
@@ -11,22 +11,22 @@
 
 using Checker = eda::gate::debugger::Checker;
 using GateBinding = Checker::GateBinding;
-using GateIdMap = eda::gate::premapper::MigMapper::GateIdMap;
+using GateIdMap = eda::gate::premapper::XmgMapper::GateIdMap;
 using Hints = Checker::Hints;
 using Link = eda::gate::model::Gate::Link;
-using MigMapper = eda::gate::premapper::MigMapper;
+using XmgMapper = eda::gate::premapper::XmgMapper;
 
-bool equivalenceCheck(const std::shared_ptr<GNet> &net,
-                      const std::shared_ptr<GNet> &migMapped) {
+bool xmgEquivalenceCheck(const std::shared_ptr<GNet> &net,
+                      const std::shared_ptr<GNet> &xmgMapped) {
   Checker checker;
   GateIdMap oldToNewGates;
   GateBinding inputBind;
   GateBinding outputBind;
   GateBinding triggerBind;
 
-  assert(net->nSourceLinks() == migMapped->nSourceLinks()
+  assert(net->nSourceLinks() == xmgMapped->nSourceLinks()
          && "The number of source links error\n");
-  assert(net->nTargetLinks() == migMapped->nTargetLinks()
+  assert(net->nTargetLinks() == xmgMapped->nTargetLinks()
          && "The number of target links error\n");
 
   // Input-to-input correspondence
@@ -52,114 +52,82 @@ bool equivalenceCheck(const std::shared_ptr<GNet> &net,
   hints.targetBinding = std::make_shared<GateBinding>(std::move(outputBind));
   hints.triggerBinding = std::make_shared<GateBinding>(std::move(triggerBind));
   
-  return checker.areEqual(*net, *migMapped, hints);
+  return checker.areEqual(*net, *xmgMapped, hints);
 }
 
-void migMap(const std::shared_ptr<GNet> &net) {
+void xmgMap(const std::shared_ptr<GNet> &net) {
   dump(*net);
-  MigMapper migmapper;
-  auto migMapped = migmapper.map(*net);
-  dump(*migMapped);
-  migMapped->sortTopologically();
+  XmgMapper xmgmapper;
+  auto xmgMapped = xmgmapper.map(*net);
+  dump(*xmgMapped);
+  xmgMapped->sortTopologically();
 
   // equivalence
-  bool isEqual = equivalenceCheck(net, migMapped);
+  bool isEqual = xmgEquivalenceCheck(net, xmgMapped);
   std::cout << "equivalence: " << isEqual << '\n';
   EXPECT_TRUE(isEqual);
 }
 
-TEST(MigMapperTest, MigMapperOrTest) {
+TEST(XmgMapperTest, XmgMapperOrTest) {
   Gate::SignalList inputs;
   Gate::Id outputId;
   auto net = makeOr(3, inputs, outputId);
-  migMap(net);
+  xmgMap(net);
   EXPECT_TRUE(net != nullptr);
 }
 
-TEST(MigMapperTest, MigMapperAndTest) {
+TEST(XmgMapperTest, XmgMapperAndTest) {
   Gate::SignalList inputs;
   Gate::Id outputId;
   auto net = makeAnd(2, inputs, outputId);
-  migMap(net);
+  xmgMap(net);
   EXPECT_TRUE(net != nullptr);
 }
 
-TEST(MigMapperTest, MigMapperMajOf3Test) {
+TEST(XmgMapperTest, XmgMapperMajOf3Test) {
   Gate::SignalList inputs;
   Gate::Id outputId;
   auto net = makeMaj(3, inputs, outputId);
-  migMap(net);
+  xmgMap(net);
   EXPECT_TRUE(net != nullptr);
 }
 
-TEST(MigMapperTest, MigMapperMajOf5Test) {
+TEST(XmgMapperTest, XmgMapperMajOf5Test) {
   Gate::SignalList inputs;
   Gate::Id outputId;
   auto net = makeMaj(5, inputs, outputId);
-  migMap(net);
+  xmgMap(net);
   EXPECT_TRUE(net != nullptr);
 }
 
-TEST(MigMapperTest, MigMapperMajOf7Test) {
-  Gate::SignalList inputs;
-  Gate::Id outputId;
-  auto net = makeMaj(7, inputs, outputId);
-  migMap(net);
-  EXPECT_TRUE(net != nullptr);
-}
-
-TEST(MigMapperTest, MigMapperMajOf9Test) {
-  Gate::SignalList inputs;
-  Gate::Id outputId;
-  auto net = makeMaj(9, inputs, outputId);
-  migMap(net);
-  EXPECT_TRUE(net != nullptr);
-}
-
-TEST(MigMapperTest, MigMapperMajOf11Test) {
-  Gate::SignalList inputs;
-  Gate::Id outputId;
-  auto net = makeMaj(11, inputs, outputId);
-  migMap(net);
-  EXPECT_TRUE(net != nullptr);
-}
-
-TEST(MigMapperTest, MigMapperMajOf17Test) {
-  Gate::SignalList inputs;
-  Gate::Id outputId;
-  auto net = makeMaj(17, inputs, outputId);
-  migMap(net);
-  EXPECT_TRUE(net != nullptr);
-}
-
-TEST(MigMapperTest, MigMapperNorTest) {
+TEST(XmgMapperTest, XmgMapperNorTest) {
   Gate::SignalList inputs;
   Gate::Id outputId;
   auto net = makeNor(2, inputs, outputId);
-  migMap(net);
+  xmgMap(net);
   EXPECT_TRUE(net != nullptr);
 }
 
-TEST(MigMapperTest, MigMapperNandTest) {
+TEST(XmgMapperTest, XmgMapperNandTest) {
   Gate::SignalList inputs;
   Gate::Id outputId;
   auto net = makeNand(2, inputs, outputId);
-  migMap(net);
+  xmgMap(net);
   EXPECT_TRUE(net != nullptr);
 }
 
-TEST(MigMapperTest, MigMapperOrnTest) {
+TEST(XmgMapperTest, XmgMapperOrnTest) {
   Gate::SignalList inputs;
   Gate::Id outputId;
   auto net = makeOrn(2, inputs, outputId);
-  migMap(net);
+  xmgMap(net);
   EXPECT_TRUE(net != nullptr);
 }
 
-TEST(MigMapperTest, MigMapperAndnTest) {
+TEST(XmgMapperTest, XmgMapperAndnTest) {
   Gate::SignalList inputs;
   Gate::Id outputId;
   auto net = makeAndn(2, inputs, outputId);
-  migMap(net);
+  xmgMap(net);
   EXPECT_TRUE(net != nullptr);
 }
