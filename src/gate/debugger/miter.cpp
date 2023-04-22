@@ -10,19 +10,19 @@
 
 namespace eda::gate::debugger {
 
-bool areMiterable(GNet *net1, GNet *net2, Hints &hints) {
-  if (net1->nSourceLinks() != net2->nSourceLinks()) {
+bool areMiterable(GNet &net1, GNet &net2, Hints &hints) {
+  if (net1.nSourceLinks() != net2.nSourceLinks()) {
     CHECK(false) << "Nets do not have the same number of inputs\n";
     return false;
   }
 
-  for (auto sourceLink : net1->sourceLinks()) {
+  for (auto sourceLink : net1.sourceLinks()) {
     if (hints.sourceBinding.get()->find(sourceLink) == hints.sourceBinding.get()->end()) {
       CHECK(false) << "Unable to find source with id " << sourceLink.target << '\n';
       return false;
     }
   }
-  for (auto targetLink : net1->targetLinks()) {
+  for (auto targetLink : net1.targetLinks()) {
     if (hints.targetBinding.get()->find(targetLink) == hints.sourceBinding.get()->end()) {
       CHECK(false) << "Unable to find target with id " << targetLink.source << '\n';
       return false;
@@ -32,15 +32,15 @@ bool areMiterable(GNet *net1, GNet *net2, Hints &hints) {
   return true;
 }
 
-GNet *miter(GNet *net1, GNet *net2, Hints &hints) {
+GNet *miter(GNet &net1, GNet &net2, Hints &hints) {
   if (not areMiterable(net1, net2, hints)) {
     return nullptr;
   }
 
   std::unordered_map<Gate::Id, Gate::Id> map1 = {};
   std::unordered_map<Gate::Id, Gate::Id> map2 = {};
-  GNet *cloned1 = net1->clone(map1);
-  GNet *cloned2 = net2->clone(map2);
+  GNet *cloned1 = net1.clone(map1);
+  GNet *cloned2 = net2.clone(map2);
 
   GateBinding ibind, obind, tbind;
   // Input-to-input correspondence.
@@ -74,7 +74,7 @@ GNet *miter(GNet *net1, GNet *net2, Hints &hints) {
   miter->addNet(*cloned2);
 
   for (auto bind : *newHints.sourceBinding.get()) {
-    GateId newInputId = miter->addIn();  
+    GateId newInputId = miter->addIn();
     if (Gate::get(bind.first.target)->func() == GateSymbol::IN) {
       miter->setGate(bind.first.target, GateSymbol::NOP, newInputId);
       miter->setGate(bind.second.target, GateSymbol::NOP, newInputId);
@@ -84,7 +84,7 @@ GNet *miter(GNet *net1, GNet *net2, Hints &hints) {
     }
   }
 
-  for (auto bind : *newHints.targetBinding.get()) { 
+  for (auto bind : *newHints.targetBinding.get()) {
     GateId newOutId = miter->addGate(GateSymbol::XOR, bind.first.source, bind.second.source);
     xorSignalList.push_back(Signal::always(newOutId));
   }
@@ -100,5 +100,5 @@ GNet *miter(GNet *net1, GNet *net2, Hints &hints) {
 
   miter->sortTopologically();
   return miter;
-} 
+}
 } // namespace eda::gate::debugger

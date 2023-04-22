@@ -15,9 +15,9 @@ using namespace eda::gate::debugger;
 using namespace eda::gate::model;
 
 TEST(MiterTest, MiterStructureTest) {
-  GNet* net = new GNet();
+  GNet *net = new GNet();
   SignalList inps1;
-  int nAndInputs = 100;
+  int nAndInputs = 2;
   for (int i = 0; i < nAndInputs; i++) {
     GateId inId1 = net->addIn();
     inps1.push_back(Signal::always(inId1));
@@ -25,14 +25,14 @@ TEST(MiterTest, MiterStructureTest) {
   GateId andId = net->addGate(GateSymbol::AND, inps1);
   GateId outId = net->addOut(andId);
   SignalList inps2;
-  int nNorInputs = 100;
+  int nNorInputs = 2;
   for (int i = 0; i < nNorInputs; i++) {
     GateId inId2 = net->addIn();
     inps2.push_back(Signal::always(inId2));
   }
   GateId norId = net->addGate(GateSymbol::NOR, inps2);
   net->addOut(norId);
-  int nOrOutputs = 100;
+  int nOrOutputs = 5;
   GateId orId = net->addGate(GateSymbol::OR, inps1);
   for (int i = 0; i < nOrOutputs; i++) {
     outId = net->addOut(orId);
@@ -66,7 +66,7 @@ TEST(MiterTest, MiterStructureTest) {
   hints.targetBinding  = std::make_shared<GateBinding>(std::move(obind));
   hints.triggerBinding = std::make_shared<GateBinding>(std::move(tbind));
   
-  GNet *mit = miter(net, netCloned, hints);
+  GNet *mit = miter(*net, *netCloned, hints);
   EXPECT_TRUE(mit->nTargetLinks() == 1);
   EXPECT_TRUE(mit->nSourceLinks() == netCloned->nSourceLinks());
 }

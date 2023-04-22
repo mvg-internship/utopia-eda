@@ -66,5 +66,5 @@ TEST(BDDCheckerTest, BDDCheckerTest) {
   hints.targetBinding  = std::make_shared<GateBinding>(std::move(obind));
   hints.triggerBinding = std::make_shared<GateBinding>(std::move(tbind));
   
-  EXPECT_TRUE(bddChecker(net, netCloned, hints));
+  EXPECT_TRUE(bddChecker(*net, *netCloned, hints));
 }

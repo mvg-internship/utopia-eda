@@ -10,7 +10,7 @@
 
 namespace eda::gate::debugger {
 
-bool bddChecker(GNet *net1, GNet *net2, Hints &hints) {
+bool bddChecker(GNet &net1, GNet &net2, Hints &hints) {
 
   GNet *miterNet = miter(net1, net2, hints);
   SignalList inputs;

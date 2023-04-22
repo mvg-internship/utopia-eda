@@ -19,18 +19,18 @@ using GateId = model::Gate::Id;
 using GateIdList  = std::vector<GateId>;
 using GateSymbol = model::GateSymbol;
 using GNet = eda::gate::model::GNet;
-using Hints = Checker::Hints;
+using Hints = eda::gate::debugger::Checker::Hints;
 using Signal = model::Gate::Signal;
-using SignalList = model::Gate::SignalList; 
+using SignalList = model::Gate::SignalList;
 
-/** 
+/**
  *  \brief Constructs a miter for the specified nets.
- *  @param hints Gate-to-gate mapping between nets. 
+ *  @param hints Gate-to-gate mapping between nets.
  *  @return The miter.
  */
-GNet *miter(GNet *net1, GNet *net2, Hints &hints);
+GNet *miter(GNet &net1, GNet &net2, Hints &hints);
 
 // Checks if it is possible to construct a miter with given parameters.
-bool areMiterable(GNet *net1, GNet *net2, Hints &hints);
+bool areMiterable(GNet &net1, GNet &net2, Hints &hints);
 
 } // namespace eda::gate::debugger

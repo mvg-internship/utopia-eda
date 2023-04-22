@@ -32,6 +32,6 @@ using SignalList = model::Gate::SignalList;
  *  @param hints Gate-to-gate mapping between nets. 
  *  @return true if the nets are equivalent, false if not.
  */
-bool bddChecker(GNet *net1, GNet *net2, Hints &hints);
+bool bddChecker(GNet &net1, GNet &net2, Hints &hints);
 
 } // namespace eda::gate::debugger
