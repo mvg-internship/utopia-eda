@@ -13,7 +13,7 @@ add_library(Gate OBJECT
   transformer/hmetis.cpp
 )
 add_library(Utopia::Gate ALIAS Gate)
-
+add_subdirectory(parser/bench)
 target_include_directories(Gate PUBLIC ${PROJECT_SOURCE_DIR}/src)
 target_link_libraries(Gate
   PUBLIC
