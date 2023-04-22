@@ -17,13 +17,22 @@ enum Tokens {
     TOK_COMMA,
 };
 %}
-
+%x IN_COMMENT
 %option noyywrap 
 IDD       [a-zA-Z][a-zA-Z0-9]*
 
 %%
 
 [ \t\r\n]+
+
+<INITIAL>{
+"#"              BEGIN(IN_COMMENT);
+}
+<IN_COMMENT>{
+\n      BEGIN(INITIAL);
+[a-zA-Z][a-zA-Z0-9]*
+\n
+}
 
 "DFF"                                   { return TOK_DFF; }
 "NOT"                                   { return TOK_NOT; }
