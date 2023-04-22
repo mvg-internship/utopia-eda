@@ -51,7 +51,7 @@ struct SymbolTable {
     std::string parentName;
     std::string childName;
     int bit;
-    Gate::Id gateId;
+    //Gate::Id gateId;
   };
   std::unordered_map<std::string, Symbol> table;
 
@@ -288,19 +288,12 @@ GNet buildGnet(SymbolTable& symbolTable, GNet& net, std::string currentModuleNam
       auto arg = gates[static_cast<std::string>(modules[it->first].variables.front())];
       auto _type = symbol.child;
 
-      // switch (_type) {
-      // case NOT_:
-      //   symbolTable.table["c"].gateId = net.addNot(symbolTable.table["d"].gateId);
-      //   break;
-      // default:
-      //   break;
-      // }
     
       for(auto idsIt = modules[it->first].variables.begin(); idsIt != modules[it->first].variables.end();++idsIt ) {
         // auto tmp = idsIt->
         //symbolTable.table[it->first].gateId ;
-        auto fId = gates.find(static_cast<std::string>());
-        ids.push_back(Signal::always(symbolTable.table[it->first].gateId));
+        auto fId = gates.find(static_cast<std::string>(*idsIt));
+        ids.push_back(Signal::always(fId->second));
       }
       for(int i; i < modules[it->first].counter; i++){
         it++;
@@ -351,7 +344,8 @@ GNet buildGnet(SymbolTable& symbolTable, GNet& net, std::string currentModuleNam
       continue;
     }
     if (symbol.child == familyInfo::OUTPUT_) {
-      symbol.gateId = net.addOut(symbol.gateId);
+      net.addOut(gates[static_cast<std::string>(entry.first)]);
+      // symbol.gateId = net.addOut(symbol.gateId);
     }
   }
   return net;
@@ -437,7 +431,8 @@ kind_of_error parse_module(token_t &tok, SymbolTable &table, std::unordered_map<
     }
   }
 
-  //buildGnet(table,net,currentModuleName,modules);
+  buildGnet(table,net,currentModuleName,modules);
+  std::cout << net;
   //table.clearTable();
   return rc;
 }
