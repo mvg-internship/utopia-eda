@@ -36,6 +36,7 @@ struct ModuleInfo {
   familyInfo type;
   std::vector<std::string> variables;
   std::string area;
+  int counter = 0;
 
   auto find_in_vector(const std::vector<std::string>& vec, const std::string& value) {
     return std::find(vec.begin(), vec.end(), value);
@@ -59,12 +60,12 @@ struct SymbolTable {
                  familyInfo parent = VOID_,
                  familyInfo child = VOID_) {
     Symbol symbol;
-    symbol.parent     = parent;
-    symbol.child      = child;
+    symbol.parent = parent;
+    symbol.child = child;
     symbol.parentName;
     symbol.childName;
     symbol.bit = 1;
-    table[name]       = symbol;
+    table[name] = symbol;
   }
 
   void removeSymbol(const std::string &name) {
@@ -193,7 +194,16 @@ void AsserrtVariable(const std::string &name,
     }
     break;  
   case LOGIC_GATE_:
-
+    if(table.findParentName(name) != familyNames){
+    table.addSymbol(name,VOID_,VOID_);
+    table.changeParentName(name,familyNames);
+    bitCounter++;
+    }
+    /* if(table.findParentName(name) != familyNames) {
+      std::cerr << "This variable didn't declaration in this module: " << name << std::endl
+                << "line: " << yylineno << std::endl;
+      exit(EXIT_FAILURE);
+    } */
     break;
   default:
 
@@ -242,49 +252,63 @@ token_t get_next_token() {
 
 //GNet net;
 
-GNet buildGnet(SymbolTable& symbolTable, GNet& net, std::string currentModuleName, std::unordered_map<std::string, ModuleInfo> &modules) {
-  for ( auto& entry : symbolTable.table) {
+/* GNet buildGnet(SymbolTable& symbolTable, GNet& net, std::string currentModuleName, std::unordered_map<std::string, ModuleInfo> &modules) {
+  for(auto& entry : symbolTable.table) {
      SymbolTable::Symbol& symbol = entry.second;
     if(symbol.parentName != currentModuleName) {
       continue;
     }
-    if (symbol.child == familyInfo::INPUT_) {
+    if(symbol.child == familyInfo::INPUT_) {
      symbol.gateId = net.addIn();
     }
   }
 
   for (auto it = symbolTable.table.begin(); it != symbolTable.table.end(); ++it) {
-    const SymbolTable::Symbol& symbol = it->second;
+    SymbolTable::Symbol& symbol = it->second;
     if(symbol.parentName != currentModuleName) {
       continue;
     }
 
-    if(symbol.child == familyInfo::LOGIC_GATE_) {
+    if(symbol.parent == familyInfo::LOGIC_GATE_) {
       std::vector<Signal> ids;
       auto arg = symbol.gateId;
       auto _type = symbol.child;
+
+      switch (_type) {
+      case NOT_:
+        symbolTable.table["c"].gateId = net.addNot(symbolTable.table["d"].gateId);
+        break;
+      default:
+        break;
+      }
     
       for(auto idsIt = modules[it->first].variables.begin(); idsIt != modules[it->first].variables.end();++idsIt ) {
         // auto tmp = idsIt->
         symbolTable.table[it->first].gateId ;
         ids.push_back(Signal::always(symbolTable.table[it->first].gateId));
       }
-      it++;
+      for(int i; i < modules[it->first].counter; i++){
+        it++;
+      }
       switch (_type) {
       case NOT_:
-        net.setGate(arg, GateSymbol::NOT, ids);
+        arg = net.addGate(GateSymbol::NOT,ids);
         break;
       case AND_:
-        net.setGate(arg, GateSymbol::AND, ids);
+        arg = net.addGate(GateSymbol::AND,ids);
+        //net.setGate(arg, GateSymbol::AND, ids);
         break;
       case NAND_:
-        net.setGate(arg, GateSymbol::NAND, ids);
+        arg = net.addGate(GateSymbol::NAND,ids);
+        //net.setGate(arg, GateSymbol::NAND, ids);
         break;
       case NOR_:
-        net.setGate(arg, GateSymbol::NOR, ids);
+        arg = net.addGate(GateSymbol::NOR,ids);
+        //net.setGate(arg, GateSymbol::NOR, ids);
         break;
       case XOR_:
-        net.setGate(arg, GateSymbol::XOR, ids);
+        arg = net.addGate(GateSymbol::XOR,ids);
+        //net.setGate(arg, GateSymbol::XOR, ids);
         break;
       //case
       default:
@@ -305,17 +329,17 @@ GNet buildGnet(SymbolTable& symbolTable, GNet& net, std::string currentModuleNam
      
     }
 
-  for (const auto& entry : symbolTable.table) {
-    const SymbolTable::Symbol& symbol = entry.second;
+  for (auto& entry : symbolTable.table) {
+     SymbolTable::Symbol& symbol = entry.second;
     if(symbol.parentName != currentModuleName) {
       continue;
     }
     if (symbol.child == familyInfo::OUTPUT_) {
-      net.addOut(symbol.gateId);
+      symbol.gateId = net.addOut(symbol.gateId);
     }
   }
   return net;
-}
+} */
 
 kind_of_error parse_gatelevel_verilog() {
   
@@ -397,7 +421,7 @@ kind_of_error parse_module(token_t &tok, SymbolTable &table, std::unordered_map<
     }
   }
 
-  buildGnet(table,net,currentModuleName,modules);
+  //buildGnet(table,net,currentModuleName,modules);
   //table.clearTable();
   return rc;
 }
@@ -465,7 +489,27 @@ kind_of_error parse_expr(token_t &tok, SymbolTable &table, std::string currentMo
  kind_of_error parse_logic_gate(token_t &tok, SymbolTable &table, std::string currentModuleName, std::unordered_map<std::string, ModuleInfo> &modules) {
   kind_of_error rc = SUCCESS;
   std::string currentLogicGateName;
-  int bit = 1;
+  familyInfo familyType = familyInfo::VOID_;
+  switch (tok) {
+  case NOT:
+    familyType = NOT_;
+    break;
+  case NAND:
+    familyType = NAND_;
+    break;
+  case AND:
+    familyType = AND_;
+    break;
+  case XOR:
+    familyType = XOR_;
+    break;
+  case NOR:
+    familyType = NOR_;
+    break;
+  default:
+    break;
+  }
+  int bit = 0;
   int counterLogicGates = 1;
   token_t tmp = tok;
   ASSERT_NEXT_TOKEN(tok, STRING, FAILURE_IN_EXPR);
@@ -475,6 +519,7 @@ kind_of_error parse_expr(token_t &tok, SymbolTable &table, std::string currentMo
       exit(EXIT_FAILURE);
   }
   modules[currentLogicGateName] = {familyInfo::LOGIC_GATE_, {}, currentModuleName};
+  table.addSymbol(yytext,LOGIC_GATE_,familyType);
   std::cout << "current area: " << modules[currentLogicGateName].area << std::endl; 
   ASSERT_NEXT_TOKEN(tok, LBRACE, FAILURE_IN_EXPR);
   DEBUGTOKEN(tok, "Parse expr begin");
@@ -485,7 +530,7 @@ kind_of_error parse_expr(token_t &tok, SymbolTable &table, std::string currentMo
       counterLogicGates++;
     }
     
-    AsserrtVariable(yytext,LOGIC_GATE_, table, currentModuleName, modules, bit, VOID_);
+    AsserrtVariable(yytext,LOGIC_GATE_, table, currentModuleName, modules, bit, familyType);
     modules[currentLogicGateName].variables.push_back(yytext);
     tok = get_next_token();
     DEBUGTOKEN(tok, "ARG  loop");
@@ -499,10 +544,11 @@ kind_of_error parse_expr(token_t &tok, SymbolTable &table, std::string currentMo
       rc = FAILURE_IN_ARG;
     }
   }
-  if(bit != counterLogicGates){
+  /* if(bit != counterLogicGates){
       std::cerr << "Count of arguments of this logic gate is wrong: "<< currentLogicGateName << std::endl << "line: " << yylineno << std::endl;
       exit(EXIT_FAILURE);
-    }
+    } */
+    modules[currentLogicGateName].counter = bit;
   ASSERT_NEXT_TOKEN(tok, SEMICOLON, FAILURE_IN_MODULE_INCAPTULATION);
   tok = get_next_token();
   DEBUGTOKEN(tok, "Parse expr end");
