@@ -1,0 +1,8 @@
+module Nand2(a, b, c);
+  input a, b;
+  output c;
+
+  wire d;
+
+  not not1(d, a);
+endmodule
