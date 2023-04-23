@@ -265,12 +265,16 @@ GNet buildGnet(SymbolTable &symbolTable,
     if (symbol.parentName != currentModuleName) {
       continue;
     }
-    if (symbol.child == familyInfo::INPUT_) {
+    if (symbol.child == familyInfo::INPUT_ && symbol.parent != LOGIC_GATE_) {
+      std::cout << "BBBBBBBBBBBB" << std::endl;
       gates.insert(
           std::make_pair(static_cast<std::string>(entry.first), net.addIn()));
-    } else {
+    } else if(symbol.parent != LOGIC_GATE_){
+      std::cout << "EEE" << std::endl;
       gates.insert(
           std::make_pair(static_cast<std::string>(entry.first), net.newGate()));
+    } else {
+      continue;
     }
   }
 
@@ -281,11 +285,12 @@ GNet buildGnet(SymbolTable &symbolTable,
       continue;
     }
     if (symbol.parent == familyInfo::LOGIC_GATE_) {
+      std::cout << "TTT" << std::endl;
       std::vector<Signal> ids;
       auto arg =
-          gates[static_cast<std::string>(modules[it->first].variables.front())];
+          gates[static_cast<std::string>(modules[it->first].variables.front())];      
       auto _type = symbol.child;
-      for (auto idsIt = modules[it->first].variables.begin();
+      for (auto idsIt = modules[it->first].variables.begin() + 1;
            idsIt != modules[it->first].variables.end(); ++idsIt) {
         auto fId = gates.find(static_cast<std::string>(*idsIt));
         ids.push_back(Signal::always(fId->second));
@@ -296,8 +301,11 @@ GNet buildGnet(SymbolTable &symbolTable,
       switch (_type) {
       case NOT_:
         net.setGate(arg, GateSymbol::NOT, ids);
+        std::cout << "NOT case symbol: " << modules[it->first].variables.front() << " gates value: " << arg << std::endl;
+        //net.addNot(ids);
         break;
       case AND_:
+       std::cout << "AND case: "<< modules[it->first].variables.front() << " gates value: " << arg << std::endl;
         net.setGate(arg, GateSymbol::AND, ids);
         break;
       case NAND_:
@@ -313,15 +321,30 @@ GNet buildGnet(SymbolTable &symbolTable,
         break;
       }
     }
+    if(symbol.parent == FUNC_INI_) {
+      std::vector<Signal> ids;
+      auto arg =
+          gates[static_cast<std::string>(modules[it->first].variables.front())];
+          
+      auto _type = symbol.child;
+    }
   }
+
+  
+
   for (auto &entry : symbolTable.table) {
     SymbolTable::Symbol &symbol = entry.second;
     if (symbol.parentName != currentModuleName) {
       continue;
     }
     if (symbol.child == familyInfo::OUTPUT_) {
+      std::cout << "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" << std::endl;
+      std::cout << "OUT case symbol: " << static_cast<std::string>(entry.first) << " gates value: " << gates[static_cast<std::string>(entry.first)] << std::endl;
       net.addOut(gates[static_cast<std::string>(entry.first)]);
+    //   gates.insert(
+    //       std::make_pair(static_cast<std::string>(entry.first), net.addIn()));
     }
+    
   }
   return net;
 }
@@ -465,6 +488,7 @@ kind_of_error parse_expr(token_t &tok,
   kind_of_error rc = SUCCESS;
   std::string currentFuncName = yytext;
   std::cout << " Type of func: " << modules[currentFuncName].type << std::endl;
+  table.addSymbol(currentFuncName, FUNC_INI_, VOID_);
   ASSERT_NEXT_TOKEN(tok, STRING, FAILURE_IN_EXPR);
   ASSERT_NEXT_TOKEN(tok, LBRACE, FAILURE_IN_EXPR);
   DEBUGTOKEN(tok, "Parse expr begin");
@@ -505,6 +529,7 @@ parse_logic_gate(token_t &tok,
   token_t tmp = tok;
   ASSERT_NEXT_TOKEN(tok, STRING, FAILURE_IN_EXPR);
   currentLogicGateName = yytext;
+  std::cout << "Logic Gate name is: "<< currentLogicGateName << std::endl;
   if (modules.find(currentLogicGateName) != modules.end() &&
       modules[currentLogicGateName].area == currentModuleName) {
     std::cerr << "This name alredy exsist: " << currentLogicGateName
@@ -514,7 +539,8 @@ parse_logic_gate(token_t &tok,
   }
   modules[currentLogicGateName] = {
       familyInfo::LOGIC_GATE_, {}, currentModuleName};
-  table.addSymbol(yytext, LOGIC_GATE_, familyType);
+  table.addSymbol(currentLogicGateName, LOGIC_GATE_, familyType);
+  table.changeParentName(yytext,currentModuleName);
   std::cout << "current area: " << modules[currentLogicGateName].area
             << std::endl;
   ASSERT_NEXT_TOKEN(tok, LBRACE, FAILURE_IN_EXPR);
