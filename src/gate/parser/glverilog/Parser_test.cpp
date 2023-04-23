@@ -317,6 +317,7 @@ GNet buildGnet(SymbolTable &symbolTable,
         it++;
       }
       std::unordered_map<Gate::Id,Gate::Id> a = {};
+      //GNet tmp;
       switch (_type) {
       case NOT_:
         gnets[currentModuleName].net.setGate(arg, GateSymbol::NOT, ids);
@@ -341,15 +342,17 @@ GNet buildGnet(SymbolTable &symbolTable,
         break;
       case FUNC_INI_NAME_:
         
-        gnets[symbol.parentName].net.clone(a);
-      //gnets[currentModuleName].net.clone(gnets[symbol.parentName].net); //Attempt add subnet in our currently net
+        auto subnet = gnets[symbol.parentName].net.clone(a);
+      gnets[currentModuleName].net.addSubnet(subnet); //Attempt add subnet in our currently net
         for (auto &i : gnets[symbol.parentName].elements) {
           //in this if construction Im gonna connect all necessery sygnals from current net to subnet 
           if (i.derection == INPUT_) {
-             //auto fId = gates.find(static_cast<std::string>(i.name));
+            auto fId = gates.find(static_cast<std::string>(i.name));
+            subnet->setNop(i.sourseGate,Signal::always(fId->second));
              //gnets[currentModuleName].net.setGate(,GateSymbol::IN,);
           } else if (i.derection == OUTPUT_) {
-             //auto fId = gates.find(static_cast<std::string>(i.name));
+             auto fId = gates.find(static_cast<std::string>(i.name));
+            subnet->setNop(i.sourseGate,Signal::always(fId->second)); // Idk why, but if I delete Signal::always... I get a problem:
           }
           //gnets[currentModuleName].net.clone(,);
         }
