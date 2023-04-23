@@ -22,7 +22,7 @@ struct GNetInfo {
   {
     std::string name;
     FamilyInfo derection; //In or Out
-    int number;
+    Gate::Id sourseGate;
   };
   std::vector<IniType> elements;
 };
@@ -275,14 +275,13 @@ GNet buildGnet(SymbolTable &symbolTable,
       continue;
     }
     if (symbol.child == FamilyInfo::INPUT_ && symbol.parent != LOGIC_GATE_) {
+      Gate::Id bb = gnets[currentModuleName].net.addIn();
       gates.insert(
-          std::make_pair(static_cast<std::string>(entry.first),
-              gnets[currentModuleName].net.addIn()));
+          std::make_pair(static_cast<std::string>(entry.first), bb));
         for ( auto &element : gnets[currentModuleName].elements) {
           if(element.name == entry.first) {
             element.derection = INPUT_;
-            element.number = counter;
-            counter ++;
+            element.sourseGate = bb;
           }
         }
     } else if (symbol.parent != LOGIC_GATE_) {
@@ -317,6 +316,7 @@ GNet buildGnet(SymbolTable &symbolTable,
       for (int i = 0; i < modules[it->first].counter; i++) {
         it++;
       }
+      std::unordered_map<Gate::Id,Gate::Id> a = {};
       switch (_type) {
       case NOT_:
         gnets[currentModuleName].net.setGate(arg, GateSymbol::NOT, ids);
@@ -340,7 +340,9 @@ GNet buildGnet(SymbolTable &symbolTable,
         gnets[currentModuleName].net.setGate(arg, GateSymbol::XOR, ids);
         break;
       case FUNC_INI_NAME_:
-      //gnets[currentModuleName].net.addSubnet(*(gnets[symbol.parentName].net)); //Attempt add subnet in our currently net
+        
+        gnets[symbol.parentName].net.clone(a);
+      //gnets[currentModuleName].net.clone(gnets[symbol.parentName].net); //Attempt add subnet in our currently net
         for (auto &i : gnets[symbol.parentName].elements) {
           //in this if construction Im gonna connect all necessery sygnals from current net to subnet 
           if (i.derection == INPUT_) {
@@ -349,7 +351,7 @@ GNet buildGnet(SymbolTable &symbolTable,
           } else if (i.derection == OUTPUT_) {
              //auto fId = gates.find(static_cast<std::string>(i.name));
           }
-          
+          //gnets[currentModuleName].net.clone(,);
         }
         break;
       default:
@@ -364,8 +366,8 @@ GNet buildGnet(SymbolTable &symbolTable,
   //     auto _type = symbol.child;
   //   }
     }
-  std::cout << "Counter 1: " << counter << std::endl;
-  counter = 0;
+  
+  
   std::cout << "All variables in/out: " << std::endl;
   for (auto &entry : symbolTable.table) {
     SymbolTable::Symbol &symbol = entry.second;
@@ -373,23 +375,20 @@ GNet buildGnet(SymbolTable &symbolTable,
       continue;
     }
     if (symbol.child == FamilyInfo::OUTPUT_) {
-      gnets[currentModuleName].net.addOut(
-          gates[static_cast<std::string>(entry.first)]);
+      Gate::Id bb = gnets[currentModuleName].net.addOut(
+          gates[static_cast<std::string>(entry.first)]);;   
       for( auto &element : gnets[currentModuleName].elements) {
           if(element.name == entry.first) {
             element.derection = OUTPUT_;
-            element.number = counter;
-            counter ++;
+            element.sourseGate = bb;
+           
           }
         }
     }   
   }
-  for (auto &element : gnets[currentModuleName].elements) {
-          
+  for (auto &element : gnets[currentModuleName].elements) {         
             std::cout << "Element derection: "<<element.derection;
-            std::cout << " Element name: "<< element.name; 
-           
-            std::cout << " Element number: "<<element.number << std::endl; 
+            std::cout << " Element name: "<< element.name;  
         
         }
          std::cout << "Counter 2: " << counter << std::endl;
