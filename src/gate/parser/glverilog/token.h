@@ -1,7 +1,7 @@
 #ifndef GLVERILOG_TOKEN_H
 #define GLVERILOG_TOKEN_H
 #define YY_DECL int scan_token() 
-enum token_t
+enum Token_T
 {
   EOF_TOKEN,
   MODULE,
@@ -32,7 +32,7 @@ enum token_t
   
 };
 
-    enum kind_of_error
+    enum KindOfError
 {
   SUCCESS,
   FAILURE_IN_MODULE_NAME,
@@ -45,7 +45,7 @@ enum token_t
   FAILURE_IN_GATE_LEVEL_VERILOG
 };
 
-    enum familyInfo
+    enum FamilyInfo
 {
   VOID_,
   MODULE_,
