@@ -1,13 +1,13 @@
-#include <fstream>
-#include <iostream>
-#include <unordered_map>
-#include <vector>
-#include <algorithm>
 #include "headerFile"
 #include "token.h"
+#include <algorithm>
+#include <fstream>
 #include <gate/model/gate.h>
 #include <gate/model/gnet.h>
 #include <gate/model/gsymbol.h>
+#include <iostream>
+#include <unordered_map>
+#include <vector>
 
 extern "C" YY_DECL;
 
@@ -313,7 +313,8 @@ GNet buildGnet(SymbolTable &symbolTable,
         auto fId = gates.find(static_cast<std::string>(*idsIt));
         ids.push_back(Signal::always(fId->second));
       }
-      for (int i; i < modules[it->first].counter; i++) {
+      
+      for (int i = 0; i < modules[it->first].counter; i++) {
         it++;
       }
       switch (_type) {
@@ -339,32 +340,30 @@ GNet buildGnet(SymbolTable &symbolTable,
         gnets[currentModuleName].net.setGate(arg, GateSymbol::XOR, ids);
         break;
       case FUNC_INI_NAME_:
-      gnets[currentModuleName].net.addSubnet(*(gnets[symbol.parentName].net)); //Attempt add subnet in our currently net
+      //gnets[currentModuleName].net.addSubnet(*(gnets[symbol.parentName].net)); //Attempt add subnet in our currently net
         for (auto &i : gnets[symbol.parentName].elements) {
           //in this if construction Im gonna connect all necessery sygnals from current net to subnet 
           if (i.derection == INPUT_) {
-             auto fId = gates.find(static_cast<std::string>(i.name));
-             gnets[currentModuleName].net.setGate(,GateSymbol::IN,);
+             //auto fId = gates.find(static_cast<std::string>(i.name));
+             //gnets[currentModuleName].net.setGate(,GateSymbol::IN,);
           } else if (i.derection == OUTPUT_) {
-             auto fId = gates.find(static_cast<std::string>(i.name));
+             //auto fId = gates.find(static_cast<std::string>(i.name));
           }
           
         }
-        
-        
         break;
       default:
         break;
       }
     }
-    if(symbol.parent == FUNC_INI_) {
-      std::vector<Signal> ids;
-      auto arg =
-          gates[static_cast<std::string>(
-              modules[it->first].variables.front())];       
-      auto _type = symbol.child;
+  //   if(symbol.parent == FUNC_INI_) {
+  //     std::vector<Signal> ids;
+  //     auto arg =
+  //         gates[static_cast<std::string>(
+  //             modules[it->first].variables.front())];       
+  //     auto _type = symbol.child;
+  //   }
     }
-  }
   std::cout << "Counter 1: " << counter << std::endl;
   counter = 0;
   std::cout << "All variables in/out: " << std::endl;
@@ -590,7 +589,7 @@ parseLogicGate(Token_T &tok,
   }
   int bit = 0;
   int counterLogicGates = 1;
-  Token_T tmp = tok;
+  //Token_T tmp = tok;
   ASSERT_NEXT_TOKEN(tok, STRING, FAILURE_IN_EXPR);
   currentLogicGateName = yytext;
   std::cout << "Logic Gate name is: "<< currentLogicGateName << std::endl;
