@@ -339,17 +339,19 @@ GNet buildGnet(SymbolTable &symbolTable,
         gnets[currentModuleName].net.setGate(arg, GateSymbol::XOR, ids);
         break;
       case FUNC_INI_NAME_:
+      gnets[currentModuleName].net.addSubnet(*(gnets[symbol.parentName].net)); //Attempt add subnet in our currently net
         for (auto &i : gnets[symbol.parentName].elements) {
+          //in this if construction Im gonna connect all necessery sygnals from current net to subnet 
           if (i.derection == INPUT_) {
              auto fId = gates.find(static_cast<std::string>(i.name));
-             lhs.push_back(Signal::always(fId->second));
+             gnets[currentModuleName].net.setGate(,GateSymbol::IN,);
           } else if (i.derection == OUTPUT_) {
              auto fId = gates.find(static_cast<std::string>(i.name));
-             rhs.push_back(Signal::always(fId->second));
           }
           
         }
-        //gnets[currentModuleName].net.mergeSubnets(lhs,rhs);
+        
+        
         break;
       default:
         break;
