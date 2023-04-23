@@ -9,9 +9,8 @@
 #pragma once
 
 #include "CLI/CLI.hpp"
-#include "gate/debugger/classLEC.h"
+#include "gate/debugger/base_checker.h"
 #include "nlohmann/json.hpp"
-
 
 #include <fstream>
 #include <iostream>
@@ -21,7 +20,7 @@
 using Json = nlohmann::json;
 NLOHMANN_JSON_SERIALIZE_ENUM( eda::gate::debugger::LecType, {
   {eda::gate::debugger::RND, "rnd"},
-  {eda::gate::debugger::DFL, "dfl"},
+  {eda::gate::debugger::DEFAULT, "default"},
   {eda::gate::debugger::BdD, "bdd"},
 })
 
@@ -133,24 +132,21 @@ static void get(Json json, const std::string &key, T &value) {
 using LecType = eda::gate::debugger::LecType;
 static constexpr const char *LEC_TYPE = "lec-type";
 struct RtlOptions final : public AppOptions {
-  eda::gate::debugger::LecType lecType = LecType::DFL;
-
-
-
+  eda::gate::debugger::LecType lecType = LecType::DEFAULT;
 
   static constexpr const char *ID = "rtl";
 
-
-
   const std::map<std::string, LecType> lecTypeMap {
     {"rnd", LecType::RND},
-    {"dfl", LecType::DFL},
+    {"default", LecType::DEFAULT},
     {"bdd", LecType::BdD},
   };
 
   RtlOptions(AppOptions &parent):
       AppOptions(parent, ID, "Logical synthesis") {
-
+    // Named options.
+    options->add_option(cli(LEC_TYPE), lecType, "Type of LEC")
+           ->expected(1);
     // Input file(s).
     options->allow_extras();
   }
@@ -160,7 +156,7 @@ struct RtlOptions final : public AppOptions {
   }
 };
 
-eda::gate::debugger::LecType lecType = LecType::DFL;
+eda::gate::debugger::LecType lecType = LecType::DEFAULT;
 
 struct HlsOptions final : public AppOptions {
   static constexpr const char *ID = "hls";
@@ -176,9 +172,6 @@ struct HlsOptions final : public AppOptions {
       AppOptions(parent, ID, "High-level synthesis") {
 
     // Named options.
-    options->add_option(cli(LEC_TYPE), lecType, "Type of LEC")
-           ->expected(1);
-
     options->add_option(cli(OUTPUT_DIR),  outDir,  "Output directory")
            ->expected(1);
     options->add_option(cli(OUTPUT_DOT),  outDot,  "Output DOT file")

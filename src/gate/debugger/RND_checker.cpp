@@ -6,13 +6,13 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "classRND.h"
+#include "RND_checker.h"
 
 namespace eda::gate::debugger {
 
-  bool RndChecker::areEqual(GNet &lhs,
-                GNet &rhs,
-                Checker::GateIdMap &gmap) {
+  bool RNDChecker::areEqual(GNet &lhs,
+                            GNet &rhs,
+                            Checker::GateIdMap &gmap) {
 
     GateBinding ibind, obind, tbind;
 

@@ -7,27 +7,19 @@
 //===----------------------------------------------------------------------===//
 
 #pragma once
-#include "gate/model/gnet.h"
+#include "base_checker.h"
+#include "miter.h"
+#include "rnd_checker.h"
 
 namespace eda::gate::debugger {
-using GNet = eda::gate::model::GNet;
-using Gate = eda::gate::model::Gate;
-using GateId = eda::gate::model::Gate::Id;
 
-class LEC {
+class RNDChecker : public BaseChecker, public util::Singleton<RNDChecker> {
+friend class util::Singleton<RNDChecker>;
+
+
 public:
-  virtual bool areEqual(GNet &lhs,
+  bool areEqual(GNet &lhs,
                 GNet &rhs,
-                std::unordered_map<Gate::Id, Gate::Id> &gmap) = 0;
-  virtual ~LEC() = 0;
+                Checker::GateIdMap &gmap) override;
 };
-
-enum LecType {
-  BdD,
-  DFL,
-  RND,
-};
-
-LEC &getChecker(LecType lec);
-
 } // namespace eda::gate::debugger

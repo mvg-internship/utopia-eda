@@ -6,13 +6,13 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "classBDD.h"
+#include "BDD_checker.h"
 
 namespace eda::gate::debugger {
 
   bool BDDChecker::areEqual(GNet &lhs,
-                GNet &rhs,
-                Checker::GateIdMap &gmap) {
+                            GNet &rhs,
+                            Checker::GateIdMap &gmap) {
 
     GateBinding ibind, obind, tbind;
 

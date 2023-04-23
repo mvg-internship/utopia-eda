@@ -6,21 +6,20 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "classLEC.h"
-#include "checker.h"
-#include "classBDD.h"
-#include "classRND.h"
-
+#pragma once
+#include "base_checker.h"
+#include "bdd_checker.h"
+#include "miter.h"
 
 namespace eda::gate::debugger {
-LEC &getChecker(LecType lec) {
-  switch(lec) {
-    case LecType::BdD: return BDDChecker::get();
-    case LecType::DFL: return Checker::get();
-    case LecType::RND: return RndChecker::get();
-    default: return Checker::get();
-  }
-}
-LEC::~LEC() {};
 
+class BDDChecker : public BaseChecker, public util::Singleton<BDDChecker> {
+friend class util::Singleton<BDDChecker>;
+
+public:
+  bool areEqual(GNet &lhs,
+                GNet &rhs,
+                Checker::GateIdMap &gmap) override;
+
+};
 } // namespace eda::gate::debugger

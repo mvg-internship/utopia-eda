@@ -7,7 +7,7 @@
 //===----------------------------------------------------------------------===//
 
 #pragma once
-#include "gate/debugger/classLEC.h"
+#include "gate/debugger/base_checker.h"
 #include "gate/debugger/context.h"
 #include "gate/debugger/encoder.h"
 #include "gate/model/gnet.h"
@@ -26,7 +26,7 @@ namespace eda::gate::debugger {
  */
 
 
-class Checker : public LEC, public util::Singleton<Checker> {
+class Checker : public BaseChecker, public util::Singleton<Checker> {
 friend class util::Singleton<Checker>;
 
 public:
@@ -142,7 +142,4 @@ private:
 	     const GateBinding &ibind,
 	     const GateBinding &obind) const;
 };
-
-//Checker &getChecker(LecType lec);
-
 } // namespace eda::gate::debugger

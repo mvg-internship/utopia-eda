@@ -5,7 +5,7 @@
 // Copyright 2021 ISP RAS (http://www.ispras.ru)
 //
 //===----------------------------------------------------------------------===//
-#include "gate/debugger/classLEC.h"
+#include "gate/debugger/base_checker.h"
 #include "config.h"
 #include "gate/debugger/checker.h"
 #include "gate/model/gate.h"
@@ -138,7 +138,6 @@ bool check(RtlContext &context) {
 
   return true;
 }
-
 
 int rtlMain(RtlContext &context) {
   if (!parse(context))   { return -1; }
