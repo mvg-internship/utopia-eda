@@ -1,16 +1,15 @@
 %{
 #include "tokens.h"
-#include <stdio.h>
 #define YY_DECL int scan_token()
 %}
 
 %option noyywrap 
-IDD       [a-zA-Z][a-zA-Z0-9]*
+IDD       [a-zA-Z_][a-zA-Z0-9_]*
 
 %%
 
 [\t\r ]*[\n]{2,}[\t\r\n]*               { return TOK_N; }
-
+"#".*[\n]                               { return TOK_COMMENT; }
 [ \t\r\n]+
 
 "DFF"                                   { return TOK_DFF; }

@@ -14,6 +14,7 @@ enum Tokens {
     TOK_E,  // equal
     TOK_ID, //var
     TOK_COMMA,
-    TOK_N
+    TOK_N,
+    TOK_COMMENT
 };
 #endif

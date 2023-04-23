@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "gate/model/gnet.h"
 #include "gate/model/gate.h"
+#include "gate/model/gnet.h"
 #include "gate/model/gsymbol.h"
 #include "headerFile"
 #include "tokens.h"
@@ -74,8 +74,8 @@ void unknown(std::vector<TokenMap>& maps, std::string& errorString) {
     }
   }
   for (auto i : maps) {
-    if(i.definite == 1)
-    mapsUpd.push_back(i);
+    if (i.definite == 1)
+      mapsUpd.push_back(i);
   }
   for (auto i : mapsUpd) {
     if (size(mapsUpd) != size(maps)) {
@@ -105,10 +105,10 @@ void doubleDefinition(Tokens whereCalled,
   for (auto i : maps) {
     if (i.definite == 1) { // definite = {0 if not declared, 1 if declared}.
       if (strlen(yytext) == i.name.size() && whereCalled != TOK_OUTPUT
-        && i.typeInit != TOK_OUTPUT)  {
+          && i.typeInit != TOK_OUTPUT)  {
         COMPARE("DOUBLE DEFINITION", line, errorString, expectedString);
       } else if (strlen(yytext) == i.name.size() 
-                && whereCalled == TOK_OUTPUT ) {
+                 && whereCalled == TOK_OUTPUT ) {
           if(i.typeInit == TOK_OUTPUT)
             COMPARE("DOUBLE DEFINITION", line, errorString, expectedString);
       }
@@ -118,8 +118,6 @@ void doubleDefinition(Tokens whereCalled,
 
 Tokens getNextToken(std::size_t &place, std::size_t &line) { 
   Tokens val = static_cast<Tokens>(scan_token());
-  // std::cout << " token: " << val << "\t" << yytext << "\tpos: " 
-  //   << line << ":" << place << std::endl;
   place += 1;
   return val;
 }
@@ -143,7 +141,7 @@ void assertNextId(Tokens expectedToken,
   } else if (whereCalled == TOK_OUTPUT && errorString.size() == 0) {
     doubleDefinition(TOK_OUTPUT, line, maps, errorString, expectedString);
     MAPS(1, TOK_OUTPUT, maps);
-  } else if (errorString.size() == 0){
+  } else if (errorString.size() == 0) {
     output(whereCalled, line, maps, errorString, expectedString);
     MAPS(0, whereCalled, maps);
   } 
@@ -159,7 +157,6 @@ void parseParenthesisInOut(Tokens type,
     ASSERT_NEXT_TOKEN(TOK_LP, "LP", place, line, errorString, expectedString);
   }
   if (errorString.size() == 0) {
-    // input(line, maps, errorString, expectedString);
     assertNextId(TOK_ID,
                 "ID",
                 type,
@@ -252,7 +249,6 @@ std::unique_ptr<GNet> builderGnet(std::vector<TokenMap>& maps) {
   std::unique_ptr<GNet> net = std::make_unique<GNet>();
   int dffFlag = 0;
   Gate::Id dffClock = -1;
-
   std::map<std::string, Gate::Id> gmap;
   for (auto i : maps) {
     if (i.usedInGate == 0 && gmap.find(i.name) == gmap.end()) {
@@ -269,7 +265,7 @@ std::unique_ptr<GNet> builderGnet(std::vector<TokenMap>& maps) {
 
   for (auto it = maps.begin(); it != maps.end(); it++) {
     if (it->typeInit != TOK_INPUT && it->typeInit
-       != TOK_OUTPUT && it->definite == 1) {
+        != TOK_OUTPUT && it->definite == 1) {
       std::vector<Signal> ids;
       auto arg = gmap[it->name];
       auto _type = it->typeInit;
@@ -306,6 +302,8 @@ std::unique_ptr<GNet> builderGnet(std::vector<TokenMap>& maps) {
         case TOK_E:
         case TOK_ID:
         case TOK_COMMA:
+        case TOK_N:
+        case TOK_COMMENT:
           break;
       } 
     }
@@ -322,15 +320,15 @@ std::unique_ptr<GNet> builderGnet(std::vector<TokenMap>& maps) {
 std::unique_ptr<GNet> parseBenchFile(const std::string &filename) {
   std::string errorString = "";
   std::string expectedString;
-
   std::size_t place = 0;
   std::size_t line = 0;
   std::vector<TokenMap> maps;
+
   yyin = fopen(filename.c_str(), "r");
   while (Tokens token = getNextToken(place, line)) {
     if (errorString.size() != 0)
       break;
-    if (token == TOK_N) {
+    if (token == TOK_N || token == TOK_COMMENT) {
       line += 1;
       continue;
     }
