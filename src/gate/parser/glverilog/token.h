@@ -55,6 +55,7 @@ enum Token_T
   ASSIGN_,
   FUNCTION_,
   FUNC_INI_,
+  FUNC_INI_NAME_, 
   NOT_,
   NAND_,
   AND_,

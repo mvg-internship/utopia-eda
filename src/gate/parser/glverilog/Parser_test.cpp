@@ -27,7 +27,6 @@ struct GNetInfo {
   std::vector<IniType> elements;
 };
 
-
 struct ModuleInfo {
   FamilyInfo type;
   std::vector<std::string> variables;
@@ -35,7 +34,7 @@ struct ModuleInfo {
   int counter = 0;
 
   auto findInVector(const std::vector<std::string> &vec,
-                      const std::string &value) {
+                    const std::string &value) {
     return std::find(vec.begin(), vec.end(), value);
   }
 };
@@ -56,8 +55,8 @@ struct SymbolTable {
     Symbol symbol;
     symbol.parent = parent;
     symbol.child = child;
-    symbol.parentName;
-    symbol.childName;
+    symbol.parentName = "";
+    symbol.childName = "";
     symbol.bit = 1;
     table[name] = symbol;
   }
@@ -112,12 +111,12 @@ struct SymbolTable {
 };
 
 void assertVariable(const std::string &name, 
-                     FamilyInfo familyType,
-                     SymbolTable &table,
-                     std::string familyNames,
-                     std::unordered_map<std::string, ModuleInfo> &modules,
-                     int &bitCounter,
-                     FamilyInfo assignType) {
+                    FamilyInfo familyType,
+                    SymbolTable &table,
+                    std::string familyNames,
+                    std::unordered_map<std::string, ModuleInfo> &modules,
+                    int &bitCounter,
+                    FamilyInfo assignType) {
   switch (familyType) {
   case FUNCTION_:
     if (modules[familyNames].findInVector(
@@ -130,7 +129,6 @@ void assertVariable(const std::string &name,
       std::cerr << "This variable didn't declaration in function: " << name
                 << std::endl
                 << "line: " << yylineno << std::endl;
-      exit(EXIT_FAILURE);
     }
 
     break;
@@ -146,7 +144,6 @@ void assertVariable(const std::string &name,
     } else {
       std::cerr << "This variable declarated twice:  " << name << std::endl
                 << "line: " << yylineno << std::endl;
-      exit(EXIT_FAILURE);
     }
 
     break;
@@ -186,12 +183,11 @@ void assertVariable(const std::string &name,
       std::cerr << "This variable: " << name 
                 << " declarated twice" << std::endl
                 << "line: " << yylineno << std::endl;
-      exit(EXIT_FAILURE);
     }
     break;
   case LOGIC_GATE_:
     if (table.findParentName(name) != familyNames) {
-      table.addSymbol(name, VOID_, VOID_);
+      //table.addSymbol(name, VOID_, VOID_);
       table.changeParentName(name, familyNames);
       bitCounter++;
     }
@@ -307,6 +303,8 @@ GNet buildGnet(SymbolTable &symbolTable,
     if (symbol.parent == FamilyInfo::LOGIC_GATE_ 
         || symbol.parent == FamilyInfo::FUNC_INI_) {
       std::vector<Signal> ids;
+      std::vector<Signal> lhs;
+      std::vector<Signal> rhs;
       auto arg =
           gates[static_cast<std::string>(modules[it->first].variables.front())];      
       auto _type = symbol.child;      
@@ -340,6 +338,19 @@ GNet buildGnet(SymbolTable &symbolTable,
       case XOR_:
         gnets[currentModuleName].net.setGate(arg, GateSymbol::XOR, ids);
         break;
+      case FUNC_INI_NAME_:
+        for (auto &i : gnets[symbol.parentName].elements) {
+          if (i.derection == INPUT_) {
+             auto fId = gates.find(static_cast<std::string>(i.name));
+             lhs.push_back(Signal::always(fId->second));
+          } else if (i.derection == OUTPUT_) {
+             auto fId = gates.find(static_cast<std::string>(i.name));
+             rhs.push_back(Signal::always(fId->second));
+          }
+          
+        }
+        //gnets[currentModuleName].net.mergeSubnets(lhs,rhs);
+        break;
       default:
         break;
       }
@@ -372,7 +383,7 @@ GNet buildGnet(SymbolTable &symbolTable,
         }
     }   
   }
-  for( auto &element : gnets[currentModuleName].elements) {
+  for (auto &element : gnets[currentModuleName].elements) {
           
             std::cout << "Element derection: "<<element.derection;
             std::cout << " Element name: "<< element.name; 
@@ -418,7 +429,7 @@ parseModule(Token_T &tok, SymbolTable &table,
     std::cout << " parent name: " << table.findParentName(yytext) << std::endl;
     rc = parseNameList(
         tok, RBRACE, MODULE_, table, currentModuleName, modules, bit, VOID_);
-    for(auto i = modules[currentModuleName].variables.begin();
+    for (auto i = modules[currentModuleName].variables.begin();
         i != modules[currentModuleName].variables.end(); 
         i++) {
       std::string namesOfElementsInThisModule = static_cast<std::string>(*i);
@@ -511,10 +522,10 @@ KindOfError parseDecl(Token_T &tok,
     tok = getNextToken();
     break;
   case STRING:
-    assertVariable(yytext, familyType, table, currentModuleName, modules, bit,
-                    VOID_);
-    rc = parseNameList(tok, SEMICOLON, familyType, table, currentModuleName,
-                          modules, bit, VOID_);
+    assertVariable(
+        yytext, familyType, table, currentModuleName, modules, bit, VOID_);
+    rc = parseNameList(
+        tok, SEMICOLON, familyType, table, currentModuleName, modules, bit, VOID_);
     tok = getNextToken();
     break;
   default:
@@ -529,10 +540,18 @@ KindOfError parseExpr(Token_T &tok,
                          std::string currentModuleName,
                          std::unordered_map<std::string, ModuleInfo> &modules) {
   KindOfError rc = SUCCESS;
-  std::string currentFuncName = yytext;
-  std::cout << " Type of func: " << modules[currentFuncName].type << std::endl;
-  table.addSymbol(currentFuncName, FUNC_INI_, FUNC_INI_);
+  std::string currentFuncType = yytext;
+  std::cout << " Type of func: " << modules[currentFuncType].type << std::endl;
+  //table.addSymbol(currentFuncName, FUNC_INI_, FUNC_INI_);
   ASSERT_NEXT_TOKEN(tok, STRING, FAILURE_IN_EXPR);
+  std::string currentFuncName = yytext;
+  if (modules.find(yytext) != modules.end()) {
+    std::cerr << "This name already exist: " << yytext << std::endl 
+              << " line: " << yylineno << std::endl;
+  }
+  table.addSymbol(currentFuncName,FUNC_INI_NAME_, FUNC_INI_NAME_);
+  table.changeParentName(currentFuncName, currentModuleName);
+  table.changeChildName(currentFuncName, currentFuncType);
   ASSERT_NEXT_TOKEN(tok, LBRACE, FAILURE_IN_EXPR);
   DEBUGTOKEN(tok, "Parse expr begin");
   rc = parseArg(tok, table, currentModuleName, currentFuncName, modules);
@@ -706,8 +725,6 @@ KindOfError parseArg(Token_T &tok, SymbolTable &table,
   int bit = 1;
   while (tok != RBRACE && rc == SUCCESS) {
     ASSERT_NEXT_TOKEN(tok, STRING, FAILURE_IN_ARG);
-    std::cout << "First element of module for this fu: "
-              << modules[currentFuncName].variables[0] << std::endl;
     if (modules[currentModuleName].findInVector(
         modules[currentModuleName].variables, yytext) ==
         modules[currentModuleName].variables.end()) {
@@ -717,8 +734,9 @@ KindOfError parseArg(Token_T &tok, SymbolTable &table,
                 << " child type: " << table.findChild(yytext) << std::endl
                 << "line: " << yylineno << std::endl;
     }
-    assertVariable(yytext, FUNC_INI_, table, currentFuncName, modules, bit,
-                    VOID_);
+    assertVariable(
+        yytext, FUNC_INI_, table, currentFuncName, modules, bit, VOID_);
+    modules[currentFuncName].variables.push_back(yytext);
     tok = getNextToken();
     DEBUGTOKEN(tok, "ARG  loop");
     if (tok == LBRACKET) {
