@@ -1,38 +1,17 @@
 %{
+#include "tokens.h"
 #include <stdio.h>
 #define YY_DECL int scan_token()
-enum Tokens {
-    TOK_INPUT = 1,
-    TOK_OUTPUT,
-    TOK_DFF,
-    TOK_NOT,
-    TOK_AND,
-    TOK_OR,
-    TOK_NAND,
-    TOK_NOR,
-    TOK_LP, //left parenthesis
-    TOK_RP, //right paranthesis
-    TOK_E,  // equal
-    TOK_ID, //var
-    TOK_COMMA,
-};
 %}
-%x IN_COMMENT
+
 %option noyywrap 
 IDD       [a-zA-Z][a-zA-Z0-9]*
 
 %%
 
-[ \t\r\n]+
+[\t\r ]*[\n]{2,}[\t\r\n]*               { return TOK_N; }
 
-<INITIAL>{
-"#"              BEGIN(IN_COMMENT);
-}
-<IN_COMMENT>{
-\n      BEGIN(INITIAL);
-[a-zA-Z][a-zA-Z0-9]*
-\n
-}
+[ \t\r\n]+
 
 "DFF"                                   { return TOK_DFF; }
 "NOT"                                   { return TOK_NOT; }

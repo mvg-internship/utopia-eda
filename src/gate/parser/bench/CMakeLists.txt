@@ -1,4 +1,3 @@
-cmake_minimum_required(VERSION 3.24.2)
 find_package(FLEX)
 FLEX_TARGET(BenchLexer 
   lexer.l 
@@ -18,7 +17,7 @@ target_link_libraries(parser.bench
 target_include_directories(parser.bench
   PUBLIC
     ${PROJECT_SOURCE_DIR}/src
-
+    ${CMAKE_CURRENT_SOURCE_DIR}
   PRIVATE
     ${PROJECT_BINARY_DIR}/src
     ${CMAKE_CURRENT_BINARY_DIR}
