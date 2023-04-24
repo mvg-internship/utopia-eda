@@ -16,8 +16,7 @@ namespace RTlil = Yosys::RTLIL;
 namespace YLib = Yosys::hashlib;
 
 void printWires(
-    const YLib::dict<RTlil::IdString,
-    RTlil::Wire *> &ywires,
+    const YLib::dict<RTlil::IdString, RTlil::Wire *> &ywires,
     std::map<std::string, int> &widt,
     std::ostream &fout,
     std::map<int, std::string> &inputs,
@@ -25,8 +24,8 @@ void printWires(
     std::map<int, std::string> &wires,
     std::string &tWires) {
   for (auto it1 = ywires.begin(); it1 != ywires.end(); ++it1) {
-    auto portOutput = it1->second->port_output;
-    auto portInput = it1->second->port_input;
+    bool portOutput = it1->second->port_output;
+    bool portInput = it1->second->port_input;
     unsigned index = it1->first.index_;
     std::string wireName = it1->first.str();
     std::string width = "u:";
@@ -35,17 +34,17 @@ void printWires(
       fout << "output " << width << " " << wireName << ";\n";
       outputs.emplace(index, wireName);
     }
-    if (portInput == 1) {
+    if (portInput == true) {
       wireName.erase(0, 1);
       fout << "input " << width << " " << wireName << ";\n";
       inputs.emplace(index, wireName);
     }
-    if (portOutput == 1) {
+    if (portOutput == true) {
       wireName.erase(0, 1);
       fout << "output " << width << " " << wireName << ";\n";
       outputs.emplace(index, wireName);
     }
-    if (portOutput == 0 && portInput == 0) {
+    if (portOutput == false && portInput == false) {
       wires.emplace(index, tWires);
       widt.emplace(tWires, it1->second->width);
       tWires += "1";
@@ -83,19 +82,19 @@ std::string buildRIL(
     std::map<int, std::string> &typeFunc,
     std::map<int, std::string> &wires) {
   auto rootCell = cell.at(root);
-  bool flag1 = inputs.find(rootCell.first) != inputs.end();
-  bool flag2 = inputs.find(rootCell.second) != inputs.end();
+  bool chkRC1list = inputs.find(rootCell.first) != inputs.end();
+  bool chkRC2list = inputs.find(rootCell.second) != inputs.end();
   auto cellPairSecond = cell[root];
   auto leftLeaf = cellPairSecond.first;
   auto rightLeaf = cellPairSecond.second;
-  if (flag1 && flag2) {
+  if (chkRC1list && chkRC2list) {
     if (leftLeaf != rightLeaf) {
       return wires[root] + " = " + inputs[rightLeaf] +
              typeFunc.find(root)->second + inputs[leftLeaf] + ";\n    ";
     } else {
       return wires[root] + " = ~" + inputs[rightLeaf] + ";\n    ";
     }
-  } else if (!flag1 && !flag2) {
+  } else if (!chkRC1list && !chkRC2list) {
     if (leftLeaf != rightLeaf) {
       auto z = buildRIL(rightLeaf, cell, inputs, typeFunc, wires);
       auto z1 = buildRIL(leftLeaf, cell, inputs, typeFunc, wires);
@@ -104,7 +103,7 @@ std::string buildRIL(
     }
     auto z = buildRIL(leftLeaf, cell, inputs, typeFunc, wires);
     return z + wires[root] + " = ~" + wires[leftLeaf] + ";\n    ";
-  } else if (!flag1 && flag2) {
+  } else if (!chkRC1list && chkRC2list) {
     auto z = buildRIL(leftLeaf, cell, inputs, typeFunc, wires);
     return z + wires[root] + " = " + wires[leftLeaf] + typeFunc[root] +
            inputs[rightLeaf] + ";\n    ";
@@ -123,40 +122,40 @@ void printCells(
     std::map<int, std::string> &typeFunc) {
   std::set<std::string> wireOutput;
   for (auto it1 = cells.begin(); it1 != cells.end(); ++it1) {
-    int i = 0;
-    bool flag = 0;
+    bool flagDen = false;
     std::string symbol;
-    int a, b, c;
-    for (auto it3 = it1->second->connections_.begin();
-         it3 != it1->second->connections_.end(); ++it3) {
-      i++;
-      auto connAsWire = it3->second.as_wire()->name.index_;
+    int addrWire, dataWire, outWire;
+    const auto &conns = it1->second->connections_;
+    auto itt = conns.begin();
+      auto connAsWire = itt->second.as_wire()->name.index_;
       if (wires.find(connAsWire) != wires.end()) {
         wireOutput.insert(wires[connAsWire]);
       }
-      if (i == 1) {
-        a = connAsWire;
-        symbol = logicFunction(it1->second->type.index_);
-        typeFunc.emplace(a, symbol);
-        if (symbol == "~") {
-          flag = 1;
-        }
+      if (itt == conns.end()) {
+        continue;
       }
-      if (i == 2) {
-        if (!flag) {
-          b = connAsWire;
-          flag = 0;
-        } else {
-          b = connAsWire;
-          c = b;
-          cell.emplace(a, std::make_pair(b, c));
-        }
+      connAsWire = itt->second.as_wire()->name.index_;
+      addrWire = connAsWire;
+      symbol = logicFunction(it1->second->type.index_);
+      typeFunc.emplace(addrWire, symbol);
+      if (symbol == "~") {
+        flagDen = true;
       }
-      if (i == 3) {
-        c = connAsWire;
-        cell.emplace(a, std::make_pair(b, c));
+      if (++itt == conns.end()) {
+        continue;
       }
-    }
+      connAsWire = itt->second.as_wire()->name.index_;
+      dataWire = connAsWire;
+      if (flagDen) {
+        outWire = dataWire;
+        cell.emplace(addrWire, std::make_pair(dataWire, outWire));
+      }
+      if (++itt == conns.end()) {
+        continue;
+      }
+      connAsWire = itt->second.as_wire()->name.index_;
+      outWire = connAsWire;
+      cell.emplace(addrWire, std::make_pair(dataWire, outWire));
   }
   for (auto it : wireOutput) {
     fout << "wire u:" << width[it] << " " << it << ";\n";
@@ -175,16 +174,15 @@ void printConnections(
     auto connAsWireInput = it1->second.as_wire()->name.index_;
     auto connAsWireOutput = it1->first.as_wire()->name.index_;
     if (inputs.find(connAsWireInput) == inputs.end()) {
-      fout << "@(*) {\n";
-      fout << "    " << buildRIL(connAsWireInput, cell, inputs, typeFunc, wires)
+      fout << "@(*) {\n"
+           << "    "
+           << buildRIL(connAsWireInput, cell, inputs, typeFunc, wires)
            << outputs.find(connAsWireOutput)->second << " = "
-           << wires[connAsWireInput] << ";\n";
-      fout << "}\n";
+           << wires[connAsWireInput] << ";\n" << "}\n";
     } else {
-      fout << "@(*) {\n";
-      fout << "   " << outputs.find(connAsWireOutput)->second << " = "
-           << inputs.find(connAsWireInput)->second << ";\n";
-      fout << "}\n";
+      fout << "@(*) {\n"
+           << "    " << outputs.find(connAsWireOutput)->second << " = "
+           << inputs.find(connAsWireInput)->second << ";\n" << "}\n";
     }
   }
 }
@@ -235,8 +233,7 @@ void printSyncs(
     listSens.push_back("@(" + state + "(" + inp + ")");
     if (state != "*") {
       listFF = "@(" + state + "(" + inp + ")) {";
-    }
-    else {
+    } else {
       listFF = "@(*) {";
     }
     for (auto it2 : (*it1)->actions) {
@@ -247,10 +244,10 @@ void printSyncs(
         t2.erase(0, 1);
         if (it2.second.is_wire()) {
           auto i2Wire = it2.second.as_wire();
-          fout << "reg u:" << i2Wire->width << " "
-               << wires[i2Wire->name.index_] << ";\n";
-          fout << "@(*) {\n   " << t1 << " = "
-               << wires[i2Wire->name.index_] << ";\n}\n";
+          fout << "reg u:" << i2Wire->width << " " << wires[i2Wire->name.index_]
+               << ";\n";
+          fout << "@(*) {\n    " << t1 << " = " << wires[i2Wire->name.index_]
+               << ";\n}\n";
         }
       }
       temp1 = Yosys::log_signal(it2.first);
@@ -261,13 +258,14 @@ void printSyncs(
 
 void printActions(
     const std::vector<RTlil::SigSig> &actions,
-    std::ostream &fout, std::map<int, std::string> &inputs,
+    std::ostream &fout,
+    std::map<int, std::string> &inputs,
     std::map<int, std::string> &outputs,
     std::map<int, std::string> &wires,
     std::map<int, std::pair<int, int>> &cell,
     std::map<int, std::string> &typeFunc,
     int &i,
-    bool &Flag,
+    bool &fFlag,
     std::string &func,
     int &width,
     bool &FF,
@@ -277,10 +275,8 @@ void printActions(
     std::string &listFF,
     std::string &tWires) {
   std::string tmp1 = "";
-  int ll = 0;
   for (auto &it : actions) {
     int z = 0;
-    ll++;
     for (auto itt : listSens) {
       tmp1 = Yosys::log_signal(it.first);
       bool cf = tmp1.find('{') != std::string::npos;
@@ -293,11 +289,10 @@ void printActions(
               fout << "@(*) {\n";
               std::string st =
                   buildRIL(it.second.as_wire()->name.index_, cell, inputs,
-                           typeFunc, wires)
-                           .substr(0, buildRIL(it.second.as_wire()->name.index_,
+                           typeFunc, wires).substr(0,
+                           buildRIL(it.second.as_wire()->name.index_,
                            cell, inputs, typeFunc, wires).size() - 4);
-              fout << "    " << st;
-              fout << "}\n";
+              fout << "    " << st << "}\n";
             }
             fout << listFF << "\n    " << wires[it.first.as_wire()->name.index_]
                  << " = ";
@@ -332,7 +327,8 @@ void printActions(
               }
               if (it.second.is_wire()) {
                 if (cell.find(it.second.as_wire()->name.index_) != cell.end()) {
-                    fout << "    " <<buildRIL(it.second.as_wire()->name.index_, cell,
+                  fout << "    "
+                       << buildRIL(it.second.as_wire()->name.index_, cell,
                                    inputs, typeFunc, wires)
                        << "}\n";
                 } else if (wires.find(it.second.as_wire()->name.index_) !=
@@ -348,7 +344,7 @@ void printActions(
             }
           }
           if (it.first.is_wire()) {
-            if (Flag && (tmp1 != "")) {
+            if (fFlag && (tmp1 != "")) {
               if (0 <= i && i <= listSens.size() - 1) {
                 if (i == 0)
                   cond.erase(0, 1);
@@ -363,11 +359,11 @@ void printActions(
                        << " = " << tmp << ";\n}\n";
                 } else {
                   if (cell.find(it.second.as_wire()->name.index_) != cell.end())
-                    fout << "    " << buildRIL(it.second.as_wire()->name.index_, cell,
+                    fout << "    "
+                         << buildRIL(it.second.as_wire()->name.index_, cell,
                                      inputs, typeFunc, wires)
-                         << wires[it.first.as_wire()->name.index_]
-                         << " = " << wires[it.second.as_wire()->name.index_]
-
+                         << wires[it.first.as_wire()->name.index_] << " = "
+                         << wires[it.second.as_wire()->name.index_]
                          << ";\n}\n";
                   else
                     fout << "    " << wires[it.first.as_wire()->name.index_]
@@ -379,8 +375,7 @@ void printActions(
                 z++;
                 if (i == listSens.size()) {
                   fout << "reg u:" << width << " " << tWires << ";\n";
-                  fout << "@(*) {\n   " << tWires << " = " << func
-                       << ";\n}\n";
+                  fout << "@(*) {\n   " << tWires << " = " << func << ";\n}\n";
                 }
                 fout << itt << ") "
                      << "if (" << tWires << ") {\n";
@@ -407,8 +402,7 @@ void printActions(
                 func += "&(~" + cond + ")";
                 fout << "reg u:" << width << " " << tWires << ";\n";
                 fout << "@(*) {\n   " << tWires << " = " << func << ";\n}\n";
-                fout << itt << ") "
-                     << "if (" << tWires << ") {\n";
+                fout << itt << ") " << "if (" << tWires << ") {\n";
                 if (!it.second.is_wire()) {
                   fout << "    " << wires[it.first.as_wire()->name.index_]
                        << " = " << Yosys::log_signal(it.second) << ";\n}\n";
@@ -438,20 +432,19 @@ void printActions(
   }
   for (auto &it : actions) {
     tmp1 = Yosys::log_signal(it.first);
-    Flag = true;
+    fFlag = true;
   }
 }
 
 void printSwitches(
     std::vector<RTlil::SwitchRule *> &switches,
-    std::ostream &fout,
-    std::map<int, std::string> &inputs,
+    std::ostream &fout, std::map<int, std::string> &inputs,
     std::map<int, std::string> &outputs,
     std::map<int, std::string> &wires,
     std::map<int, std::pair<int, int>> &cell,
     std::map<int, std::string> &typeFunc,
     int &i,
-    bool &Flag,
+    bool &fFlag,
     std::string &func,
     int &width,
     bool &FF,
@@ -465,39 +458,11 @@ void printSwitches(
     if (it->signal.is_wire())
       width = it->signal.as_wire()->width;
     for (auto *it1 : it->cases) {
-      printActions(it1->actions,
-                   fout,
-                   inputs,
-                   outputs,
-                   wires,
-                   cell,
-                   typeFunc,
-                   i,
-                   Flag,
-                   func,
-                   width,
-                   FF,
-                   DFF,
-                   listSens,
-                   cond,
-                   listFF,
+      printActions(it1->actions, fout, inputs, outputs, wires, cell, typeFunc,
+                   i, fFlag, func, width, FF, DFF, listSens, cond, listFF,
                    tWires);
-      printSwitches(it1->switches,
-                    fout,
-                    inputs,
-                    outputs,
-                    wires,
-                    cell,
-                    typeFunc,
-                    i,
-                    Flag,
-                    func,
-                    width,
-                    FF,
-                    DFF,
-                    listSens,
-                    cond,
-                    listFF,
+      printSwitches(it1->switches, fout, inputs, outputs, wires, cell, typeFunc,
+                    i, fFlag, func, width, FF, DFF, listSens, cond, listFF,
                     tWires);
     }
   }
@@ -513,71 +478,29 @@ void printProcesses(
     std::string &temp1,
     std::string &temp2,
     std::string &tWires) {
-  int pp = 0;
   bool FF = false;
   bool DFF = false;
+  bool fFlag = false;
   std::vector<std::string> listSens;
   int i = 0;
-  bool Flag = false;
-  std::string func = "";
   int width;
+  std::string func = "";
   std::string cond = "";
   std::string listFF = "";
   for (auto it1 = processes.begin(); it1 != processes.end(); ++it1) {
-    pp++;
     std::string state;
     int temporary;
     auto rootCase = it1->second->root_case;
-    printSyncs(it1->second->syncs,
-               fout,
-               inputs,
-               outputs,
-               wires,
-               state,
-               temporary,
-               cell,
-               typeFunc,
-               temp1,
-               temp2,
-               listSens,
-               listFF);
+    printSyncs(it1->second->syncs, fout, inputs, outputs, wires, state,
+               temporary, cell, typeFunc, temp1, temp2, listSens, listFF);
     if (rootCase.switches.empty()) {
       FF = 1;
     }
-    printActions(rootCase.actions,
-                 fout,
-                 inputs,
-                 outputs,
-                 wires,
-                 cell,
-                 typeFunc,
-                 i,
-                 Flag,
-                 func,
-                 width,
-                 FF,
-                 DFF,
-                 listSens,
-                 cond,
-                 listFF,
-                 tWires);
-    printSwitches(rootCase.switches,
-                  fout,
-                  inputs,
-                  outputs,
-                  wires,
-                  cell,
-                  typeFunc,
-                  i,
-                  Flag,
-                  func,
-                  width,
-                  FF,
-                  DFF,
-                  listSens,
-                  cond,
-                  listFF,
-                  tWires);
+    printActions(rootCase.actions, fout, inputs, outputs, wires, cell, typeFunc,
+                 i, fFlag, func, width, FF, DFF, listSens, cond, listFF, tWires);
+    printSwitches(rootCase.switches, fout, inputs, outputs, wires, cell,
+                  typeFunc, i, fFlag, func, width, FF, DFF, listSens, cond,
+                  listFF, tWires);
   }
 }
 
@@ -592,31 +515,12 @@ void printParams(
   std::map<std::string, int> width;
   std::string temp1 = "", temp2 = "";
   std::string tWires = "_1";
-  printWires(m.second->wires_,
-             width,
-             fout,
-             inputs,
-             outputs,
-             wires,
-             tWires);
+  printWires(m.second->wires_, width, fout, inputs, outputs, wires, tWires);
   printCells(m.second->cells_, wires, width, fout, cell, typeFunc);
-  printConnections(m.second->connections_,
-                   fout,
-                   cell,
-                   inputs,
-                   outputs,
-                   typeFunc,
-                   wires);
-  printProcesses(m.second->processes,
-                 fout,
-                 inputs,
-                 outputs,
-                 wires,
-                 cell,
-                 typeFunc,
-                 temp1,
-                 temp2,
-                 tWires);
+  printConnections(m.second->connections_, fout, cell, inputs, outputs,
+                   typeFunc, wires);
+  printProcesses(m.second->processes, fout, inputs, outputs, wires, cell,
+                 typeFunc, temp1, temp2, tWires);
 }
 
 int main(int argc, char *argv[]) {
@@ -636,7 +540,7 @@ int main(int argc, char *argv[]) {
     printParams(*(design->modules_.begin()), fout);
     fb.close();
     std::cout << "Parsed to: " << filename << "\n";
-    eda::rtl::parser::ril::parse(filename); //RIL Check
+    eda::rtl::parser::ril::parse(filename); // RIL Check
   }
   Yosys::yosys_shutdown();
 }
