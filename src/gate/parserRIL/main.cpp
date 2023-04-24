@@ -276,7 +276,6 @@ void printActions(
     std::string &tWires) {
   std::string tmp1 = "";
   for (auto &it : actions) {
-    int z = 0;
     for (auto itt : listSens) {
       tmp1 = Yosys::log_signal(it.first);
       bool cf = tmp1.find('{') != std::string::npos;
@@ -372,7 +371,6 @@ void printActions(
                 }
               }
               if (i >= listSens.size() && i <= 2 * listSens.size() - 1) {
-                z++;
                 if (i == listSens.size()) {
                   fout << "reg u:" << width << " " << tWires << ";\n";
                   fout << "@(*) {\n   " << tWires << " = " << func << ";\n}\n";
