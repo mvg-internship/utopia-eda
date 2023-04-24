@@ -18,10 +18,10 @@
 #include <vector>
 
 using Json = nlohmann::json;
-NLOHMANN_JSON_SERIALIZE_ENUM( eda::gate::debugger::LecType, {
-  {eda::gate::debugger::RND, "rnd"},
-  {eda::gate::debugger::DEFAULT, "default"},
-  {eda::gate::debugger::BdD, "bdd"},
+NLOHMANN_JSON_SERIALIZE_ENUM( eda::gate::debugger::options::LecType, {
+  {eda::gate::debugger::options::RND, "rnd"},
+  {eda::gate::debugger::options::DEFAULT, "default"},
+  {eda::gate::debugger::options::BDD, "bdd"},
 })
 
 class AppOptions {
@@ -129,17 +129,17 @@ static void get(Json json, const std::string &key, T &value) {
   const bool isRoot;
   CLI::App *options;
 };
-using LecType = eda::gate::debugger::LecType;
+using LecType = eda::gate::debugger::options::LecType;
 static constexpr const char *LEC_TYPE = "lec-type";
 struct RtlOptions final : public AppOptions {
-  eda::gate::debugger::LecType lecType = LecType::DEFAULT;
+  eda::gate::debugger::options::LecType lecType = LecType::DEFAULT;
 
   static constexpr const char *ID = "rtl";
 
   const std::map<std::string, LecType> lecTypeMap {
     {"rnd", LecType::RND},
     {"default", LecType::DEFAULT},
-    {"bdd", LecType::BdD},
+    {"bdd", LecType::BDD},
   };
 
   RtlOptions(AppOptions &parent):
@@ -156,7 +156,7 @@ struct RtlOptions final : public AppOptions {
   }
 };
 
-eda::gate::debugger::LecType lecType = LecType::DEFAULT;
+eda::gate::debugger::options::LecType lecType = LecType::DEFAULT;
 
 struct HlsOptions final : public AppOptions {
   static constexpr const char *ID = "hls";
