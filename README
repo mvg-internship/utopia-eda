@@ -28,9 +28,7 @@ The list of tools required to build the project:
 source directory:
 
 ```
-touch aclocal.m4 configure
-touch Makefile.am configure
-touch Makefile.in configure
+touch aclocal.m4 Makefile.am Makefile.in configure
 ./configure --enable-obj
 make
 sudo make install
