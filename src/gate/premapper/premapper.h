@@ -41,33 +41,34 @@ public:
 protected:
   virtual Gate::Id mapIn (GNet &newNet) const = 0;
   virtual Gate::Id mapOut(const Gate::SignalList &newInputs,
-                          size_t n0, size_t n1, GNet &newNet) const = 0;
+                          const size_t n0, const size_t n1,
+                          GNet &newNet) const = 0;
 
-  virtual Gate::Id mapVal(bool value, GNet &newNet) const = 0;
+  virtual Gate::Id mapVal(const bool value, GNet &newNet) const = 0;
 
   virtual Gate::Id mapNop(const Gate::SignalList &newInputs,
-                          bool sign, GNet &newNet) const = 0;
+                          const bool sign, GNet &newNet) const = 0;
   virtual Gate::Id mapNop(const Gate::SignalList &newInputs,
-                          size_t n0, size_t n1,
-                          bool sign, GNet &newNet) const = 0;
+                          const size_t n0, const size_t n1,
+                          const bool sign, GNet &newNet) const = 0;
 
   virtual Gate::Id mapAnd(const Gate::SignalList &newInputs,
-                          bool sign, GNet &newNet) const = 0;
+                          const bool sign, GNet &newNet) const = 0;
   virtual Gate::Id mapAnd(const Gate::SignalList &newInputs,
-                          size_t n0, size_t n1,
-                          bool sign, GNet &newNet) const = 0;
+                          const size_t n0, const size_t n1,
+                          const bool sign, GNet &newNet) const = 0;
 
   virtual Gate::Id mapOr (const Gate::SignalList &newInputs,
-                          bool sign, GNet &newNet) const = 0;
+                          const bool sign, GNet &newNet) const = 0;
   virtual Gate::Id mapOr (const Gate::SignalList &newInputs,
-                          size_t n0, size_t n1,
-                          bool sign, GNet &newNet) const = 0;
+                          const size_t n0, const size_t n1,
+                          const bool sign, GNet &newNet) const = 0;
 
   virtual Gate::Id mapXor(const Gate::SignalList &newInputs,
-                          bool sign, GNet &newNet) const = 0;
+                          const bool sign, GNet &newNet) const = 0;
   virtual Gate::Id mapXor(const Gate::SignalList &newInputs,
-                          size_t n0, size_t n1,
-                          bool sign, GNet &newNet) const = 0;
+                          const size_t n0, const size_t n1,
+                          const bool sign, GNet &newNet) const = 0;
 
   PreMapper() {}
   virtual ~PreMapper() {}
@@ -83,7 +84,7 @@ protected:
 };
 
 /**
- * \brief Defines functional bases are supported by pre-mappers.
+ * \brief Defines functional bases supported by pre-mappers.
  * \author <a href="mailto:smolov@ispras.ru">Sergey Smolov</a>
  */
 enum PreBasis {
@@ -93,7 +94,7 @@ enum PreBasis {
   MIG,
   /// Xor-And-Inverter Graph
   XAG,
-  /// Xor-Majority-Inverter Graph
+  /// Xor-Maj-Inverter Graph
   XMG
 };
 

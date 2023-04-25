@@ -14,7 +14,7 @@
 namespace eda::gate::premapper {
 
 /**
- * \brief Implements an netlist-to-MIG pre-mapper.
+ * \brief Implements a netlist-to-MIG pre-mapper.
  * \author <a href="mailto:mdvershkov@edu.hse.ru">Maksim Vershkov</a>
  */
 class MigMapper : public PreMapper, public util::Singleton<MigMapper> {
@@ -25,34 +25,39 @@ protected:
                    const GateIdMap &oldToNewGates,
                    GNet &newNet) const override;
 
-  Gate::Id mapIn (GNet &newNet) const override;
+  Gate::Id mapIn(GNet &newNet) const override;
   Gate::Id mapOut(const Gate::SignalList &newInputs,
-                  size_t n0, size_t n1, GNet &newNet) const override;
+                  const size_t n0, const size_t n1,
+                  GNet &newNet) const override;
 
-  Gate::Id mapVal(bool value, GNet &newNet) const override;
+  Gate::Id mapVal(const bool value, GNet &newNet) const override;
 
   Gate::Id mapNop(const Gate::SignalList &newInputs,
-                  bool sign, GNet &newNet) const override;
+                  const bool sign, GNet &newNet) const override;
   Gate::Id mapNop(const Gate::SignalList &newInputs,
-                  size_t n0, size_t n1, bool sign, GNet &newNet) const override;
+                  const size_t n0, const size_t n1,
+                  const bool sign, GNet &newNet) const override;
 
   Gate::Id mapAnd(const Gate::SignalList &newInputs,
-                  bool sign, GNet &newNet) const override;
+                  const bool sign, GNet &newNet) const override;
   Gate::Id mapAnd(const Gate::SignalList &newInputs,
-                  size_t n0, size_t n1, bool sign, GNet &newNet) const override;
+                  const size_t n0, const size_t n1,
+                  const bool sign, GNet &newNet) const override;
 
-  Gate::Id mapOr (const Gate::SignalList &newInputs,
-                  bool sign, GNet &newNet) const override;
-  Gate::Id mapOr (const Gate::SignalList &newInputs,
-                  size_t n0, size_t n1, bool sign, GNet &newNet) const override;
+  Gate::Id mapOr(const Gate::SignalList &newInputs,
+                 const bool sign, GNet &newNet) const override;
+  Gate::Id mapOr(const Gate::SignalList &newInputs,
+                 const size_t n0, const size_t n1,
+                 const bool sign, GNet &newNet) const override;
 
   Gate::Id mapXor(const Gate::SignalList &newInputs,
-                  bool sign, GNet &newNet) const override;
+                  const bool sign, GNet &newNet) const override;
   Gate::Id mapXor(const Gate::SignalList &newInputs,
-                  size_t n0, size_t n1, bool sign, GNet &newNet) const override;
+                  const size_t n0, const size_t n1,
+                  const bool sign, GNet &newNet) const override;
 
   Gate::Id mapMaj(const Gate::SignalList &newInputs,
-                  size_t n0, size_t n1, GNet &newNet) const;
+                  const size_t n0, const size_t n1, GNet &newNet) const;
 
 };
 

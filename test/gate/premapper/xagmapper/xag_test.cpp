@@ -96,8 +96,8 @@ bool checkEquivalence(const std::shared_ptr<GNet> net,
   GateBinding ibind, obind;
   initializeBinds(*net, gmap, ibind, obind);
   eda::gate::debugger::Checker::Hints hints;
-  hints.sourceBinding  = std::make_shared<GateBinding>(std::move(ibind));
-  hints.targetBinding  = std::make_shared<GateBinding>(std::move(obind));
+  hints.sourceBinding = std::make_shared<GateBinding>(std::move(ibind));
+  hints.targetBinding = std::make_shared<GateBinding>(std::move(obind));
   //check equivalence
   eda::gate::debugger::Checker checker;
   bool equal = checker.areEqual(*net, *premapped, hints);

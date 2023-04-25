@@ -1,3 +1,11 @@
+//===----------------------------------------------------------------------===//
+//
+// Part of the Utopia EDA Project, under the Apache License v2.0
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2023 ISP RAS (http://www.ispras.ru)
+//
+//===----------------------------------------------------------------------===//
+
 #include "gate/debugger/checker.h"
 #include "gate/model/gnet_test.h"
 
@@ -17,7 +25,7 @@ using Link = eda::gate::model::Gate::Link;
 using XmgMapper = eda::gate::premapper::XmgMapper;
 
 bool xmgEquivalenceCheck(const std::shared_ptr<GNet> &net,
-                      const std::shared_ptr<GNet> &xmgMapped) {
+                         const std::shared_ptr<GNet> &xmgMapped) {
   Checker checker;
   GateIdMap oldToNewGates;
   GateBinding inputBind;

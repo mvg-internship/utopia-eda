@@ -169,7 +169,7 @@ Gate::Id AigMapper::mapAnd(const Gate::SignalList &newInputs,
 //===----------------------------------------------------------------------===//
 
 Gate::Id AigMapper::mapOr(const Gate::SignalList &newInputs,
-                          bool sign, GNet &newNet) const {
+                          const bool sign, GNet &newNet) const {
   // OR(x[1],...,x[n]) = NOT(AND(NOT(x[1]),...,NOT(x[n]))).
   Gate::SignalList negInputs(newInputs.size());
   for (size_t i = 0; i < newInputs.size(); i++) {
@@ -181,9 +181,9 @@ Gate::Id AigMapper::mapOr(const Gate::SignalList &newInputs,
 }
 
 Gate::Id AigMapper::mapOr(const Gate::SignalList &newInputs,
-                          size_t n0,
-                          size_t n1,
-                          bool sign,
+                          const size_t n0,
+                          const size_t n1,
+                          const bool sign,
                           GNet &newNet) const {
   if (n1 > 0) {
     return mapVal(sign, newNet);
@@ -197,7 +197,7 @@ Gate::Id AigMapper::mapOr(const Gate::SignalList &newInputs,
 //===----------------------------------------------------------------------===//
 
 Gate::Id AigMapper::mapXor(const Gate::SignalList &newInputs,
-                           bool sign, GNet &newNet) const {
+                           const bool sign, GNet &newNet) const {
   Gate::SignalList inputs(newInputs.begin(), newInputs.end());
   inputs.reserve(2 * newInputs.size() - 1);
 

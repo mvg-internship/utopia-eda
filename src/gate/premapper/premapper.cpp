@@ -22,11 +22,12 @@ using Gate = eda::gate::model::Gate;
 using GNet = eda::gate::model::GNet;
 using SignalList = model::Gate::SignalList;
 
-PreMapper &getPreMapper(PreBasis basis) {
+PreMapper &getPreMapper(const PreBasis basis) {
   switch(basis) {
   case PreBasis::MIG: return MigMapper::get();
   case PreBasis::XAG: return XagMapper::Singleton<XagMapper>::get();
   case PreBasis::XMG: return XmgMapper::Singleton<XmgMapper>::get();
+  case PreBasis::AIG: return AigMapper::get();
   default: return AigMapper::get();
   }
 }
@@ -40,8 +41,8 @@ std::shared_ptr<GNet> PreMapper::map(const GNet &net,
     const auto *oldTrigger = Gate::get(oldTriggerId);
 
     auto newTriggerId = oldToNewGates.find(oldTriggerId);
-    assert("Points one past the last element" &&
-            (newTriggerId != oldToNewGates.end()));
+    assert((newTriggerId != oldToNewGates.end()) &&
+           "Invalid new trigger ID");
 
     auto newInputs = model::getNewInputs(oldTrigger->inputs(), oldToNewGates);
     newNet->setGate(newTriggerId->second, oldTrigger->func(), newInputs);
@@ -52,19 +53,19 @@ std::shared_ptr<GNet> PreMapper::map(const GNet &net,
 
 GNet *PreMapper::mapGates(const GNet &net,
                           GateIdMap &oldToNewGates) const {
-  assert("Orphans, empty subnets, network is not flat or sorted" &&
-          (net.isWellFormed() && net.isSorted()));
+  assert((net.isWellFormed() && net.isSorted()) &&
+         "Orphans, empty subnets, network is not flat or sorted");
 
   auto *newNet = new GNet(net.getLevel());
 
   if (net.isFlat()) {
     for (const auto *oldGate : net.gates()) {
       const auto oldGateId = oldGate->id();
-      assert("Points one past the last element" &&
-             (oldToNewGates.find(oldGateId) == oldToNewGates.end()));
+      assert((oldToNewGates.find(oldGateId) == oldToNewGates.end()) &&
+             "Invalid new Gate ID");
 
       const auto newGateId = mapGate(*oldGate, oldToNewGates, *newNet);
-      assert("Invalid gate used" && (newGateId != Gate::INVALID));
+      assert((newGateId != Gate::INVALID) && "Invalid gate used");
 
       oldToNewGates.emplace(oldGateId, newGateId);
     }
