@@ -15,7 +15,7 @@
 using namespace eda::gate::model;
 using namespace eda::gate::debugger;
 
-TEST(rnd_generatorTest, test1) {
+TEST(rnd_generatorTest, SimpleTest) {
 
   Gate::SignalList inputs;
   Gate::Id output;
