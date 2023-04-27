@@ -7,7 +7,7 @@
 //===----------------------------------------------------------------------===//
 
 #pragma once
-
+#include "base_checker.h"
 #include "gate/debugger/miter.h"
 #include "gate/transformer/bdd.h"
 
@@ -33,5 +33,15 @@ using SignalList = model::Gate::SignalList;
  *  @return true if the nets are equivalent, false if not.
  */
 bool bddChecker(GNet &net1, GNet &net2, Hints &hints);
+
+class BDDChecker : public BaseChecker, public util::Singleton<BDDChecker> {
+friend class util::Singleton<BDDChecker>;
+
+public:
+  bool areEqual(GNet &lhs,
+                GNet &rhs,
+                Checker::GateIdMap &gmap) override;
+
+};
 
 } // namespace eda::gate::debugger

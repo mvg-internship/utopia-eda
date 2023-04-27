@@ -7,9 +7,9 @@
 //===----------------------------------------------------------------------===//
 
 #include "base_checker.h"
-#include "BDD_checker.h"
+#include "bdd_checker.h"
 #include "checker.h"
-#include "RND_checker.h"
+#include "rnd_checker.h"
 
 namespace eda::gate::debugger {
 using LecType = eda::gate::debugger::options::LecType;

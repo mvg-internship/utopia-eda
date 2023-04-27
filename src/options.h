@@ -130,7 +130,7 @@ static void get(Json json, const std::string &key, T &value) {
   CLI::App *options;
 };
 using LecType = eda::gate::debugger::options::LecType;
-static constexpr const char *LEC_TYPE = "lec-type";
+static constexpr const char *LEC_TYPE = "lec";
 struct RtlOptions final : public AppOptions {
   eda::gate::debugger::options::LecType lecType = LecType::DEFAULT;
 

@@ -21,11 +21,6 @@ Result Generator(GNet &miter, const unsigned int tries, const bool exhaustive = 
 
   std::uint64_t count = miter.sourceLinks().size();
 
-  // counting the inputs
-  //for (auto x : miter.sourceLinks()) {
-  //count += 1;
-  //}
-
   GNet::In inp(1);
   auto &input = inp[0];
 
@@ -56,7 +51,7 @@ Result Generator(GNet &miter, const unsigned int tries, const bool exhaustive = 
     for (std::uint64_t t = 0; t < tries; t++) {
       for (std::uint64_t i = 0; i < count; i++) {
         std::uint64_t temp = 2*rand();
-        std::uint64_t in = temp % static_cast<std::uint64_t>(std::pow(2, count - 1));
+        std::uint64_t in = temp % static_cast<std::uint64_t>(std::pow(2, count));
         compiled.simulate(o, in);
         if (o == 1) {
           return  Result::NOTEQUAL;
@@ -68,9 +63,9 @@ Result Generator(GNet &miter, const unsigned int tries, const bool exhaustive = 
 
   if (exhaustive) {
   // exhaustive check
-    for (std::uint64_t t = 0; t < std::pow(2, count - 1); t++) {
+    for (std::uint64_t t = 0; t < std::pow(2, count); t++) {
       std::uint64_t temp = 2*t;
-      std::uint64_t in = temp % static_cast<std::uint64_t>(std::pow(2, count - 1));
+      std::uint64_t in = temp % static_cast<std::uint64_t>(std::pow(2, count));
       compiled.simulate(o, in);
       if (o == 1) {
         return  Result::NOTEQUAL;
@@ -81,5 +76,47 @@ Result Generator(GNet &miter, const unsigned int tries, const bool exhaustive = 
 
   return Result::ERROR;
 }
+
+void RNDChecker::setTries(int tries) {
+  this->tries = tries;
+}
+
+void RNDChecker::setExhaustive(bool exhaustive) {
+  this->exhaustive = exhaustive;
+}
+
+bool RNDChecker::areEqual(GNet &lhs,
+                            GNet &rhs,
+                            Checker::GateIdMap &gmap) {
+
+    GateBinding ibind, obind, tbind;
+
+  // Input-to-input correspondence.
+  for (auto oldSourceLink : lhs.sourceLinks()) {
+    auto newSourceId = gmap[oldSourceLink.target];
+    ibind.insert({oldSourceLink, Gate::Link(newSourceId)});
+  }
+
+  // Output-to-output correspondence.
+  for (auto oldTargetLink : lhs.targetLinks()) {
+    auto newTargetId = gmap[oldTargetLink.source];
+    obind.insert({oldTargetLink, Gate::Link(newTargetId)});
+  }
+
+  // Trigger-to-trigger correspondence.
+  for (auto oldTriggerId : lhs.triggers()) {
+    auto newTriggerId = gmap[oldTriggerId];
+    tbind.insert({Gate::Link(oldTriggerId), Gate::Link(newTriggerId)});
+  }
+
+  Checker::Hints hints;
+  hints.sourceBinding  = std::make_shared<GateBinding>(std::move(ibind));
+  hints.targetBinding  = std::make_shared<GateBinding>(std::move(obind));
+  hints.triggerBinding = std::make_shared<GateBinding>(std::move(tbind));
+
+    GNet *net = miter(lhs, rhs, hints);
+    Result res = Generator(*net, tries, exhaustive);
+    return (res == 0);
+  }
 
 } // namespace eda::gate::debugger

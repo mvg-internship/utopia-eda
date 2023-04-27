@@ -7,11 +7,12 @@
 //===----------------------------------------------------------------------===//
 
 #pragma once
+#include "base_checker.h"
 #include "checker.h"
 #include "gate/model/gnet.h"
 #include "gate/simulator/simulator.h"
+#include "miter.h"
 #include "rtl/library/flibrary.h"
-
 
 #include <cassert>
 #include <cmath>
@@ -31,4 +32,19 @@ enum Result {
 };
 
 Result Generator(GNet &miter, const unsigned int tries, const bool exhaustive);
+
+class RNDChecker : public BaseChecker, public util::Singleton<RNDChecker> {
+friend class util::Singleton<RNDChecker>;
+
+public:
+  bool areEqual(GNet &lhs,
+                GNet &rhs,
+                Checker::GateIdMap &gmap) override;
+  void setTries(int tries);
+  void setExhaustive(bool exhaustive);
+private:
+  int tries = 0;
+  bool exhaustive = true;
+};
+
 } // namespace eda::gate::debugger
