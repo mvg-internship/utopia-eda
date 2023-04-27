@@ -4,7 +4,7 @@
 %}
 
 %option noyywrap 
-IDD       [a-zA-Z_][a-zA-Z0-9_]*
+IDD       [a-zA-Z_][a-zA-Z0-9_.]*
 
 %%
 

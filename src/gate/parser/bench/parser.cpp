@@ -182,8 +182,10 @@ void parseParenthesisInOut(Tokens type,
   }  
   if (errorString.size() == 0) {
     assertNextToken(TOK_RP, "RP", place, line, errorString, expectedString);
-    line += 1;
-    place = 0;
+    if (errorString.size() == 0) {
+      line += 1;
+      place = 0;
+    }
   }
 }
 
@@ -228,8 +230,10 @@ void parseParenthesisID(Tokens type,
     errorString = "'RP'";
     expectedString.assign(yytext);
   }
-  line += 1;
-  place = 0;
+  if (errorString.size() == 0) {
+    line += 1;
+    place = 0;
+  }
 }
 
 void parseID(std::size_t &place,
@@ -372,10 +376,10 @@ std::unique_ptr<GNet> parseBenchFile(const std::string &filename) {
     ref = builderGnet(maps);
   }
   if (errorString == "ERROR IN UNKNOWN DEFINITION ") {
-    std::cout << "error with '" << unknownToken << "'\tpos: " << where << "\n";
+    std::cout << "error with unknown '" << unknownToken << "'\tpos: " << where << "\n";
   } else if (errorString.size() != 0) {
     std::cout << "error in '" << errorString << "'\tpos: "
-    << line  << ":" << place - 2 << "\tcaught " << expectedString << "\n";
+    << line + 1 << ":" << place - 2 << "\tcaught " << expectedString << "\n";
   }
   fclose(yyin);
   std::cout << "\nthe file was read: " << filename << ".\n\n";
