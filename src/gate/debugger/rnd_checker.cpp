@@ -19,20 +19,20 @@ Result Generator(GNet &miter, const unsigned int tries, const bool exhaustive = 
   //check the number of output
   assert(miter.nTargetLinks() == 1);
 
-  std::uint64_t count = miter.sourceLinks().size();
+  std::uint64_t inputNum = miter.sourceLinks().size();
 
-  GNet::In inp(1);
-  auto &input = inp[0];
+  GNet::In gnetInput(1);
+  auto &input = gnetInput[0];
 
-  for (auto x : miter.sourceLinks()) {
-     input.push_back(x.target);
+  for (auto srcLink : miter.sourceLinks()) {
+     input.push_back(srcLink.target);
   }
 
   Gate::SignalList inputs;
   Gate::Id output = 0;
   GNet::LinkList in;
 
-  for (size_t n = 0; n < count; n++) {
+  for (size_t n = 0; n < inputNum; n++) {
     in.push_back(GNet::Link(input[n]));
   }
 
@@ -47,11 +47,10 @@ Result Generator(GNet &miter, const unsigned int tries, const bool exhaustive = 
   std::uint64_t o;
 
   if (!exhaustive) {
-  // UNexhaustive check
     for (std::uint64_t t = 0; t < tries; t++) {
-      for (std::uint64_t i = 0; i < count; i++) {
+      for (std::uint64_t i = 0; i < inputNum; i++) {
         std::uint64_t temp = 2*rand();
-        std::uint64_t in = temp % static_cast<std::uint64_t>(std::pow(2, count));
+        std::uint64_t in = temp % static_cast<std::uint64_t>((1 << inputNum));
         compiled.simulate(o, in);
         if (o == 1) {
           return  Result::NOTEQUAL;
@@ -62,13 +61,12 @@ Result Generator(GNet &miter, const unsigned int tries, const bool exhaustive = 
   }
 
   if (exhaustive) {
-  // exhaustive check
-    for (std::uint64_t t = 0; t < std::pow(2, count); t++) {
+    for (std::uint64_t t = 0; t < static_cast<std::uint64_t>((1 << inputNum)); t++) {
       std::uint64_t temp = 2*t;
-      std::uint64_t in = temp % static_cast<std::uint64_t>(std::pow(2, count));
+      std::uint64_t in = temp % static_cast<std::uint64_t>((1 << inputNum));
       compiled.simulate(o, in);
       if (o == 1) {
-        return  Result::NOTEQUAL;
+        return Result::NOTEQUAL;
       }
     }
     return Result::EQUAL;

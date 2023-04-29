@@ -7,6 +7,7 @@
 //===----------------------------------------------------------------------===//
 
 #pragma once
+
 #include "gate/model/gnet.h"
 
 namespace eda::gate::debugger::options {

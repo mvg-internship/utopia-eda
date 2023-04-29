@@ -11,18 +11,18 @@
 namespace eda::gate::debugger {
 
 bool areMiterable(GNet &net1, GNet &net2, Hints &hints) {
-  if (net2.nSourceLinks() != net2.nSourceLinks()) {
+  if (net1.nSourceLinks() != net2.nSourceLinks()) {
     CHECK(false) << "Nets do not have the same number of inputs\n";
     return false;
   }
 
-  for (auto sourceLink : net2.sourceLinks()) {
+  for (auto sourceLink : net1.sourceLinks()) {
     if (hints.sourceBinding.get()->find(sourceLink) == hints.sourceBinding.get()->end()) {
       CHECK(false) << "Unable to find source with id " << sourceLink.target << '\n';
       return false;
     }
   }
-  for (auto targetLink : net2.targetLinks()) {
+  for (auto targetLink : net1.targetLinks()) {
     if (hints.targetBinding.get()->find(targetLink) == hints.sourceBinding.get()->end()) {
       CHECK(false) << "Unable to find target with id " << targetLink.source << '\n';
       return false;
@@ -39,7 +39,7 @@ GNet *miter(GNet &net1, GNet &net2, Hints &hints) {
 
   std::unordered_map<Gate::Id, Gate::Id> map1 = {};
   std::unordered_map<Gate::Id, Gate::Id> map2 = {};
-  GNet *cloned1 = net2.clone(map1);
+  GNet *cloned1 = net1.clone(map1);
   GNet *cloned2 = net2.clone(map2);
 
   GateBinding ibind, obind, tbind;
@@ -63,6 +63,7 @@ GNet *miter(GNet &net1, GNet &net2, Hints &hints) {
     auto newTriggerId2 = map2[bind.second.source];
     tbind.insert({Gate::Link(newTriggerId1), Gate::Link(newTriggerId2)});
   }
+
   Checker::Hints newHints;
   newHints.sourceBinding  = std::make_shared<GateBinding>(std::move(ibind));
   newHints.targetBinding  = std::make_shared<GateBinding>(std::move(obind));

@@ -20,21 +20,21 @@ TEST(rnd_checkerTest, MiterAndCheckerTest) {
   SignalList inps;
   int countInp = 5;
   int countOut = 5;
-  for (int i = 0; i < countInp; i++){
+  for (int i = 0; i < countInp; i++) {
     GateId z = net.addIn();
     inps.push_back(Signal::always(z));
   }
   GateId y = net.addGate(GateSymbol::OR, inps);
   GateId outId = net.addOut(y);
   SignalList inps1;
-  for (int i = 0; i < countInp; i++){
+  for (int i = 0; i < countInp; i++) {
     GateId z = net.addIn();
     inps1.push_back(Signal::always(z));
   }
   GateId w = net.addGate(GateSymbol::OR, inps1);
   net.addOut(w);
   w = net.addGate(GateSymbol::OR, inps);
-  for(int i = 0; i < countOut; i++){
+  for (int i = 0; i < countOut; i++) {
     outId = net.addOut(w);
   }
   net.addOut(w);

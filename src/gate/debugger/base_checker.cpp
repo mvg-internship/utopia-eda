@@ -12,7 +12,9 @@
 #include "rnd_checker.h"
 
 namespace eda::gate::debugger {
+
 using LecType = eda::gate::debugger::options::LecType;
+
 BaseChecker &getChecker(LecType lec) {
   switch(lec) {
     case LecType::BDD: return BDDChecker::get();

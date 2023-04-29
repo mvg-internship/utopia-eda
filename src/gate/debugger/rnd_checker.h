@@ -24,6 +24,8 @@ namespace eda::gate::debugger {
 // generator return value
 // EQUAL returns if there exhaustive check and nets are equal
 // UNKNOWN returns if there NO exhaustive check and nets are equal
+// NOTEQUAL returns if nets are not equal
+// ERROR returns if invalid arguments were given
 enum Result {
   ERROR = -2,
   UNKNOWN = -1,
@@ -31,6 +33,13 @@ enum Result {
   NOTEQUAL = 1,
 };
 
+/**
+ *  \brief Goes through values and checks miter output.
+ *  @param miter Miter which will receive values.
+ *  @param tries number of random values checked, if the check is inexhaustive.
+ *  @param exhaustive Sets the mode of the check.
+ *  @return The result of the check.
+ */
 Result Generator(GNet &miter, const unsigned int tries, const bool exhaustive);
 
 class RNDChecker : public BaseChecker, public util::Singleton<RNDChecker> {

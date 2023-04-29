@@ -520,7 +520,6 @@ public:
    */
   GNet* clone(std::unordered_map<Gate::Id, Gate::Id> &oldToNewId);
 
-
 private:
   //===--------------------------------------------------------------------===//
   // Internal Methods

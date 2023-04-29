@@ -702,4 +702,3 @@ std::ostream& operator <<(std::ostream &out, const GNet &net) {
 }
 
 } // namespace eda::gate::model
-

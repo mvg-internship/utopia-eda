@@ -36,17 +36,14 @@ bool bddChecker(GNet &net1, GNet &net2, Hints &hints) {
   }
 
   BDD netBDD = GNetBDDConverter::convert(*miterNet, outputId, varMap, manager);
-  if (netBDD == manager.bddZero()) {
-    return true;
-  }
-  return false;
+  return (netBDD == manager.bddZero());
 } 
 
 bool BDDChecker::areEqual(GNet &lhs,
-                            GNet &rhs,
-                            Checker::GateIdMap &gmap) {
+                          GNet &rhs,
+                          Checker::GateIdMap &gmap) {
 
-    GateBinding ibind, obind, tbind;
+  GateBinding ibind, obind, tbind;
 
   // Input-to-input correspondence.
   for (auto oldSourceLink : lhs.sourceLinks()) {
@@ -71,7 +68,7 @@ bool BDDChecker::areEqual(GNet &lhs,
   hints.targetBinding  = std::make_shared<GateBinding>(std::move(obind));
   hints.triggerBinding = std::make_shared<GateBinding>(std::move(tbind));
 
-    return (bddChecker(lhs, rhs, hints));
-  }
+  return (bddChecker(lhs, rhs, hints));
+}
 
 } // namespace eda::gate::debugger

@@ -132,11 +132,11 @@ FLibrary::Out FLibraryDefault::synthSimpleAdder(size_t outSize, const In &in, GN
 
   Out out(outSize);
 
-  Signal carrybit;
-  Signal clause;
-  Signal clause1;
-  Signal clause2;
-  Signal clause3;
+  Signal carrybit = Signal(0);
+  Signal clause = Signal(0);
+  Signal clause1 = Signal(0);
+  Signal clause2 = Signal(0);
+  Signal clause3 = Signal(0);
 
   for (size_t i = 0; i < outSize; i++) {
     auto termWire1 = Signal::always(term1[i]);
@@ -149,8 +149,8 @@ FLibrary::Out FLibraryDefault::synthSimpleAdder(size_t outSize, const In &in, GN
     } else {
       out[i] = net.addGate(GateSymbol::XOR, {Signal::always(sum), carrybit});
 
-    // counting carrybit
-    // carrybit = (term1 & term2) || (term1 & previous carrybit) || (term2 & previous carrybit)
+      // counting carrybit
+      // carrybit = (term1 & term2) || (term1 & previous carrybit) || (term2 & previous carrybit)
 
       clause1 = Signal::always(net.addGate(GateSymbol::AND, {termWire1, termWire2}));
       clause2 = Signal::always(net.addGate(GateSymbol::AND, {termWire1, carrybit}));
