@@ -5,8 +5,8 @@
 // Copyright 2021 ISP RAS (http://www.ispras.ru)
 //
 //===----------------------------------------------------------------------===//
-#include "gate/debugger/base_checker.h"
 #include "config.h"
+#include "gate/debugger/base_checker.h"
 #include "gate/debugger/checker.h"
 #include "gate/model/gate.h"
 #include "gate/model/gnet.h"

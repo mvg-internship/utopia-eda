@@ -6,7 +6,7 @@
 //
 //===----------------------------------------------------------------------===//
 #include <iostream>
-#include "gate/model/gnet.h"
+
 #include "gate/debugger/rnd_checker.h"
 #include "gate/model/gnet_test.h"
 #include "gtest/gtest.h"
@@ -21,8 +21,8 @@ TEST(rnd_generatorTest, SimpleTest) {
 
   auto net = makeNor(8, inputs, output);
 
-    std::cout << "STARTING RND_GENERATOR TEST\n";
-    int a = Generator(*net, 0, true);
-    std::cout << "GENERATOR RESULT IS: \t" << a << std::endl;
-    EXPECT_TRUE(a == 0);
+  std::cout << "STARTING RND_GENERATOR TEST\n";
+  int a = Generator(*net, 0, true);
+  std::cout << "GENERATOR RESULT IS: \t" << a << std::endl;
+  EXPECT_TRUE(a == 0);
 }

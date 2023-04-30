@@ -13,7 +13,7 @@
 
 namespace eda::gate::debugger {
 
-using BDDList = transformer::GNetBDDConverter::BDDList;
+using BddList = transformer::GNetBDDConverter::BDDList;
 using Gate = model::Gate;
 using GateBDDMap = transformer::GNetBDDConverter::GateBDDMap;
 using GateBinding = std::unordered_map<Gate::Link, Gate::Link>;

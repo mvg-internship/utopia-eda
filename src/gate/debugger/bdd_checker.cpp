@@ -25,14 +25,14 @@ bool bddChecker(GNet &net1, GNet &net2, Hints &hints) {
       outputId = gate->id();
     }
   }
-  BDDList x = {};
+  BddList bddVarList = {};
   for (unsigned i = 0; i < inputs.size(); i++) {
-    x.push_back(manager.bddVar());
+    bddVarList.push_back(manager.bddVar());
   }
   
   GateBDDMap varMap;
-  for (unsigned i = 0; i < x.size(); i++) {
-    varMap[inputs[i].node()] = x[i];
+  for (unsigned i = 0; i < bddVarList.size(); i++) {
+    varMap[inputs[i].node()] = bddVarList[i];
   }
 
   BDD netBDD = GNetBDDConverter::convert(*miterNet, outputId, varMap, manager);

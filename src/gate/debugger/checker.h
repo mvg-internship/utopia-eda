@@ -7,6 +7,7 @@
 //===----------------------------------------------------------------------===//
 
 #pragma once
+
 #include "gate/debugger/base_checker.h"
 #include "gate/debugger/context.h"
 #include "gate/debugger/encoder.h"
@@ -16,7 +17,6 @@
 
 #include <memory>
 #include <unordered_map>
-
 
 namespace eda::gate::debugger {
 

@@ -29,14 +29,14 @@ Result Generator(GNet &miter, const unsigned int tries, const bool exhaustive = 
   }
 
   Gate::SignalList inputs;
-  Gate::Id output = 0;
+  Gate::Id outputId = 0;
   GNet::LinkList in;
 
   for (size_t n = 0; n < inputNum; n++) {
     in.push_back(GNet::Link(input[n]));
   }
 
-  GNet::LinkList out{Gate::Link(output)};
+  GNet::LinkList out{Gate::Link(outputId)};
 
   for (auto input : inputs) {
     in.push_back(GNet::Link(input.node()));
@@ -44,15 +44,15 @@ Result Generator(GNet &miter, const unsigned int tries, const bool exhaustive = 
 
   miter.sortTopologically();
   auto compiled = simulator.compile(miter, in, out);
-  std::uint64_t o;
+  std::uint64_t output;
 
   if (!exhaustive) {
     for (std::uint64_t t = 0; t < tries; t++) {
       for (std::uint64_t i = 0; i < inputNum; i++) {
         std::uint64_t temp = 2*rand();
         std::uint64_t in = temp % static_cast<std::uint64_t>((1 << inputNum));
-        compiled.simulate(o, in);
-        if (o == 1) {
+        compiled.simulate(output, in);
+        if (output == 1) {
           return  Result::NOTEQUAL;
         }
       }
@@ -64,8 +64,8 @@ Result Generator(GNet &miter, const unsigned int tries, const bool exhaustive = 
     for (std::uint64_t t = 0; t < static_cast<std::uint64_t>((1 << inputNum)); t++) {
       std::uint64_t temp = 2*t;
       std::uint64_t in = temp % static_cast<std::uint64_t>((1 << inputNum));
-      compiled.simulate(o, in);
-      if (o == 1) {
+      compiled.simulate(output, in);
+      if (output == 1) {
         return Result::NOTEQUAL;
       }
     }
@@ -84,33 +84,33 @@ void RNDChecker::setExhaustive(bool exhaustive) {
 }
 
 bool RNDChecker::areEqual(GNet &lhs,
-                            GNet &rhs,
-                            Checker::GateIdMap &gmap) {
+                          GNet &rhs,
+                          Checker::GateIdMap &gmap) {
 
     GateBinding ibind, obind, tbind;
 
-  // Input-to-input correspondence.
-  for (auto oldSourceLink : lhs.sourceLinks()) {
-    auto newSourceId = gmap[oldSourceLink.target];
-    ibind.insert({oldSourceLink, Gate::Link(newSourceId)});
-  }
+    // Input-to-input correspondence.
+    for (auto oldSourceLink : lhs.sourceLinks()) {
+      auto newSourceId = gmap[oldSourceLink.target];
+      ibind.insert({oldSourceLink, Gate::Link(newSourceId)});
+    }
 
-  // Output-to-output correspondence.
-  for (auto oldTargetLink : lhs.targetLinks()) {
-    auto newTargetId = gmap[oldTargetLink.source];
-    obind.insert({oldTargetLink, Gate::Link(newTargetId)});
-  }
+    // Output-to-output correspondence.
+    for (auto oldTargetLink : lhs.targetLinks()) {
+      auto newTargetId = gmap[oldTargetLink.source];
+      obind.insert({oldTargetLink, Gate::Link(newTargetId)});
+    }
 
-  // Trigger-to-trigger correspondence.
-  for (auto oldTriggerId : lhs.triggers()) {
-    auto newTriggerId = gmap[oldTriggerId];
-    tbind.insert({Gate::Link(oldTriggerId), Gate::Link(newTriggerId)});
-  }
+    // Trigger-to-trigger correspondence.
+    for (auto oldTriggerId : lhs.triggers()) {
+      auto newTriggerId = gmap[oldTriggerId];
+      tbind.insert({Gate::Link(oldTriggerId), Gate::Link(newTriggerId)});
+    }
 
-  Checker::Hints hints;
-  hints.sourceBinding  = std::make_shared<GateBinding>(std::move(ibind));
-  hints.targetBinding  = std::make_shared<GateBinding>(std::move(obind));
-  hints.triggerBinding = std::make_shared<GateBinding>(std::move(tbind));
+    Checker::Hints hints;
+    hints.sourceBinding  = std::make_shared<GateBinding>(std::move(ibind));
+    hints.targetBinding  = std::make_shared<GateBinding>(std::move(obind));
+    hints.triggerBinding = std::make_shared<GateBinding>(std::move(tbind));
 
     GNet *net = miter(lhs, rhs, hints);
     Result res = Generator(*net, tries, exhaustive);

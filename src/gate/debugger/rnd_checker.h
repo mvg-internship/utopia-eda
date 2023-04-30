@@ -36,7 +36,7 @@ enum Result {
 /**
  *  \brief Goes through values and checks miter output.
  *  @param miter Miter which will receive values.
- *  @param tries number of random values checked, if the check is inexhaustive.
+ *  @param tries Number of random values checked, if the check is inexhaustive.
  *  @param exhaustive Sets the mode of the check.
  *  @return The result of the check.
  */
