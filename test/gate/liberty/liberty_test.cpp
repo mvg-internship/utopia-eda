@@ -1,4 +1,5 @@
-#include "gate/parserGnet/parserGnet.h"
+#include "gate/liberty/parser_liberty.h"
+#include "gate/truth_table/truth_table.h"
 #include "gtest/gtest.h"
 
 #include <filesystem>
@@ -34,31 +35,31 @@ inline static NetData libertyGnet() {
   return vec;
 }
 
-TEST(testGnet, Buf) {
+TEST(liberty_test, Buf) {
   auto vec = libertyGnet();
   auto bufGate = createLogicGate(GateSymbol::NOP);
   EXPECT_EQ(buildTruthTab(bufGate.get()), buildTruthTab(vec.combNets[0].get()));
 }
 
-TEST(testGnet, Not) {
+TEST(liberty_test, Not) {
   auto vec = libertyGnet();
   auto notGate = createLogicGate(GateSymbol::NOT);
   EXPECT_EQ(buildTruthTab(notGate.get()), buildTruthTab(vec.combNets[1].get()));
 }
 
-TEST(testGnet, Xor) {
+TEST(liberty_test, Xor) {
   auto vec = libertyGnet();
   auto xorGate = createLogicGate(GateSymbol::XOR);
   EXPECT_EQ(buildTruthTab(xorGate.get()), buildTruthTab(vec.combNets[2].get()));
 }
 
-TEST(testGnet, Or) {
+TEST(liberty_test, Or) {
   auto vec = libertyGnet();
   auto orGate = createLogicGate(GateSymbol::OR);
   EXPECT_EQ(buildTruthTab(orGate.get()), buildTruthTab(vec.combNets[3].get()));
 }
 
-TEST(testGnet, And) {
+TEST(liberty_test, And) {
   auto vec = libertyGnet();
   auto andGate = createLogicGate(GateSymbol::AND);
   EXPECT_EQ(buildTruthTab(andGate.get()), buildTruthTab(vec.combNets[4].get()));
