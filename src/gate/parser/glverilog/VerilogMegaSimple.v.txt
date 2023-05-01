@@ -1,8 +1,13 @@
-module Nand2(a, b, c);
-  input a, b;
-  output c;
+module A(a, b);
 
-  wire d;
+input a;
+output b;
+not asd(b, a);
+endmodule
 
-  not not1(d, a);
+module B(a, b);
+
+input a;
+output b;
+not jkl(b, a);
 endmodule

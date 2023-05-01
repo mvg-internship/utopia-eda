@@ -6,8 +6,10 @@
 #include <gate/model/gnet.h>
 #include <gate/model/gsymbol.h>
 #include <iostream>
+#include <memory>
 #include <unordered_map>
 #include <vector>
+
 
 extern "C" YY_DECL;
 
@@ -17,12 +19,12 @@ using Gate = eda::gate::model::Gate;
 using GateSymbol = eda::gate::model::GateSymbol;
 
 struct GNetInfo {
-  GNet net;
+  std::unique_ptr<GNet> net;
   struct  IniType
   {
     std::string name;
-    FamilyInfo derection; //In or Out
-    Gate::Id sourseGate;
+    FamilyInfo direction; //In or Out
+    Gate::Id sourceGate;
   };
   std::vector<IniType> elements;
 };
@@ -130,7 +132,6 @@ void assertVariable(const std::string &name,
                 << std::endl
                 << "line: " << yylineno << std::endl;
     }
-
     break;
   case WIRE_:
   case MODULE_:
@@ -145,7 +146,6 @@ void assertVariable(const std::string &name,
       std::cerr << "This variable declarated twice:  " << name << std::endl
                 << "line: " << yylineno << std::endl;
     }
-
     break;
   case INPUT_:
   case OUTPUT_:
@@ -187,9 +187,9 @@ void assertVariable(const std::string &name,
     break;
   case LOGIC_GATE_:
     if (table.findParentName(name) != familyNames) {
-      //table.addSymbol(name, VOID_, VOID_);
-      table.changeParentName(name, familyNames);
-      bitCounter++;
+      std::cerr << "This variable wasn't declorated in this module: " << name 
+                << std::endl << "line: " << yylineno << std::endl;
+     
     }
     break;
   default:
@@ -262,7 +262,7 @@ Token_T getNextToken() {
   return val;
 }
 
-GNet buildGnet(SymbolTable &symbolTable, 
+void buildGnet(SymbolTable &symbolTable, 
                std::unordered_map<std::string, GNetInfo> &gnets,
                std::string currentModuleName,
                std::unordered_map<std::string, ModuleInfo> &modules) {
@@ -275,19 +275,19 @@ GNet buildGnet(SymbolTable &symbolTable,
       continue;
     }
     if (symbol.child == FamilyInfo::INPUT_ && symbol.parent != LOGIC_GATE_) {
-      Gate::Id bb = gnets[currentModuleName].net.addIn();
+      Gate::Id bb = gnets[currentModuleName].net->addIn();
       gates.insert(
           std::make_pair(static_cast<std::string>(entry.first), bb));
-        for ( auto &element : gnets[currentModuleName].elements) {
+        for (auto &element : gnets[currentModuleName].elements) {
           if(element.name == entry.first) {
-            element.derection = INPUT_;
-            element.sourseGate = bb;
+            element.direction = INPUT_;
+            element.sourceGate = bb;
           }
         }
     } else if (symbol.parent != LOGIC_GATE_) {
       gates.insert(
           std::make_pair(static_cast<std::string>(entry.first),
-              gnets[currentModuleName].net.newGate()));
+              gnets[currentModuleName].net->newGate()));
     } else {
       continue;
     }
@@ -302,8 +302,6 @@ GNet buildGnet(SymbolTable &symbolTable,
     if (symbol.parent == FamilyInfo::LOGIC_GATE_ 
         || symbol.parent == FamilyInfo::FUNC_INI_) {
       std::vector<Signal> ids;
-      std::vector<Signal> lhs;
-      std::vector<Signal> rhs;
       auto arg =
           gates[static_cast<std::string>(modules[it->first].variables.front())];      
       auto _type = symbol.child;      
@@ -312,15 +310,13 @@ GNet buildGnet(SymbolTable &symbolTable,
         auto fId = gates.find(static_cast<std::string>(*idsIt));
         ids.push_back(Signal::always(fId->second));
       }
-      
       for (int i = 0; i < modules[it->first].counter; i++) {
         it++;
       }
-      std::unordered_map<Gate::Id,Gate::Id> a = {};
-      //GNet tmp;
+    
       switch (_type) {
       case NOT_:
-        gnets[currentModuleName].net.setGate(arg, GateSymbol::NOT, ids);
+        gnets[currentModuleName].net->setGate(arg, GateSymbol::NOT, ids);
         std::cout << "NOT case symbol: " 
                   << modules[it->first].variables.front()
                   << " gates value: " << arg << std::endl;
@@ -329,45 +325,21 @@ GNet buildGnet(SymbolTable &symbolTable,
        std::cout << "AND case: "
                  << modules[it->first].variables.front() 
                  << " gates value: " << arg << std::endl;
-        gnets[currentModuleName].net.setGate(arg, GateSymbol::AND, ids);
+        gnets[currentModuleName].net->setGate(arg, GateSymbol::AND, ids);
         break;
       case NAND_:
-        gnets[currentModuleName].net.setGate(arg, GateSymbol::NAND, ids);
+        gnets[currentModuleName].net->setGate(arg, GateSymbol::NAND, ids);
         break;
       case NOR_:
-        gnets[currentModuleName].net.setGate(arg, GateSymbol::NOR, ids);
+        gnets[currentModuleName].net->setGate(arg, GateSymbol::NOR, ids);
         break;
       case XOR_:
-        gnets[currentModuleName].net.setGate(arg, GateSymbol::XOR, ids);
-        break;
-      case FUNC_INI_NAME_:
-        
-        auto subnet = gnets[symbol.parentName].net.clone(a);
-      gnets[currentModuleName].net.addSubnet(subnet); //Attempt add subnet in our currently net
-        for (auto &i : gnets[symbol.parentName].elements) {
-          //in this if construction Im gonna connect all necessery sygnals from current net to subnet 
-          if (i.derection == INPUT_) {
-            auto fId = gates.find(static_cast<std::string>(i.name));
-            subnet->setNop(i.sourseGate,Signal::always(fId->second));
-             //gnets[currentModuleName].net.setGate(,GateSymbol::IN,);
-          } else if (i.derection == OUTPUT_) {
-             auto fId = gates.find(static_cast<std::string>(i.name));
-            subnet->setNop(i.sourseGate,Signal::always(fId->second)); // Idk why, but if I delete Signal::always... I get a problem:
-          }
-          //gnets[currentModuleName].net.clone(,);
-        }
+        gnets[currentModuleName].net->setGate(arg, GateSymbol::XOR, ids);
         break;
       default:
         break;
       }
     }
-  //   if(symbol.parent == FUNC_INI_) {
-  //     std::vector<Signal> ids;
-  //     auto arg =
-  //         gates[static_cast<std::string>(
-  //             modules[it->first].variables.front())];       
-  //     auto _type = symbol.child;
-  //   }
     }
   
   
@@ -378,24 +350,23 @@ GNet buildGnet(SymbolTable &symbolTable,
       continue;
     }
     if (symbol.child == FamilyInfo::OUTPUT_) {
-      Gate::Id bb = gnets[currentModuleName].net.addOut(
+      Gate::Id bb = gnets[currentModuleName].net->addOut(
           gates[static_cast<std::string>(entry.first)]);;   
       for( auto &element : gnets[currentModuleName].elements) {
           if(element.name == entry.first) {
-            element.derection = OUTPUT_;
-            element.sourseGate = bb;
+            element.direction = OUTPUT_;
+            element.sourceGate = bb;
            
           }
         }
     }   
   }
   for (auto &element : gnets[currentModuleName].elements) {         
-            std::cout << "Element derection: "<<element.derection;
-            std::cout << " Element name: "<< element.name;  
+            std::cout << "Element derection: "<<element.direction;
+            std::cout << " Element name: "<< element.name<< std::endl;  
         
         }
          std::cout << "Counter 2: " << counter << std::endl;
-  return gnets[currentModuleName].net;
 }
 
 KindOfError parseGateLevelVerilog() {
@@ -406,11 +377,18 @@ KindOfError parseGateLevelVerilog() {
   std::unordered_map<std::string, ModuleInfo> modules;
   while (tok != EOF_TOKEN) {
     DEBUGTOKEN(tok, "Verilog loop");
-    ASSERT_NEXT_TOKEN(tok, MODULE, FAILURE_IN_GATE_LEVEL_VERILOG);
-    rc = parseModule(tok, table, modules, gnets);
+    tok = getNextToken();
+    if(tok == MODULE) {
+      rc = parseModule(tok, table, modules, gnets);
+    }else if(tok == EOF_TOKEN) {
+      std::cout << " End of file. Check 'errors.txt' for more info about errors" << std::endl;
+      break;
+    } else {
+      std::cerr << "Error: "<< FAILURE_IN_GATE_LEVEL_VERILOG << std::endl << "line: " << yylineno << std::endl;
+    }
   }
-  std::cout << "Error! "
-            << "type = " << rc << std::endl;
+  std::cout << "module A: "<< std::endl << *gnets["A"].net<< std::endl;
+  std::cout << "module B: " << std::endl << *gnets["B"].net<< std::endl;
   return rc;
 }
 
@@ -422,6 +400,12 @@ parseModule(Token_T &tok, SymbolTable &table,
   int bit = 1;
   ASSERT_NEXT_TOKEN(tok, STRING, FAILURE_IN_MODULE_NAME); 
   std::string currentModuleName = yytext;
+  GNetInfo new_gnet_info;
+  new_gnet_info.net = std::make_unique<GNet>();
+  gnets[currentModuleName] = std::move(new_gnet_info);
+  std::cout << "New GNet instance created for module: " << currentModuleName 
+          << ". Address: " << gnets[currentModuleName].net.get() << std::endl;
+
   if (modules.find(currentModuleName) == modules.end()) { 
     modules[currentModuleName] = {FamilyInfo::MODULE_, {}};
     ASSERT_NEXT_TOKEN(tok, LBRACE, FAILURE_IN_MODULE_NAME);
@@ -485,7 +469,7 @@ parseModule(Token_T &tok, SymbolTable &table,
     }
   }
   buildGnet(table, gnets, currentModuleName, modules); 
-  std::cout << gnets[currentModuleName].net;
+  std::cout << *gnets[currentModuleName].net;
   return rc;
 }
 
@@ -600,7 +584,6 @@ parseLogicGate(Token_T &tok,
     std::cerr << "This name alredy exsist: " << currentLogicGateName
               << std::endl
               << "line: " << yylineno << std::endl;
-    exit(EXIT_FAILURE);
   }
   modules[currentLogicGateName] = {
     FamilyInfo::LOGIC_GATE_, {}, currentModuleName};
@@ -630,6 +613,14 @@ parseLogicGate(Token_T &tok,
     }
     if (tok != COMMA && tok != RBRACE) {
       rc = FAILURE_IN_ARG;
+    }
+  }
+  for (auto it = modules[currentLogicGateName].variables.begin();
+           it != modules[currentLogicGateName].variables.end(); ++it) { 
+    if(table.findChild(*it) != INPUT_ && it != modules[currentLogicGateName].variables.begin()) {
+      std::cerr << "This variable is not input sygnal: " << *it << std::endl;
+    } else if(it == modules[currentLogicGateName].variables.begin() && table.findChild(*it) != OUTPUT_) {
+      std::cerr << "This variable is not output sygnal: " << *it << std::endl;
     }
   }
   modules[currentLogicGateName].counter = bit;
