@@ -8,6 +8,7 @@ add_library(Gate OBJECT
   optimizer/rwdatabase.cpp
   premapper/aigmapper.cpp
   premapper/premapper.cpp
+  printer/graphml.cpp
   simulator/simulator.cpp
   transformer/bdd.cpp
   transformer/hmetis.cpp
