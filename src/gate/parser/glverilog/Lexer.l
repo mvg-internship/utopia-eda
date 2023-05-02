@@ -12,7 +12,7 @@
 
  
 NUM     [0-9]
-STRING  [a-zA-Z][a-zA-Z0-9]*
+STRING  [a-zA-Z][a-zA-Z0-9_]*
 
         //Rule section
 %%
@@ -42,6 +42,8 @@ nand    { return NAND; }
 and     { return AND; }
 xor     { return XOR; }
 nor     { return NOR; }
+or      { return OR; }
+xnor    { return XNOR; }
 
 
 

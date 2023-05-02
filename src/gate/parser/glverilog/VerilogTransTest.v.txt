@@ -1,44 +1,91 @@
-module PriorityA(E, A, PA, X1);
+/* Correct tests */
+module test1(a, b, y);
+    input a;
+    input b;
+    output y;
+    wire w1;
+    and and1(w1, a, b);
+    not not1(y, w1);
+endmodule
 
-  input E, A;
-  output X1, PA;
-  
-  wire Ab, EAb;
 
-  not Ab0(Ab, A);
-  and PAigate(PAi,EAb);
-  nand EAb0(EAb, Ab, E); 
-  xor X10(X1, PA, EAb);
+module test2(a, b, c, y);
+    input a;
+    input b;
+    input c;
+    output y;
+    wire w1, w2;
+    or or1(w1, a, b);
+    xor xor1(w2, a, c);
+    and and2(y, w1, w2);
+endmodule
 
-endmodule /* PriorityA */
 
-module TopLevel432 (T, A, B, C, PA, PB, PC, Chan);
+module test_and(a, b, y);
+    input a;
+    input b;
+    output y;
+    and and3(y, a, b);
+endmodule
 
-  input	T, A, B, C;
-  output PA, PB, PC, Chan;
-  wire X1, X2, I;
 
-  PriorityA M1(T, A, PA, X1);
+module test_nand(a, b, y);
+    input a;
+    input b;
+    output y;
+    nand nand1(y, a, b);
+endmodule
 
-endmodule /* TopLevel432 */
 
-module Circuit432 (in4, in1, in8, in14, out223, out329, out370, out421);
+module test_or(a, b, y);
+    input a;
+    input b;
+    output y;
+    or or2(y, a, b);
+endmodule
 
-  input in4, in1, in8, in14;
-  output out223, out329, out370, out421;
 
-  wire A, B, C, E, PA, PB, PC, Chan;
+module test_nor(a, b, y);
+    input a;
+    input b;
+    output y;
+    nor nor1(y, a, b);
+endmodule
 
-  assign
-      E = in4,
-      A = in1,
-      B = in8,
-      C = in14,
-      PA = out223,
-      PB = out329,
-      PC = out370,
-      Chan = out421;
-	
- TopLevel432 Ckt432 (E, A, B, C, PA, PB, PC, Chan);
 
-endmodule /* Circuit432 */
+module test_xor(a, b, y);
+    input a;
+    input b;
+    output y;
+    xor xor2(y, a, b);
+endmodule
+
+
+module test_xnor(a, b, y);
+    input a;
+    input b;
+    output y;
+    xnor xnor1(y, a, b);
+endmodule
+
+/* Incorrect tests */
+
+
+
+module invalid1(a, b, y); 
+    input a;
+    input b;
+    output y;
+    wire w1;
+    and and1(a, w1, b);/* In this logic gate "a" is not output sygnal or wire*/
+    not not1(y, w1);
+endmodule
+
+module invalid2(a, a, b, y);/*In this module sygnal "a" declorated twice*/
+    input a;
+    input b;
+    output y;
+    wire w1;
+    and and1(w1, a, b);
+    not not1(y, w1);
+endmodule
