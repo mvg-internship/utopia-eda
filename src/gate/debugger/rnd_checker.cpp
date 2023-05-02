@@ -14,7 +14,7 @@ namespace eda::gate::debugger {
 
 static simulator::Simulator simulator;
 
-Result Generator(GNet &miter, const unsigned int tries, const bool exhaustive = true) {
+Result rndChecker(GNet &miter, const unsigned int tries, const bool exhaustive = true) {
 
   //check the number of output
   assert(miter.nTargetLinks() == 1);
@@ -45,12 +45,13 @@ Result Generator(GNet &miter, const unsigned int tries, const bool exhaustive = 
   miter.sortTopologically();
   auto compiled = simulator.compile(miter, in, out);
   std::uint64_t output;
-
+  std::uint64_t inputPower = static_cast<std::uint64_t>((1 << inputNum));
+  
   if (!exhaustive) {
     for (std::uint64_t t = 0; t < tries; t++) {
       for (std::uint64_t i = 0; i < inputNum; i++) {
-        std::uint64_t temp = 2*rand();
-        std::uint64_t in = temp % static_cast<std::uint64_t>((1 << inputNum));
+        std::uint64_t temp = 2 * rand();
+        std::uint64_t in = temp % inputPower;
         compiled.simulate(output, in);
         if (output == 1) {
           return  Result::NOTEQUAL;
@@ -61,9 +62,9 @@ Result Generator(GNet &miter, const unsigned int tries, const bool exhaustive = 
   }
 
   if (exhaustive) {
-    for (std::uint64_t t = 0; t < static_cast<std::uint64_t>((1 << inputNum)); t++) {
-      std::uint64_t temp = 2*t;
-      std::uint64_t in = temp % static_cast<std::uint64_t>((1 << inputNum));
+    for (std::uint64_t t = 0; t < inputPower; t++) {
+      std::uint64_t temp = 2 * t;
+      std::uint64_t in = temp % inputPower;
       compiled.simulate(output, in);
       if (output == 1) {
         return Result::NOTEQUAL;
@@ -75,15 +76,15 @@ Result Generator(GNet &miter, const unsigned int tries, const bool exhaustive = 
   return Result::ERROR;
 }
 
-void RNDChecker::setTries(int tries) {
+void RndChecker::setTries(int tries) {
   this->tries = tries;
 }
 
-void RNDChecker::setExhaustive(bool exhaustive) {
+void RndChecker::setExhaustive(bool exhaustive) {
   this->exhaustive = exhaustive;
 }
 
-bool RNDChecker::areEqual(GNet &lhs,
+bool RndChecker::areEqual(GNet &lhs,
                           GNet &rhs,
                           Checker::GateIdMap &gmap) {
 
@@ -113,7 +114,7 @@ bool RNDChecker::areEqual(GNet &lhs,
     hints.triggerBinding = std::make_shared<GateBinding>(std::move(tbind));
 
     GNet *net = miter(lhs, rhs, hints);
-    Result res = Generator(*net, tries, exhaustive);
+    Result res = rndChecker(*net, tries, exhaustive);
     return (res == 0);
   }
 

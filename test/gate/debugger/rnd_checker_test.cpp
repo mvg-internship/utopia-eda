@@ -14,15 +14,15 @@
 using namespace eda::gate::debugger;
 using namespace eda::gate::model;
 
-TEST(rnd_generatorTest, SimpleTest) {
+TEST(rnd_checkerTest, SimpleTest) {
 
   Gate::SignalList inputs;
   Gate::Id output;
 
   auto net = makeNor(8, inputs, output);
 
-  std::cout << "STARTING RND_GENERATOR TEST\n";
-  int a = Generator(*net, 0, true);
-  std::cout << "GENERATOR RESULT IS: \t" << a << std::endl;
+  std::cout << "STARTING RND_CHECKER TEST\n";
+  int a = rndChecker(*net, 0, true);
+  std::cout << "CHECKER RESULT IS: \t" << a << std::endl;
   EXPECT_TRUE(a == 0);
 }

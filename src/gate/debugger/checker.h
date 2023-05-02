@@ -25,7 +25,6 @@ namespace eda::gate::debugger {
  * \author <a href="mailto:kamkin@ispras.ru">Alexander Kamkin</a>
  */
 
-
 class Checker : public BaseChecker, public util::Singleton<Checker> {
 friend class util::Singleton<Checker>;
 

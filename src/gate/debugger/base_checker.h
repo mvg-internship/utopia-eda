@@ -29,8 +29,8 @@ using LecType = eda::gate::debugger::options::LecType;
 class BaseChecker {
 public:
   virtual bool areEqual(GNet &lhs,
-                GNet &rhs,
-                std::unordered_map<Gate::Id, Gate::Id> &gmap) = 0;
+               GNet &rhs,
+               std::unordered_map<Gate::Id, Gate::Id> &gmap) = 0;
   virtual ~BaseChecker() = 0;
 };
 

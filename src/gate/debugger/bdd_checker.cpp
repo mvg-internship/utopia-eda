@@ -39,7 +39,7 @@ bool bddChecker(GNet &net1, GNet &net2, Hints &hints) {
   return (netBDD == manager.bddZero());
 } 
 
-bool BDDChecker::areEqual(GNet &lhs,
+bool BddChecker::areEqual(GNet &lhs,
                           GNet &rhs,
                           Checker::GateIdMap &gmap) {
 

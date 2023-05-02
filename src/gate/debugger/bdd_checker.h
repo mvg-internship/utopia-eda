@@ -34,8 +34,8 @@ using SignalList = model::Gate::SignalList;
  */
 bool bddChecker(GNet &net1, GNet &net2, Hints &hints);
 
-class BDDChecker : public BaseChecker, public util::Singleton<BDDChecker> {
-friend class util::Singleton<BDDChecker>;
+class BddChecker : public BaseChecker, public util::Singleton<BddChecker> {
+friend class util::Singleton<BddChecker>;
 
 public:
   bool areEqual(GNet &lhs,

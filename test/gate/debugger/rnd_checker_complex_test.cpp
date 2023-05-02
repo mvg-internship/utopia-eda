@@ -67,8 +67,8 @@ TEST(rnd_checkerTest, MiterAndCheckerTest) {
   hints.triggerBinding = std::make_shared<GateBinding>(std::move(tbind));
 
   GNet* mit = miter(net, *netCloned, hints);
-  int res = Generator(*mit, 0, true);
-  int res2 = Generator(*mit, 2, false);
+  int res = rndChecker(*mit, 0, true);
+  int res2 = rndChecker(*mit, 2, false);
   std::cout << "Result of rnd_checker is:\t" << res << std::endl;
   EXPECT_TRUE(res == 0);
   EXPECT_TRUE(res2 == -1);

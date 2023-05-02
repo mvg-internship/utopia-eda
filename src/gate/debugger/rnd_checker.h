@@ -21,7 +21,7 @@ using GNet = eda::gate::model::GNet;
 
 namespace eda::gate::debugger {
 
-// generator return value
+// rndChecker return value
 // EQUAL returns if there exhaustive check and nets are equal
 // UNKNOWN returns if there NO exhaustive check and nets are equal
 // NOTEQUAL returns if nets are not equal
@@ -40,10 +40,10 @@ enum Result {
  *  @param exhaustive Sets the mode of the check.
  *  @return The result of the check.
  */
-Result Generator(GNet &miter, const unsigned int tries, const bool exhaustive);
+Result rndChecker(GNet &miter, const unsigned int tries, const bool exhaustive);
 
-class RNDChecker : public BaseChecker, public util::Singleton<RNDChecker> {
-friend class util::Singleton<RNDChecker>;
+class RndChecker : public BaseChecker, public util::Singleton<RndChecker> {
+friend class util::Singleton<RndChecker>;
 
 public:
   bool areEqual(GNet &lhs,
