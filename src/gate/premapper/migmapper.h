@@ -51,7 +51,7 @@ protected:
                  const bool sign, GNet &newNet) const override;
 
   Gate::Id mapXor(const Gate::SignalList &newInputs,
-                  const bool sign, GNet &newNet) const override;
+                  bool sign, GNet &newNet) const override;
   Gate::Id mapXor(const Gate::SignalList &newInputs,
                   const size_t n0, const size_t n1,
                   const bool sign, GNet &newNet) const override;

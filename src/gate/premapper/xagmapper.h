@@ -28,4 +28,3 @@ protected:
 };
 
 } // namespace eda::gate::premapper
-

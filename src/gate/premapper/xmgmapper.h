@@ -14,7 +14,7 @@
 namespace eda::gate::premapper {
 
 /**
- * \brief Implements an netlist-to-XMG pre-mapper.
+ * \brief Implements a netlist-to-XMG pre-mapper.
  * \author <a href="mailto:mdvershkov@edu.hse.ru">Maksim Vershkov</a>
  *
  * Pre-mapper transforms netlist to XMG (Xor-Maj-Inverter Graph) basis.

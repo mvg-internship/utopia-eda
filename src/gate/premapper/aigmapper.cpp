@@ -197,7 +197,7 @@ Gate::Id AigMapper::mapOr(const Gate::SignalList &newInputs,
 //===----------------------------------------------------------------------===//
 
 Gate::Id AigMapper::mapXor(const Gate::SignalList &newInputs,
-                           const bool sign, GNet &newNet) const {
+                           bool sign, GNet &newNet) const {
   Gate::SignalList inputs(newInputs.begin(), newInputs.end());
   inputs.reserve(2 * newInputs.size() - 1);
 

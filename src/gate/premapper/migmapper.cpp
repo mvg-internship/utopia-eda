@@ -61,7 +61,7 @@ Gate::Id MigMapper::mapIn(GNet &newNet) const {
 Gate::Id MigMapper::mapOut(const Gate::SignalList &newInputs,
                            const size_t n0, const size_t n1,
                            GNet &newNet) const {
-  assert(newInputs.size() + n0 + n1 == 1 && "Input size error of mapOut\n");
+  assert((newInputs.size() + n0 + n1 == 1) && "Input size error of mapOut\n");
 
   // Constant output.
   if (n0 > 0 || n1 > 0) {
@@ -305,8 +305,9 @@ Gate::Id majorityOfSeven(const Gate::SignalList &newInputs, GNet &newNet) {
                        Gate::Signal::always(tufrxztId));
 }
 
-Gate::Id MigMapper::mapMaj(const Gate::SignalList &newInputs, const size_t n0,
-                           const size_t n1, GNet &newNet) const {
+Gate::Id MigMapper::mapMaj(const Gate::SignalList &newInputs,
+                           const size_t n0, const size_t n1,
+                           GNet &newNet) const {
   size_t inputSize = newInputs.size();
   assert(((inputSize + n0 + n1) % 2 == 1) && (inputSize + n0 + n1 >= 3)
                                           && "Invalid number of inputs\n");

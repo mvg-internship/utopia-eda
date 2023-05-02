@@ -41,8 +41,7 @@ std::shared_ptr<GNet> PreMapper::map(const GNet &net,
     const auto *oldTrigger = Gate::get(oldTriggerId);
 
     auto newTriggerId = oldToNewGates.find(oldTriggerId);
-    assert((newTriggerId != oldToNewGates.end()) &&
-           "Invalid new trigger ID");
+    assert((newTriggerId != oldToNewGates.end()) && "Invalid new trigger ID");
 
     auto newInputs = model::getNewInputs(oldTrigger->inputs(), oldToNewGates);
     newNet->setGate(newTriggerId->second, oldTrigger->func(), newInputs);
@@ -62,7 +61,7 @@ GNet *PreMapper::mapGates(const GNet &net,
     for (const auto *oldGate : net.gates()) {
       const auto oldGateId = oldGate->id();
       assert((oldToNewGates.find(oldGateId) == oldToNewGates.end()) &&
-             "Invalid new Gate ID");
+             "Invalid new gate ID");
 
       const auto newGateId = mapGate(*oldGate, oldToNewGates, *newNet);
       assert((newGateId != Gate::INVALID) && "Invalid gate used");
