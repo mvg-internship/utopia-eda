@@ -15,11 +15,6 @@
 
 #include <string>
 
-/**
- * \brief Implements translation from Liberty format file to GNet.
- * \author <a href="mailto:anushakov@edu.hse.ru">Aleksander Ushakov</a>
- */
-
 bool translateModuleToGNet(
     const Yosys::RTLIL::Module *m,
     eda::gate::model::GNet &net);

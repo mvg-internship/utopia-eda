@@ -35,7 +35,7 @@ static std::unique_ptr<GModel::GNet> createLogicGate(
 
 inline static NetData libertyGnet() {
   NetData vec;
-  const std::filesystem::path subCatalog = "test/data/gate/parserGnet";
+  const std::filesystem::path subCatalog = "test/data/gate/liberty";
   const std::filesystem::path homePath = std::string(getenv("UTOPIA_HOME"));
   const std::filesystem::path prefixPath = homePath / subCatalog;
   const std::string filenames = prefixPath / "normal1.lib";
