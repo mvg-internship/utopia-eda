@@ -42,7 +42,7 @@ std::vector<RWDatabase::TruthTable> NetData::buildTruthTab(
   for (auto link: net->sourceLinks()) {
     in.push_back(Gate::Link(link.target));
   }
-  for(auto link: net->targetLinks()) {
+  for (auto link: net->targetLinks()) {
     out.push_back(Gate::Link(link.source));
   }
   auto compiled = simulator.compile(*net, in, out);
