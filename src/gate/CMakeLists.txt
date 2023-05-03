@@ -12,9 +12,8 @@ add_library(Gate OBJECT
   simulator/simulator.cpp
   transformer/bdd.cpp
   transformer/hmetis.cpp
-  liberty/parser_liberty.cpp
-  liberty/fill_database.cpp
-  truth_table/truth_table.cpp
+  library/liberty/translate.cpp
+  library/liberty/net_data.cpp
 )
 add_library(Utopia::Gate ALIAS Gate)
 

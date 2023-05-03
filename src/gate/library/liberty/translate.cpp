@@ -1,12 +1,12 @@
-/**
- * \brief Implements translation from Liberty format file to GNet.
- * \author <a href="mailto:anushakov@edu.hse.ru">Aleksander Ushakov</a>
- */
+//===----------------------------------------------------------------------===//
+//
+// Part of the Utopia EDA Project, under the Apache License v2.0
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2023 ISP RAS (http://www.ispras.ru)
+//
+//===----------------------------------------------------------------------===//
 
-#include "parser_liberty.h"
-#include "gate/truth_table/truth_table.h"
-
-#include <string>
+#include "gate/library/liberty/translate.h"
 
 namespace GModel = eda::gate::model;
 namespace YLib = Yosys::hashlib;

@@ -25,7 +25,7 @@ add_executable(utest
   gate/debugger/checker_test.cpp
   gate/model/gnet_test.cpp
   gate/optimizer/rwdatabase_test.cpp
-  gate/liberty/liberty_test.cpp
+  gate/library/liberty/liberty_test.cpp
   gate/printer/graphml_test.cpp
   gate/simulator/simulator_test.cpp
   gate/transformer/bdd_test.cpp
