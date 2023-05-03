@@ -25,7 +25,7 @@ protected:
                    const GateIdMap &oldToNewGates,
                    GNet &newNet) const override;
 
-  Gate::Id mapIn (GNet &newNet) const override;
+  Gate::Id mapIn(GNet &newNet) const override;
   Gate::Id mapOut(const Gate::SignalList &newInputs,
       const size_t n0, const size_t n1, GNet &newNet) const override;
 
@@ -43,11 +43,11 @@ protected:
                   const size_t n0, const size_t n1,
                   const bool sign, GNet &newNet) const override;
 
-  Gate::Id mapOr (const Gate::SignalList &newInputs,
-                  const bool sign, GNet &newNet) const override;
-  Gate::Id mapOr (const Gate::SignalList &newInputs,
-                  const size_t n0,const  size_t n1,
-                  const bool sign, GNet &newNet) const override;
+  Gate::Id mapOr(const Gate::SignalList &newInputs,
+                 const bool sign, GNet &newNet) const override;
+  Gate::Id mapOr(const Gate::SignalList &newInputs,
+                 const size_t n0, const size_t n1,
+                 const bool sign, GNet &newNet) const override;
 
   Gate::Id mapXor(const Gate::SignalList &newInputs,
                   bool sign, GNet &newNet) const override;

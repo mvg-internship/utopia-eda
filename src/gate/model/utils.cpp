@@ -17,7 +17,7 @@ Gate::SignalList getNewInputs(const Gate::SignalList &oldInputs,
   for (size_t i = 0; i < oldInputs.size(); i++) {
     auto oldInput = oldInputs[i];
     auto newInput = oldToNewGates.find(oldInput.node());
-    assert(newInput != oldToNewGates.end());
+    assert((newInput != oldToNewGates.end()) && "The gate was not found");
 
     newInputs[i] = Gate::Signal(oldInput.event(), newInput->second);
   }
@@ -43,7 +43,7 @@ Gate::SignalList getNewInputs(const Gate &oldGate,
       n1 += (isZero ? 0 : 1);
     } else {
       const auto i = oldToNewGates.find(input.node());
-      assert(i != oldToNewGates.end());
+      assert((i != oldToNewGates.end()) && "The gate was not found");
 
       const auto newInputId = i->second;
       newInputs.push_back(Gate::Signal::always(newInputId));
