@@ -13,6 +13,8 @@ add_library(Gate OBJECT
   premapper/xagmapper.cpp
   premapper/xmgmapper.cpp
   printer/graphml.cpp
+  printer/dot.cpp
+  parser/gate_verilog_parser.cpp
   simulator/simulator.cpp
   transformer/bdd.cpp
   transformer/hmetis.cpp
