@@ -170,7 +170,7 @@ FLibrary::Out FLibraryDefault::synthAdd(size_t outSize,
 
    makeInputsEqual(outSize, x, y, net);
 
-   return synthAdder(outSize, {x, y}, false, net);;
+   return synthAdder(outSize, {x, y}, false, net);
 }
 
 FLibrary::Out FLibraryDefault::synthSub(size_t outSize,
