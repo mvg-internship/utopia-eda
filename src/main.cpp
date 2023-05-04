@@ -93,10 +93,8 @@ void dump(const GNet &net) {
   std::cout << "O=" << net.nTargetLinks() << std::endl;
 }
 
-bool fillingDB(RtlContext &context) {
-  NetData data;
+bool fillingDB(RtlContext &context, NetData &data) {
   translateLibertyToDesign(context.file, data);
-  data.fillDatabase(context.techLib);
   return true;
 }
 
@@ -222,11 +220,13 @@ int main(int argc, char **argv) {
 
   if (!options.rtl.libertyFile.empty()) {
     RtlContext context(options.rtl.libertyFile, options.rtl);
-    result |= fillingDB(context);
+    NetData data;
+    result |= fillingDB(context, data);
     for (auto file : options.rtl.files()) {
       RtlContext context(file, options.rtl);
-      result |= fillingDB(context);
+      result |= fillingDB(context, data);
     }
+    data.fillDatabase(context.techLib);
   } else {
     for (auto file : options.rtl.files()) {
       RtlContext context(file, options.rtl);

@@ -51,7 +51,6 @@ public:
 
   virtual void fromJson(Json json) {
     // TODO: Default implementation.
-
   }
 
   virtual Json toJson() const {
@@ -141,10 +140,9 @@ struct RtlOptions final : public AppOptions {
   using PreBasis = eda::gate::premapper::PreBasis;
 
   static constexpr const char *ID = "rtl";
-  static constexpr const char *LIBERTY  = "lib";
-
 
   static constexpr const char *PREMAP_BASIS  = "premap-basis";
+  static constexpr const char *LIBERTY  = "lib";
 
   const std::map<std::string, PreBasis> preBasisMap {
     {"aig", PreBasis::AIG},
@@ -155,16 +153,16 @@ struct RtlOptions final : public AppOptions {
 
   RtlOptions(AppOptions &parent):
     AppOptions(parent, ID, "Logical synthesis") {
-    options->add_option(
-        cli(LIBERTY),
-        libertyFile,
-        "Is used to filling Technical Library. Requires .lib files.")
-    ->expected(1);
 
     // Named options.
     options->add_option(cli(PREMAP_BASIS), preBasis, "Premapper basis")
            ->expected(1)
            ->transform(CLI::CheckedTransformer(preBasisMap, CLI::ignore_case));
+    options->add_option(
+        cli(LIBERTY),
+        libertyFile,
+        "Is used to filling Technical Library. Requires .lib files.")
+           ->expected(1);
 
     // Input file(s).
     options->allow_extras();
@@ -178,8 +176,8 @@ struct RtlOptions final : public AppOptions {
     get(json, PREMAP_BASIS, preBasis);
     get(json, LIBERTY,  libertyFile);
   }
-  std::string libertyFile;
   PreBasis preBasis = PreBasis::AIG;
+  std::string libertyFile;
 
 };
 
