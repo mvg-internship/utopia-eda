@@ -165,7 +165,12 @@ FLibrary::Out FLibraryDefault::synthSimpleAdder(size_t outSize, const In &in, GN
 FLibrary::Out FLibraryDefault::synthAdd(size_t outSize,
                                         const In &in,
                                         GNet &net) {
-  return synthSimpleAdder(outSize, in, net);
+   auto x = in[0];
+   auto y = in[1];
+
+   makeInputsEqual(outSize, x, y, net);
+
+   return synthAdder(outSize, {x, y}, false, net);;
 }
 
 FLibrary::Out FLibraryDefault::synthSub(size_t outSize,
