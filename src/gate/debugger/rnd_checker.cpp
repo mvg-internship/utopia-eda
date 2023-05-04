@@ -45,6 +45,7 @@ Result rndChecker(GNet &miter, const unsigned int tries, const bool exhaustive =
   miter.sortTopologically();
   auto compiled = simulator.compile(miter, in, out);
   std::uint64_t output;
+  inputNum--;
   std::uint64_t inputPower = static_cast<std::uint64_t>((1 << inputNum));
   
   if (!exhaustive) {
