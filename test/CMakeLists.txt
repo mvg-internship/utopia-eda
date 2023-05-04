@@ -23,6 +23,7 @@ enable_testing()
 
 add_executable(utest
   gate/debugger/checker_test.cpp
+  gate/debugger/failed_test.cpp
   gate/model/gnet_test.cpp
   gate/optimizer/rwdatabase_test.cpp
   gate/parserGnet/testGnet.cpp
