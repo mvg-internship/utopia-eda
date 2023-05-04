@@ -44,6 +44,7 @@ target_link_libraries(${MAIN_LIBRARY}
   Utopia::Gate
   Utopia::RTL
   Utopia::RILParser
+  Yosys::Yosys
 )
 
 # The project executable.

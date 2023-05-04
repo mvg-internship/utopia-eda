@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include "gate/library/liberty/translate.h"
+
 #include "CLI/CLI.hpp"
 #include "nlohmann/json.hpp"
 
@@ -41,6 +43,7 @@ public:
 
   virtual void fromJson(Json json) {
     // TODO: Default implementation.
+
   }
 
   virtual Json toJson() const {
@@ -120,9 +123,16 @@ protected:
 
 struct RtlOptions final : public AppOptions {
   static constexpr const char *ID = "rtl";
+  static constexpr const char *LIBERTY  = "lib";
+
 
   RtlOptions(AppOptions &parent):
-      AppOptions(parent, ID, "Logical synthesis") {
+    AppOptions(parent, ID, "Logical synthesis") {
+    options->add_option(
+        cli(LIBERTY),
+        libertyFile,
+        "Is used to filling Technical Library. Requires .lib files.")
+    ->expected(1);
 
     // Input file(s).
     options->allow_extras();
@@ -131,6 +141,11 @@ struct RtlOptions final : public AppOptions {
   std::vector<std::string> files() const {
     return options->remaining();
   }
+
+  void fromJson(Json json) override {
+    get(json, LIBERTY,  libertyFile);
+  }
+  std::string libertyFile;
 };
 
 struct HlsOptions final : public AppOptions {

@@ -2,14 +2,17 @@
 //
 // Part of the Utopia EDA Project, under the Apache License v2.0
 // SPDX-License-Identifier: Apache-2.0
-// Copyright 2021 ISP RAS (http://www.ispras.ru)
+// Copyright 2023 ISP RAS (http://www.ispras.ru)
 //
 //===----------------------------------------------------------------------===//
 
 #include "config.h"
 #include "gate/debugger/checker.h"
+#include "gate/library/liberty/net_data.h"
+#include "gate/library/liberty/translate.h"
 #include "gate/model/gate.h"
 #include "gate/model/gnet.h"
+#include "gate/optimizer/rwdatabase.h"
 #include "gate/premapper/aigmapper.h"
 #include "gate/premapper/migmapper.h"
 #include "options.h"
@@ -46,6 +49,7 @@ struct RtlContext {
   using PreMapper = eda::gate::premapper::PreMapper;
   using AigMapper = eda::gate::premapper::AigMapper;
   using Checker = eda::gate::debugger::Checker;
+  using RWDatabase = eda::gate::optimizer::RWDatabase;
 
   RtlContext(const std::string &file, const RtlOptions &options):
     file(file), options(options) {}
@@ -60,6 +64,8 @@ struct RtlContext {
   PreMapper::GateIdMap gmap;
 
   bool equal;
+
+  RWDatabase techLib;
 };
 
 void dump(const GNet &net) {
@@ -78,6 +84,13 @@ void dump(const GNet &net) {
   std::cout << "N=" << net.nGates() << std::endl;
   std::cout << "I=" << net.nSourceLinks() << std::endl;
   std::cout << "O=" << net.nTargetLinks() << std::endl;
+}
+
+bool fillingDB(RtlContext &context) {
+  NetData data;
+  translateLibertyToDesign(context.file, data);
+  data.fillDatabase(context.techLib);
+  return true;
 }
 
 bool parse(RtlContext &context) {
@@ -169,10 +182,10 @@ bool check(RtlContext &context) {
 }
 
 int rtlMain(RtlContext &context) {
-  if (!parse(context))   { return -1; }
-  if (!compile(context)) { return -1; }
-  if (!premap(context))  { return -1; }
-  if (!check(context))   { return -1; }
+  if (!parse(context))     { return -1; }
+  if (!compile(context))   { return -1; }
+  if (!premap(context))    { return -1; }
+  if (!check(context))     { return -1; }
 
   return 0;
 }
@@ -186,7 +199,7 @@ int main(int argc, char **argv) {
   version << VERSION_MAJOR << "." << VERSION_MINOR;
 
   title << "Utopia EDA " << version.str() << " | ";
-  title << "Copyright (c) 2021-2022 ISPRAS";
+  title << "Copyright (c) 2021-2023 ISPRAS";
 
   Options options(title.str(), version.str());
 
@@ -198,9 +211,18 @@ int main(int argc, char **argv) {
 
   int result = 0;
 
-  for (auto file : options.rtl.files()) {
-    RtlContext context(file, options.rtl);
-    result |= rtlMain(context);
+  if (!options.rtl.libertyFile.empty()) {
+    RtlContext context(options.rtl.libertyFile, options.rtl);
+    result |= fillingDB(context);
+    for (auto file : options.rtl.files()) {
+      RtlContext context(file, options.rtl);
+      result |= fillingDB(context);
+    }
+  } else {
+    for (auto file : options.rtl.files()) {
+      RtlContext context(file, options.rtl);
+      result |= rtlMain(context);
+    }
   }
 
   return result;
