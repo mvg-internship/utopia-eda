@@ -8,9 +8,8 @@ IDD       [a-zA-Z_][a-zA-Z0-9_.]*
 
 %%
 
-[\t\r ]*[\n]{2,}[\t\r\n]*               { return TOK_N; }
-"#".*[\n]                               { return TOK_COMMENT; }
-[ \t\r\n]+
+[\n]                                    { yylineno++; } 
+"#".*[\n]                               { yylineno++; }
 
 "DFF"                                   { return TOK_DFF; }
 "NOT"                                   { return TOK_NOT; }
