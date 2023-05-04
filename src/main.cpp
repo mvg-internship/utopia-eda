@@ -11,6 +11,7 @@
 #include "gate/model/gate.h"
 #include "gate/model/gnet.h"
 #include "gate/premapper/aigmapper.h"
+#include "gate/premapper/migmapper.h"
 #include "options.h"
 #include "rtl/compiler/compiler.h"
 #include "rtl/library/arithmetic.h"

@@ -49,10 +49,12 @@ public:
     XOR,
     /// Sheffer's stroke: OUT = ~(X & Y (& ...)).
     NAND,
-    /// Peirce's arrow: OUT <= ~(X | Y (| ...)).
+    /// Peirce's arrow: OUT = ~(X | Y (| ...)).
     NOR,
-    /// Exclusive NOR: OUT <= ~(X + Y (+ ...) (mod 2)).
+    /// Exclusive NOR: OUT = ~(X + Y (+ ...) (mod 2)).
     XNOR,
+    /// Majority function: OUT = Majority(X, Y, (...)).
+    MAJ,
 
     //--------------------------------------------------------------------------
     // Flip-flops and latches

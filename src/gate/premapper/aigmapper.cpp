@@ -2,10 +2,11 @@
 //
 // Part of the Utopia EDA Project, under the Apache License v2.0
 // SPDX-License-Identifier: Apache-2.0
-// Copyright 2022 ISP RAS (http://www.ispras.ru)
+// Copyright 2022-2023 ISP RAS (http://www.ispras.ru)
 //
 //===----------------------------------------------------------------------===//
 
+#include "gate/model/utils.h"
 #include "gate/premapper/aigmapper.h"
 
 #include <cassert>
@@ -15,32 +16,6 @@ namespace eda::gate::premapper {
 
 using Gate = eda::gate::model::Gate;
 using GNet = eda::gate::model::GNet;
-
-Gate::SignalList getNewInputs(const Gate &oldGate,
-                              const AigMapper::GateIdMap &oldToNewGates,
-                              size_t &n0, size_t &n1) {
-  const auto k = oldGate.arity();
-
-  Gate::SignalList newInputs;
-  newInputs.reserve(k);
-
-  n0 = n1 = 0;
-  for (auto input : oldGate.inputs()) {
-    if (model::isValue(input)) {
-      const auto isZero = model::isZero(input);
-      n0 += (isZero ? 1 : 0);
-      n1 += (isZero ? 0 : 1);
-    } else {
-      const auto i = oldToNewGates.find(input.node());
-      assert(i != oldToNewGates.end());
-
-      const auto newInputId = i->second;
-      newInputs.push_back(Gate::Signal::always(newInputId));
-    }
-  }
-
-  return newInputs;
-}
 
 Gate::Id AigMapper::mapGate(const Gate &oldGate,
                             const GateIdMap &oldToNewGates,
@@ -53,7 +28,7 @@ Gate::Id AigMapper::mapGate(const Gate &oldGate,
   }
 
   size_t n0, n1;
-  auto newInputs = getNewInputs(oldGate, oldToNewGates, n0, n1);
+  auto newInputs = model::getNewInputs(oldGate, oldToNewGates, n0, n1);
 
   switch (oldGate.func()) {
   case GateSymbol::IN   : return mapIn (                          newNet);
@@ -83,8 +58,10 @@ Gate::Id AigMapper::mapIn(GNet &newNet) const {
 }
 
 Gate::Id AigMapper::mapOut(const Gate::SignalList &newInputs,
-                           size_t n0, size_t n1, GNet &newNet) const {
-  assert(newInputs.size() + n0 + n1 == 1);
+                           const size_t n0,
+                           const size_t n1,
+                           GNet &newNet) const {
+  assert((newInputs.size() + n0 + n1) == 1 && "Only single input is allowed");
 
   // Constant output.
   if (n0 > 0 || n1 > 0) {
@@ -99,7 +76,7 @@ Gate::Id AigMapper::mapOut(const Gate::SignalList &newInputs,
 // ONE/ZERO
 //===----------------------------------------------------------------------===//
 
-Gate::Id AigMapper::mapVal(bool value, GNet &newNet) const {
+Gate::Id AigMapper::mapVal(const bool value, GNet &newNet) const {
   return value ? newNet.addOne() : newNet.addZero();
 }
 
@@ -108,7 +85,7 @@ Gate::Id AigMapper::mapVal(bool value, GNet &newNet) const {
 //===----------------------------------------------------------------------===//
 
 Gate::Id AigMapper::mapNop(const Gate::SignalList &newInputs,
-                           bool sign, GNet &newNet) const {
+                           const bool sign, GNet &newNet) const {
   // NOP(x) = x.
   const auto inputId = newInputs.at(0).node();
   if (sign) {
@@ -126,8 +103,11 @@ Gate::Id AigMapper::mapNop(const Gate::SignalList &newInputs,
 }
 
 Gate::Id AigMapper::mapNop(const Gate::SignalList &newInputs,
-                           size_t n0, size_t n1, bool sign, GNet &newNet) const {
-  assert(newInputs.size() + n0 + n1 == 1);
+                           const size_t n0,
+                           const size_t n1,
+                           const bool sign,
+                           GNet &newNet) const {
+  assert((newInputs.size() + n0 + n1) == 1 && "Only single input is allowed");
 
   if (n0 > 0 || n1 > 0) {
     return mapVal((n0 > 0) ^ sign, newNet);
@@ -141,7 +121,7 @@ Gate::Id AigMapper::mapNop(const Gate::SignalList &newInputs,
 //===----------------------------------------------------------------------===//
 
 Gate::Id AigMapper::mapAnd(const Gate::SignalList &newInputs,
-                           bool sign, GNet &newNet) const {
+                           const bool sign, GNet &newNet) const {
   Gate::SignalList inputs(newInputs.begin(), newInputs.end());
   inputs.reserve(2 * newInputs.size() - 1);
 
@@ -173,7 +153,10 @@ Gate::Id AigMapper::mapAnd(const Gate::SignalList &newInputs,
 }
 
 Gate::Id AigMapper::mapAnd(const Gate::SignalList &newInputs,
-                           size_t n0, size_t n1, bool sign, GNet &newNet) const {
+                           const size_t n0,
+                           const size_t n1,
+                           const bool sign,
+                           GNet &newNet) const {
   if (n0 > 0) {
     return mapVal(!sign, newNet);
   }
@@ -186,7 +169,7 @@ Gate::Id AigMapper::mapAnd(const Gate::SignalList &newInputs,
 //===----------------------------------------------------------------------===//
 
 Gate::Id AigMapper::mapOr(const Gate::SignalList &newInputs,
-                          bool sign, GNet &newNet) const {
+                          const bool sign, GNet &newNet) const {
   // OR(x[1],...,x[n]) = NOT(AND(NOT(x[1]),...,NOT(x[n]))).
   Gate::SignalList negInputs(newInputs.size());
   for (size_t i = 0; i < newInputs.size(); i++) {
@@ -198,7 +181,10 @@ Gate::Id AigMapper::mapOr(const Gate::SignalList &newInputs,
 }
 
 Gate::Id AigMapper::mapOr(const Gate::SignalList &newInputs,
-                          size_t n0, size_t n1, bool sign, GNet &newNet) const {
+                          const size_t n0,
+                          const size_t n1,
+                          const bool sign,
+                          GNet &newNet) const {
   if (n1 > 0) {
     return mapVal(sign, newNet);
   }
@@ -244,8 +230,11 @@ Gate::Id AigMapper::mapXor(const Gate::SignalList &newInputs,
 }
 
 Gate::Id AigMapper::mapXor(const Gate::SignalList &newInputs,
-                           size_t n0, size_t n1, bool sign, GNet &newNet) const {
-  if (n1 > 1) {
+                           const size_t n0,
+                           const size_t n1,
+                           const bool sign,
+                           GNet &newNet) const {
+  if (n1 > 0) {
     return mapXor(newInputs, sign ^ (n1 & 1), newNet);
   }
 
