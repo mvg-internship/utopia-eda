@@ -25,6 +25,7 @@ add_executable(utest
   gate/debugger/checker_test.cpp
   gate/model/gnet_test.cpp
   gate/optimizer/rwdatabase_test.cpp
+  gate/premapper/aigmapper/aig_test.cpp
   gate/premapper/migmapper/migmapper_test.cpp
   gate/premapper/xagmapper/xag_test.cpp
   gate/premapper/xagmapper/xag_verilog_test.cpp
