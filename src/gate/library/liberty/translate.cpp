@@ -1,12 +1,12 @@
-/**
- * \brief Implements translation from Liberty format file to GNet.
- * \author <a href="mailto:anushakov@edu.hse.ru">Aleksander Ushakov</a>
- */
+//===----------------------------------------------------------------------===//
+//
+// Part of the Utopia EDA Project, under the Apache License v2.0
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2023 ISP RAS (http://www.ispras.ru)
+//
+//===----------------------------------------------------------------------===//
 
-#include "parserGnet.h"
-#include "gate/simulator/simulator.h"
-
-#include <string>
+#include "gate/library/liberty/translate.h"
 
 namespace GModel = eda::gate::model;
 namespace YLib = Yosys::hashlib;
@@ -15,7 +15,6 @@ namespace RTlil = Yosys::RTLIL;
 using eda::gate::model::Gate;
 using eda::gate::model::GateSymbol;
 using GateId = eda::gate::model::Gate::Id;
-using eda::gate::simulator::Simulator;
 
 class YosysManager {
 public:
@@ -408,30 +407,4 @@ void translateLibertyToDesign(
   RTlil::Design design;
   Yosys::run_frontend(namefile, "liberty", &design, nullptr);
   translateDesignToGNet(&design, vec);
-}
-
-///Returns vector of means, where vector[0] is mean for 1st out of Gnet and etc.
-std::vector<uint64_t> buildTruthTab(
-    const GModel::GNet *net) {
-  static Simulator simulator;
-  Gate::LinkList in, out;
-  for (auto link: net->sourceLinks()) {
-    in.push_back(Gate::Link(link.target));
-  }
-  for(auto link: net->targetLinks()) {
-    out.push_back(Gate::Link(link.source));
-  }
-  auto compiled = simulator.compile(*net, in, out);
-  uint64_t mean;
-  std::vector<uint64_t> tMean;
-  tMean.resize(out.size());
-  std::fill(tMean.begin(), tMean.end(), 0);
-  uint64_t length = 1 << net->nSourceLinks();
-  for (uint64_t i = 0; i < length; ++i) {
-    compiled.simulate(mean, i);
-    for (uint64_t j = 0; j < tMean.size(); ++j) {
-      tMean[j] += ((mean >> j) % 2) << i;
-    }
-  }
-  return tMean;
 }
