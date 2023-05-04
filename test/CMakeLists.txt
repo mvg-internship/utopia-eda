@@ -29,6 +29,7 @@ add_executable(utest
   gate/premapper/migmapper/migmapper_test.cpp
   gate/premapper/xagmapper/xag_test.cpp
   gate/premapper/xmgmapper/xmgmapper_test.cpp
+  gate/library/liberty/liberty_test.cpp
   gate/printer/graphml_test.cpp
   gate/simulator/simulator_test.cpp
   gate/transformer/bdd_test.cpp
