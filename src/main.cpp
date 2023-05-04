@@ -15,6 +15,9 @@
 #include "gate/optimizer/rwdatabase.h"
 #include "gate/premapper/aigmapper.h"
 #include "gate/premapper/migmapper.h"
+#include "gate/premapper/premapper.h"
+#include "gate/premapper/xagmapper.h"
+#include "gate/premapper/xmgmapper.h"
 #include "options.h"
 #include "rtl/compiler/compiler.h"
 #include "rtl/library/arithmetic.h"
@@ -44,12 +47,16 @@ struct RtlContext {
   using Gate = eda::gate::model::Gate;
   using Link = Gate::Link;
 
-  using Library = eda::rtl::library::ArithmeticLibrary;
-  using Compiler = eda::rtl::compiler::Compiler;
-  using PreMapper = eda::gate::premapper::PreMapper;
   using AigMapper = eda::gate::premapper::AigMapper;
   using Checker = eda::gate::debugger::Checker;
   using RWDatabase = eda::gate::optimizer::RWDatabase;
+  using Compiler = eda::rtl::compiler::Compiler;
+  using Library = eda::rtl::library::FLibraryDefault;
+  using MigMapper = eda::gate::premapper::MigMapper;
+  using PreBasis = eda::gate::premapper::PreBasis;
+  using PreMapper = eda::gate::premapper::PreMapper;
+  using XagMapper = eda::gate::premapper::XagMapper;
+  using XmgMapper = eda::gate::premapper::XmgMapper;
 
   RtlContext(const std::string &file, const RtlOptions &options):
     file(file), options(options) {}
@@ -131,7 +138,9 @@ bool compile(RtlContext &context) {
 bool premap(RtlContext &context) {
   LOG(INFO) << "RTL premap";
 
-  auto &premapper = RtlContext::AigMapper::get();
+  auto &premapper =
+      eda::gate::premapper::getPreMapper(context.options.preBasis);
+
   context.gnet1 = premapper.map(*context.gnet0, context.gmap);
 
   std::cout << "------ G-net #1 ------" << std::endl;
