@@ -166,11 +166,12 @@ struct RtlOptions final : public AppOptions {
       AppOptions(parent, ID, "Logical synthesis") {
     // Named options.
     options->add_option(cli(LEC_TYPE), lecType, "Type of LEC")
-           ->expected(1);
+        ->expected(1)
+            ->transform(CLI::CheckedTransformer(lecTypeMap, CLI::ignore_case));
     // Named options.
     options->add_option(cli(PREMAP_BASIS), preBasis, "Premapper basis")
-           ->expected(1)
-           ->transform(CLI::CheckedTransformer(preBasisMap, CLI::ignore_case));
+        ->expected(1)
+            ->transform(CLI::CheckedTransformer(preBasisMap, CLI::ignore_case));
 
     // Input file(s).
     options->allow_extras();
@@ -181,13 +182,12 @@ struct RtlOptions final : public AppOptions {
   }
 
   void fromJson(Json json) override {
+    get(json, LEC_TYPE, lecType);
     get(json, PREMAP_BASIS, preBasis);
   }
 
   PreBasis preBasis = PreBasis::AIG;
 };
-
-eda::gate::debugger::options::LecType lecType = LecType::DEFAULT;
 
 struct HlsOptions final : public AppOptions {
   static constexpr const char *ID = "hls";
@@ -225,7 +225,6 @@ struct HlsOptions final : public AppOptions {
   }
 
   void fromJson(Json json) override {
-    get(json, LEC_TYPE, lecType);
     get(json, OUTPUT_DIR,  outDir);
     get(json, OUTPUT_DOT,  outDot);
     get(json, OUTPUT_MLIR, outMlir);
