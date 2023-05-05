@@ -28,15 +28,22 @@ std::string SQLiteRWDatabase::serialize(const BoundGNetList &list) {
   std::stringstream ss;
   ss << list.size() << ' ';
   for (const auto &bGNet : list) {
-    auto bindings = bGNet.bindings;
+    const auto &inputsDelay = bGNet.inputsDelay;
+    const auto &bindings = bGNet.bindings;
     auto net = bGNet.net;
     if (!net->isSorted()) {
       throw "Net isn't topologically sorted.";
     }
 
     ss << bindings.size() << ' ';
-    for (auto &binding : bindings) {
+    for (const auto &binding : bindings) {
       ss << binding.first << ' ' << binding.second << ' ';
+    }
+
+    ss << inputsDelay.size() << ' ';
+    for (auto pair : inputsDelay) {
+      uint64_t ser = *( (uint64_t*)&pair.second );
+      ss << pair.first << ' ' << ser << ' ';
     }
 
     ss << net->gates().size() << ' ';
@@ -77,6 +84,19 @@ BoundGNetList SQLiteRWDatabase::deserialize(const std::string &str) {
       reversedBindings.insert(std::make_pair<Gate::Id, InputId>
                               (std::forward<Gate::Id>(value),
                                std::forward<InputId>(key)));
+    }
+
+    size_t inputsDelayCount;
+    ss >> inputsDelayCount;
+
+    for (size_t j = 0; j < inputsDelayCount; j++) {
+      InputId key;
+      double value;
+      uint64_t ser;
+
+      ss >> key >> ser;
+      value = *( (double*)&ser );
+      bGNet.inputsDelay[key] = value;
     }
 
     size_t gateCount;
