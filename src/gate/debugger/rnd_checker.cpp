@@ -19,14 +19,14 @@ Result rndChecker(GNet &miter, const unsigned int tries, const bool exhaustive =
   // check the number of outputs
   assert(miter.nTargetLinks() == 1);
 
-  std::uint64_t inputNum = miter.sourceLinks().size();
-  assert(inputNum >= 1);
+  std::uint64_t inputNum = miter.nSourceLinks();
+  assert(inputNum >= 2 && inputNum <= 64);
 
   GNet::In gnetInput(1);
   auto &input = gnetInput[0];
 
   for (auto srcLink : miter.sourceLinks()) {
-     input.push_back(srcLink.target);
+    input.push_back(srcLink.target);
   }
 
   Gate::SignalList inputs;
@@ -46,12 +46,11 @@ Result rndChecker(GNet &miter, const unsigned int tries, const bool exhaustive =
   miter.sortTopologically();
   auto compiled = simulator.compile(miter, in, out);
   std::uint64_t output;
-  inputNum--;
-  std::uint64_t inputPower = static_cast<std::uint64_t>((1 << inputNum));
+  std::uint64_t inputPower = static_cast<std::uint64_t>(1 << (inputNum - 1));
   
   if (!exhaustive) {
     for (std::uint64_t t = 0; t < tries; t++) {
-      for (std::uint64_t i = 0; i < inputNum; i++) {
+      for (std::uint64_t i = 0; i < (inputNum - 1); i++) {
         std::uint64_t temp = 2 * rand();
         std::uint64_t in = temp % inputPower;
         compiled.simulate(output, in);
