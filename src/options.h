@@ -10,6 +10,7 @@
 
 #include "CLI/CLI.hpp"
 #include "gate/debugger/base_checker.h"
+#include "gate/premapper/premapper.h"
 #include "nlohmann/json.hpp"
 
 #include <fstream>
@@ -141,12 +142,30 @@ struct RtlOptions final : public AppOptions {
     {"default", LecType::DEFAULT},
     {"bdd", LecType::BDD},
   };
+  using PreBasis = eda::gate::premapper::PreBasis;
+
+  static constexpr const char *ID = "rtl";
+
+  static constexpr const char *PREMAP_BASIS  = "premap-basis";
+
+  const std::map<std::string, PreBasis> preBasisMap {
+    {"aig", PreBasis::AIG},
+    {"mig", PreBasis::MIG},
+    {"xag", PreBasis::XAG},
+    {"xmg", PreBasis::XMG}
+
+  };
 
   RtlOptions(AppOptions &parent):
       AppOptions(parent, ID, "Logical synthesis") {
     // Named options.
     options->add_option(cli(LEC_TYPE), lecType, "Type of LEC")
            ->expected(1);
+    // Named options.
+    options->add_option(cli(PREMAP_BASIS), preBasis, "Premapper basis")
+           ->expected(1)
+           ->transform(CLI::CheckedTransformer(preBasisMap, CLI::ignore_case));
+
     // Input file(s).
     options->allow_extras();
   }
