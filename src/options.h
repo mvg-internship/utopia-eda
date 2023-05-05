@@ -9,6 +9,7 @@
 #pragma once
 
 #include "CLI/CLI.hpp"
+#include "gate/debugger/base_checker.h"
 #include "gate/premapper/premapper.h"
 #include "nlohmann/json.hpp"
 
@@ -18,6 +19,11 @@
 #include <vector>
 
 using Json = nlohmann::json;
+NLOHMANN_JSON_SERIALIZE_ENUM( eda::gate::debugger::options::LecType, {
+  {eda::gate::debugger::options::RND, "rnd"},
+  {eda::gate::debugger::options::DEFAULT, "default"},
+  {eda::gate::debugger::options::BDD, "bdd"},
+})
 
 NLOHMANN_JSON_SERIALIZE_ENUM( eda::gate::premapper::PreBasis, {
     {eda::gate::premapper::AIG, "aig"},
@@ -132,9 +138,17 @@ protected:
   const bool isRoot;
   CLI::App *options;
 };
-
+using LecType = eda::gate::debugger::options::LecType;
+static constexpr const char *LEC_TYPE = "lec";
 struct RtlOptions final : public AppOptions {
 
+  eda::gate::debugger::options::LecType lecType = LecType::DEFAULT;
+
+  const std::map<std::string, LecType> lecTypeMap {
+    {"rnd", LecType::RND},
+    {"default", LecType::DEFAULT},
+    {"bdd", LecType::BDD},
+  };
   using PreBasis = eda::gate::premapper::PreBasis;
 
   static constexpr const char *ID = "rtl";
@@ -150,7 +164,9 @@ struct RtlOptions final : public AppOptions {
 
   RtlOptions(AppOptions &parent):
       AppOptions(parent, ID, "Logical synthesis") {
-
+    // Named options.
+    options->add_option(cli(LEC_TYPE), lecType, "Type of LEC")
+           ->expected(1);
     // Named options.
     options->add_option(cli(PREMAP_BASIS), preBasis, "Premapper basis")
            ->expected(1)
@@ -170,6 +186,8 @@ struct RtlOptions final : public AppOptions {
 
   PreBasis preBasis = PreBasis::AIG;
 };
+
+eda::gate::debugger::options::LecType lecType = LecType::DEFAULT;
 
 struct HlsOptions final : public AppOptions {
   static constexpr const char *ID = "hls";
@@ -207,6 +225,7 @@ struct HlsOptions final : public AppOptions {
   }
 
   void fromJson(Json json) override {
+    get(json, LEC_TYPE, lecType);
     get(json, OUTPUT_DIR,  outDir);
     get(json, OUTPUT_DOT,  outDot);
     get(json, OUTPUT_MLIR, outMlir);
