@@ -19,13 +19,13 @@
 #include <set>
 #include <stdlib.h>
 #include <vector>
-#include <chrono>
 
 extern "C" int scan_token();
 
 ///define useful cerr-throw message.
 #define CERR(message) do {\
-  std::cerr << std::endl << "Caught " << yytext << " line "<< yylineno << std::endl;\
+  std::cerr << std::endl << "Caught "\
+    << yytext << " line "<< yylineno << std::endl;\
   throw std::logic_error(message);\
 } while (false)
 
@@ -48,9 +48,7 @@ void addMap(int definite, Tokens typeInit, std::vector<TokenMap> &maps) {
 }
 
 Tokens getNextToken() { 
-  Tokens token = static_cast<Tokens>(scan_token());
-  // std::cout << " token: " << yytext << "\tyyline "<< yylineno << std::endl;
-  return token;
+  return static_cast<Tokens>(scan_token());
 }
 
 ///Defines the method for verifying the next token.
@@ -141,10 +139,9 @@ void assertNextId(Tokens token, std::vector<TokenMap> &maps) {
   if (getNextToken() != TOK_ID) {
     CERR("ID reading");
   }   
-  if (token == TOK_INPUT || token == TOK_OUTPUT) { // checkers.
+  if (token == TOK_INPUT || token == TOK_OUTPUT) {
     addMap(1, token, maps);
   } else {
-    // outputToken(token, maps);
     addMap(0, token, maps);
   } 
 }
@@ -245,7 +242,6 @@ std::unique_ptr<GNet> builderGnet(std::vector<TokenMap> &maps) {
       } 
     }
   }
-
   for (auto &i : maps) {
     if (i.typeInit == TOK_OUTPUT) {
       net->addOut(gmap[i.name]);
@@ -255,11 +251,15 @@ std::unique_ptr<GNet> builderGnet(std::vector<TokenMap> &maps) {
 }
 
 std::unique_ptr<GNet> parseBenchFile(const std::string &filename) {
-  std::vector<TokenMap> maps;
   yylineno = 1;
   yyin = fopen(filename.c_str(), "r");
   std::unique_ptr<GNet> ref = std::make_unique<GNet>();
   try {
+    std::vector<TokenMap> maps;
+    if (!yyin) {
+      std::cerr << std::endl << "unable to open file: ";
+      throw std::ios_base::failure(filename);
+    }
     while (Tokens token = getNextToken()) {
       switch (token) {
         case TOK_INPUT:
@@ -267,7 +267,6 @@ std::unique_ptr<GNet> parseBenchFile(const std::string &filename) {
           parseParenthesisInOut(token, maps);
           break;
         case TOK_ID:
-          // doubleDefinition(token, maps);
           parseID(maps);
           break;
         default:
