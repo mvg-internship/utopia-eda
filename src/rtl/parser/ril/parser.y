@@ -172,6 +172,10 @@ assign:
     Builder::get().add_assign(SUB, *$f, {*$x, *$y});
     delete $f; delete $x; delete $y;
   }
+| VAR[f] ASSIGN VAR[x] STAR VAR[y] SEMI {
+    Builder::get().add_assign(MUL, *$f, {*$x, *$y});
+    delete $f; delete $x; delete $y;
+  }
 ;
 
 %%

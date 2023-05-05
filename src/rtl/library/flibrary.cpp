@@ -67,7 +67,7 @@ FLibrary::Out FLibraryDefault::synth(size_t outSize,
 
   GNet::Out out(outSize);
   for (size_t i = 0; i < out.size(); i++) {
-    out[i] = net.addGate((value[i] ? GateSymbol::ONE : GateSymbol::ZERO), {});
+    out[i] = value[i] ? net.addOne() : net.addZero();
   }
 
   return out;
@@ -80,7 +80,7 @@ FLibrary::Out FLibraryDefault::synth(size_t outSize,
 
   GNet::Out targets(outSize);
   for (size_t i = 0; i < out.size(); i++) {
-    targets[i] = net.addGate(GateSymbol::OUT, {Signal::always(out[i])});
+    targets[i] = net.addOut(out[i]);
   }
 
   return targets;
