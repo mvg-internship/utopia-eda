@@ -24,8 +24,14 @@ struct GNetInfo {
     std::string name;
     FamilyInfo direction; //In or Out
     Gate::Id sourceGate;
+    int  used = 0;//0 if varible not used yet 1 if used
+     bool isVareableAlreadyUsed(const std::string &name) {
+    return used != 0;
+  }
   };
   std::vector<IniType> elements;
+
+ 
 };
 
 struct ModuleInfo {
@@ -293,6 +299,28 @@ FamilyInfo setType(Token_T type) {
   return VOID_;
 }
 
+void setDirection(GNetInfo* currentNet, std::string elementName , FamilyInfo direction) {
+  for(auto &element : currentNet->elements) {
+    if(element.name == elementName) {
+      element.direction = direction;
+    }
+  }
+}
+void setUsing(GNetInfo* currentNet, std::string elementName) {
+  for(auto &element : currentNet->elements) {
+    if(element.name == elementName) {
+      element.used = 1;
+    }
+  }
+}
+void findUnused(GNetInfo* currentNet) {
+  for(auto &element : currentNet->elements) {
+    if(!element.isVareableAlreadyUsed(element.name)) {
+      std::cerr << "Warning!, this signal is declorated but never used: " 
+                << element.name << std::endl;
+    }
+  }
+}
 void buildGnet(SymbolTable &symbolTable, 
                std::unordered_map<std::string, GNetInfo> &gnets,
                std::string currentModuleName,
@@ -307,12 +335,7 @@ void buildGnet(SymbolTable &symbolTable,
     if (symbol.child == FamilyInfo::INPUT_ && symbol.parent != LOGIC_GATE_) {
       Gate::Id bb = currentNet->net->addIn();
       gates.insert(std::make_pair(entry.first, bb));
-        for (auto &element : currentNet->elements) {
-          if(element.name == entry.first) {
-            element.direction = INPUT_;
-            element.sourceGate = bb;
-          }
-        }
+      setDirection(currentNet,entry.first, INPUT_);
     } else if (symbol.parent != LOGIC_GATE_) {
       gates.insert(std::make_pair(entry.first, currentNet->net->newGate()));
     } else {
@@ -331,15 +354,18 @@ void buildGnet(SymbolTable &symbolTable,
       std::vector<Signal> ids;
       auto arg = gates[modules[it->first].variables.front()];      
       auto type = symbol.child;      
+      setUsing(currentNet,modules[it->first].variables.front());
       for (auto idsIt = modules[it->first].variables.begin() + 1;
            idsIt != modules[it->first].variables.end(); ++idsIt) {
         auto fId = gates.find(*idsIt);
         ids.push_back(Signal::always(fId->second));
+        setUsing(currentNet,fId->first);
       }
       for (int i = 0; i < modules[it->first].counter; i++) {
         it++;
       }
        currentNet->net->setGate(arg, setType(type), ids);
+       
     }
     }
    
@@ -349,22 +375,19 @@ void buildGnet(SymbolTable &symbolTable,
       continue;
     }
     if (symbol.child == FamilyInfo::OUTPUT_) {
-      Gate::Id bb = currentNet->net->addOut(
-          gates[entry.first]);;   
-      for( auto &element : currentNet->elements) {
-          if(element.name == entry.first) {
-            element.direction = OUTPUT_;
-            element.sourceGate = bb;
-           
-          }
-        }
+      currentNet->net->addOut(gates[entry.first]);;   
+      setDirection(currentNet,entry.first, OUTPUT_);
+
     }   
   }
   std::cout << "All variables in/out: " << std::endl;
   for (auto &element : currentNet->elements) { //Shown of list elements with thouse gates numbers
             std::cout << "Gate name: " << gates[element.name];
+            std::cout << " Element usage: " << element.used;
             std::cout << " Element name: "<< element.name<< std::endl;  
+            
         }
+  findUnused(currentNet);
 }
 
 KindOfError parseGateLevelVerilog() {
@@ -374,7 +397,6 @@ KindOfError parseGateLevelVerilog() {
   std::unordered_map<std::string, GNetInfo> gnets;
   std::unordered_map<std::string, ModuleInfo> modules;
   while (tok != EOF_TOKEN) {
-    //DEBUGTOKEN(tok, "Verilog loop"); 
     tok = getNextToken();
     if(tok == MODULE) {
       rc = parseModule(tok, table, modules, gnets);
