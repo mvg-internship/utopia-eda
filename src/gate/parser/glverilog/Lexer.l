@@ -44,6 +44,7 @@ xor     { return XOR; }
 nor     { return NOR; }
 or      { return OR; }
 xnor    { return XNOR; }
+dff     { return DFF; }
 
 
 

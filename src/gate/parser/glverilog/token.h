@@ -28,6 +28,7 @@ enum Token_T
   NOR,
   OR,
   XNOR,
+  DFF,
   LFIGURNAYA,
   RFIGURNAYA,
   START
@@ -65,6 +66,7 @@ enum Token_T
   NOR_,
   OR_,
   XNOR_,
+  DFF_,
   LOGIC_GATE_
 };
 #endif
