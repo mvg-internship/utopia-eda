@@ -72,10 +72,6 @@ public:
 
   bool isOutput() const { return _var.bind() == Variable::OUTPUT; }
 
-  size_t nSignals() const { return _signals.size(); }
-  const SignalList &signals() const { return _signals; }
-  const Signal &signal(size_t i) const { return _signals[i]; }
-
   const std::vector<bool> value() const { return _value; }
 
   const PNode *pnode() const { return _pnode; }
@@ -83,14 +79,12 @@ public:
 private:
   VNode(Kind kind,
         const Variable &var,
-        const SignalList &signals,
         FuncSymbol func,
         const SignalList &inputs,
         const std::vector<bool> &value):
       VNodeBase(func, inputs),
       _kind(kind),
       _var(var),
-      _signals(signals),
       _value(value),
       _pnode(nullptr) {
     assert(std::find(inputs.begin(), inputs.end(), VNode::INVALID) == inputs.end());
@@ -99,14 +93,13 @@ private:
   VNode(Id id,
         Kind kind,
         const Variable &var,
-        const SignalList &signals,
         FuncSymbol func,
         const SignalList &inputs,
-        const std::vector<bool> &value):
-      VNodeBase(id, func, inputs),
+        const std::vector<bool> &value,
+        const LinkList &links):
+      VNodeBase(id, func, inputs, links),
       _kind(kind),
       _var(var),
-      _signals(signals),
       _value(value),
       _pnode(nullptr) {
     assert(std::find(inputs.begin(), inputs.end(), VNode::INVALID) == inputs.end());
@@ -114,18 +107,22 @@ private:
 
   VNode *duplicate(const std::string &newName) {
     Variable var(newName, _var.kind(), _var.bind(), _var.type());
-    return new VNode(_kind, var, _signals, _func, _inputs, _value);
+    return new VNode(_kind, var, _func, _inputs, _value);
   }
 
   void replaceWith(Kind kind,
                    const Variable &var,
-                   const SignalList &signals,
                    FuncSymbol func,
                    const SignalList &inputs,
                    const std::vector<bool> &value) {
+    // Save the identifier and the links.
     Id oldId = _id;
+    LinkList oldLinks = _links;
+    // Disconnect from the drivers.
+    this->setInputs({});
+    // Replace the node w/ a new one.
     this->~VNode();
-    new (this) VNode(oldId, kind, var, signals, func, inputs, value);
+    new (this) VNode(oldId, kind, var, func, inputs, value, oldLinks);
   }
 
   void setPNode(const PNode *pnode) {
@@ -135,7 +132,6 @@ private:
 
   const Kind _kind;
   const Variable _var;
-  const SignalList _signals;
   const std::vector<bool> _value;
 
   // Parent P-node (set on P-node creation).

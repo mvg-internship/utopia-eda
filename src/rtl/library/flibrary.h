@@ -24,12 +24,32 @@ namespace eda::gate::model {
 
 namespace eda::rtl::library {
 
+// Complete GateIdList with zeros up to the passed size:
+// 111 -> 000111
+void fillWithZeros(const size_t size,
+                   GNet::GateIdList &in,
+                   GNet &net);
+
+// Make inputs equal to each other,
+// but no longer than outSize
+void makeInputsEqual(const size_t outSize,
+                     GNet::GateIdList &x,
+                     GNet::GateIdList &y,
+                     GNet &net);
+
+// Make left shift for GateIdList:
+// 111 -> 111000 (for shift = 3)
+GNet::GateIdList leftShiftForGateIdList(const GNet::GateIdList &x,
+                                        const size_t shift,
+                                        GNet &net);
+
 /**
  * \brief Interface for functional library.
  * \author <a href="mailto:kamkin@ispras.ru">Alexander Kamkin</a>.
  */
 struct FLibrary {
   using GateIdList = GNet::GateIdList;
+  using GateId     = GNet::GateId;
   using Signal     = GNet::Signal;
   using SignalList = GNet::SignalList;
   using Value      = GNet::Value;
@@ -64,7 +84,7 @@ struct FLibrary {
                     const SignalList &control,
                     GNet &net) = 0;
 
-  virtual ~FLibrary() {} 
+  virtual ~FLibrary() {}
 };
 
 /**
@@ -107,6 +127,7 @@ private:
 
   static Out synthAdd(size_t outSize, const In &in, GNet &net);
   static Out synthSub(size_t outSize, const In &in, GNet &net);
+  static Out synthMul(size_t outSize, const In &in, GNet &net);
   static Out synthMux(size_t outSize, const In &in, GNet &net);
 
   static Out synthAdder(size_t size, const In &in, bool plusOne, GNet &net);
@@ -117,6 +138,15 @@ private:
                         Gate::Id carryIn,
                         bool needsCarryOut,
                         GNet &net);
+
+  static Out synthMultiplier(const size_t outSize,
+                             const In &in,
+                             GNet &net);
+
+  static Out synthMultiplier(const size_t outSize,
+                             const GateIdList &x,
+                             const GateId &y,
+                             GNet &net);
 
   static Signal invertIfNegative(const Signal &event, GNet &net);
 

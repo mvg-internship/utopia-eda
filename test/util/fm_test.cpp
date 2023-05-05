@@ -143,7 +143,7 @@ TEST(FMTest, BookPartitionTest) {
 }
 
 TEST(FMTest, GatePartitionTest) {
-  auto net = makeRand(1024, 256);
+  auto net = eda::gate::model::makeRand(1024, 256);
   std::cout<<"NET GENERATED\n";
   const std::string pathOut = "test/data/fm/test_gate_out.txt";
 

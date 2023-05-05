@@ -25,6 +25,7 @@ GateSymbol::GateDescriptor GateSymbol::_desc[XXX] = {
   /* NAND  */ { "nand",   0, 0, 1, 0, 1, NOT, AND  },
   /* NOR   */ { "nor",    0, 0, 1, 0, 1, NOT, OR   },
   /* XNOR  */ { "xnor",   0, 0, 1, 1, 1, NOT, XOR  },
+  /* MAJ   */ { "maj",    0, 0, 1, 0, 0, XXX, XXX  },
   /* LATCH */ { "latch",  0, 0, 0, 0, 0, XXX, XXX  },
   /* DFF   */ { "dff",    0, 0, 0, 0, 0, XXX, XXX  },
   /* DFFrs */ { "dff_rs", 0, 0, 0, 0, 0, XXX, XXX  }

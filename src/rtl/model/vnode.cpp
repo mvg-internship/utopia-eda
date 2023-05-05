@@ -35,33 +35,27 @@ std::ostream &operator <<(std::ostream &out, const VNode &vnode) {
   out << vnode.id() << ": ";
   switch (vnode.kind()) {
   case VNode::SRC:
-    return out << "S{" << vnode.var() << "}";
+    out << "S{" << vnode.var() << "}";
+    break;
   case VNode::VAL:
-    return out << "C{" << vnode.var() << " = "
-                       << vnode.value() << "}";
+    out << "C{" << vnode.var() << " = "
+                << vnode.value() << "}";
+    break;
   case VNode::FUN:
-    return out << "F{" << vnode.var() << " = "
-                       << vnode.func() << "(" << vnode.inputs() << ")}";
+    out << "F{" << vnode.var() << " = "
+                << vnode.func() << "(" << vnode.inputs() << ")}";
+    break;
   case VNode::MUX:
-    return out << "M{" << vnode.var() << " = "
-                       << "mux(" << vnode.inputs() << ")}";
+    out << "M{" << vnode.var() << " = "
+                << "mux(" << vnode.inputs() << ")}";
+    break;
   case VNode::REG:
-    out << "R{";
-    bool separator = false;
-    for (std::size_t i = 0; i < vnode.arity(); i++) {
-      out << (separator ? ", " : "");
-      if (i < vnode.nSignals()) {
-        out << vnode.signal(i) << ": ";
-      }
-      const auto *rhs = VNode::get(vnode.input(i).node());
-      out << vnode.var() << " = " << rhs->name();
-      separator = true;
-    }
-    return out << "}";
+    out << "R{" << vnode.var() << " = "
+                << "reg(" << vnode.inputs() << ")}";
+    break;
   }
 
-
-  out << "[" << vnode.isOutput() << "]";
+  out << "[fo=" << vnode.fanout() << "]";
   return out;
 }
 

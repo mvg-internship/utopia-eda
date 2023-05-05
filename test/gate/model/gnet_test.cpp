@@ -2,7 +2,7 @@
 //
 // Part of the Utopia EDA Project, under the Apache License v2.0
 // SPDX-License-Identifier: Apache-2.0
-// Copyright 2021 ISP RAS (http://www.ispras.ru)
+// Copyright 2021-2023 ISP RAS (http://www.ispras.ru)
 //
 //===----------------------------------------------------------------------===//
 
@@ -14,14 +14,14 @@
 #include <cassert>
 #include <random>
 
-using namespace eda::gate::model;
+namespace eda::gate::model {
 
 // gate(x1, ..., xN).
-static std::unique_ptr<GNet> makeNet(GateSymbol gate,
-                                     unsigned N,
+static std::shared_ptr<GNet> makeNet(GateSymbol gate,
+                                     const unsigned N,
                                      Gate::SignalList &inputs,
                                      Gate::Id &outputId) {
-  auto net = std::make_unique<GNet>();
+  auto net = std::make_shared<GNet>();
 
   for (unsigned i = 0; i < N; i++) {
     const Gate::Id inputId = net->addIn();
@@ -36,11 +36,11 @@ static std::unique_ptr<GNet> makeNet(GateSymbol gate,
 }
 
 // gate(~x1, ..., ~xN).
-static std::unique_ptr<GNet> makeNetn(GateSymbol gate,
-                                      unsigned N,
+static std::shared_ptr<GNet> makeNetn(GateSymbol gate,
+                                      const unsigned N,
                                       Gate::SignalList &inputs,
                                       Gate::Id &outputId) {
-  auto net = std::make_unique<GNet>();
+  auto net = std::make_shared<GNet>();
 
   Gate::SignalList andInputs;
   for (unsigned i = 0; i < N; i++) {
@@ -59,14 +59,14 @@ static std::unique_ptr<GNet> makeNetn(GateSymbol gate,
 }
 
 // (x1 | ... | xN).
-std::unique_ptr<GNet> makeOr(unsigned N,
+std::shared_ptr<GNet> makeOr(const unsigned N,
                              Gate::SignalList &inputs,
                              Gate::Id &outputId) {
   return makeNet(GateSymbol::OR, N, inputs, outputId);
 }
 
 // (x1 & ... & xN).
-std::unique_ptr<GNet> makeAnd(unsigned N,
+std::shared_ptr<GNet> makeAnd(const unsigned N,
                               Gate::SignalList &inputs,
                               Gate::Id &outputId) {
   return makeNet(GateSymbol::AND, N, inputs, outputId);
@@ -74,14 +74,14 @@ std::unique_ptr<GNet> makeAnd(unsigned N,
 
 
 // ~(x1 | ... | xN).
-std::unique_ptr<GNet> makeNor(unsigned N,
+std::shared_ptr<GNet> makeNor(const unsigned N,
                               Gate::SignalList &inputs,
                               Gate::Id &outputId) {
   return makeNet(GateSymbol::NOR, N, inputs, outputId);
 }
 
 // ~(x1 & ... & xN).
-std::unique_ptr<GNet> makeNand(unsigned N,
+std::shared_ptr<GNet> makeNand(const unsigned N,
                                Gate::SignalList &inputs,
                                Gate::Id &outputId) {
   return makeNet(GateSymbol::NAND, N, inputs, outputId);
@@ -89,24 +89,31 @@ std::unique_ptr<GNet> makeNand(unsigned N,
 
 
 // (~x1 | ... | ~xN).
-std::unique_ptr<GNet> makeOrn(unsigned N,
+std::shared_ptr<GNet> makeOrn(const unsigned N,
                               Gate::SignalList &inputs,
                               Gate::Id &outputId) {
   return makeNetn(GateSymbol::OR, N, inputs, outputId);
 }
 
 // (~x1 & ... & ~xN).
-std::unique_ptr<GNet> makeAndn(unsigned N,
+std::shared_ptr<GNet> makeAndn(const unsigned N,
                                Gate::SignalList &inputs,
                                Gate::Id &outputId) {
   return makeNetn(GateSymbol::AND, N, inputs, outputId);
 }
 
+// Maj(x1, x2, ..., xN).
+std::shared_ptr<GNet> makeMaj(const unsigned N,
+                              Gate::SignalList &inputs,
+                              Gate::Id &outputId) {
+  return makeNet(GateSymbol::MAJ, N, inputs, outputId);
+}
+
 // Random hierarchical network.
-std::unique_ptr<GNet> makeRand(std::size_t nGates,
-                               std::size_t nSubnets) {
-  assert(nGates >= 2);
-  auto net = std::make_unique<GNet>();
+std::shared_ptr<GNet> makeRand(const std::size_t nGates,
+                               const std::size_t nSubnets) {
+  assert((nGates >= 2) && "Small number of gates");
+  auto net = std::make_shared<GNet>();
 
   // Create subnets.
   for (std::size_t i = 0; i < nSubnets; i++) {
@@ -125,7 +132,7 @@ std::unique_ptr<GNet> makeRand(std::size_t nGates,
   std::uniform_int_distribution<Gate::Id> gateDist(minGateId, maxGateId);
 
   std::size_t minArity = 0u;
-  std::size_t maxArity = std::min(static_cast<std::size_t>(7), nGates - 1);
+  std::size_t maxArity = 7 < nGates - 1 ? 7 : nGates - 1;
   std::uniform_int_distribution<std::size_t> arityDist(minArity, maxArity);
 
   for (std::size_t n = 0; n < 4; n++) {
@@ -215,6 +222,13 @@ std::unique_ptr<GNet> makeRand(std::size_t nGates,
   return net;
 }
 
+void dump(const GNet &net) {
+  std::cout << net << '\n';
+  std::cout << "N=" << net.nGates() << '\n';
+  std::cout << "I=" << net.nSourceLinks() << '\n';
+  std::cout << "O=" << net.nTargetLinks() << '\n';
+}
+
 TEST(GNetTest, GNetOrTest) {
   Gate::SignalList inputs;
   Gate::Id outputId;
@@ -267,3 +281,4 @@ TEST(GNetTest, GNetRandTestIssue11877) {
   EXPECT_TRUE(net != nullptr);
 }
 
+} // namespace eda::gate::model
