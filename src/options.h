@@ -172,11 +172,6 @@ struct RtlOptions final : public AppOptions {
            ->expected(1)
            ->transform(CLI::CheckedTransformer(preBasisMap, CLI::ignore_case));
 
-    // Named options.
-    options->add_option(cli(PREMAP_BASIS), preBasis, "Premapper basis")
-           ->expected(1)
-           ->transform(CLI::CheckedTransformer(preBasisMap, CLI::ignore_case));
-
     // Input file(s).
     options->allow_extras();
   }
