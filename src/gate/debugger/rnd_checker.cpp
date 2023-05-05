@@ -16,10 +16,11 @@ static simulator::Simulator simulator;
 
 Result rndChecker(GNet &miter, const unsigned int tries, const bool exhaustive = true) {
 
-  //check the number of output
+  // check the number of outputs
   assert(miter.nTargetLinks() == 1);
 
   std::uint64_t inputNum = miter.sourceLinks().size();
+  assert(inputNum >= 1);
 
   GNet::In gnetInput(1);
   auto &input = gnetInput[0];
