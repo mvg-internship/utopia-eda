@@ -95,12 +95,6 @@ protected:
       value = json[key].get<std::string>();
     }
   }
-template<class T>
-static void get(Json json, const std::string &key, T &value) {
-  if (json.contains(key)) {
-    value = json[key].get<T>();
-  }
-}
 
   template<class T>
   static void get(Json json, const std::string &key, T &value) {
@@ -149,8 +143,6 @@ static constexpr const char *LEC_TYPE = "lec";
 struct RtlOptions final : public AppOptions {
 
   eda::gate::debugger::options::LecType lecType = LecType::DEFAULT;
-
-  static constexpr const char *ID = "rtl";
 
   const std::map<std::string, LecType> lecTypeMap {
     {"rnd", LecType::RND},
