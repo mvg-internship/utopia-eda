@@ -4,12 +4,13 @@
 %}
 
 %option noyywrap 
+%option prefix="bench"
 IDD       [a-zA-Z_][a-zA-Z0-9_.]*
 
 %%
 [\t ]+
-[\n]                                    { yylineno++; } 
-"#".*[\n]                               { yylineno++; }
+[\n]                                    { benchlineno++; } 
+"#".*[\n]                               { benchlineno++; }
 
 "DFF"                                   { return TOK_DFF; }
 "NOT"                                   { return TOK_NOT; }
