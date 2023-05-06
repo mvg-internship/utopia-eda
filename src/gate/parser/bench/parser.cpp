@@ -52,8 +52,10 @@ struct SymbolInfo {
   std::vector<std::string> args;
 };
 
-///Defines the adding in a token map vector.
-std::string addMap(bool def, Tokens typeInit, std::map<std::string, SymbolInfo> &infos) {
+///Defines the adding in a infos map.
+std::string addMap(bool def,
+                   Tokens typeInit,
+                   std::map<std::string, SymbolInfo> &infos) {
   const std::string name {benchtext};
   auto &inf = infos[name];
   const TokenMap map {def, typeInit, benchlineno};
@@ -84,11 +86,13 @@ void assertNextToken(Tokens expectedToken) {
   }
 }
 
+///Checking for undefined and repeated definitions.
 void checker(std::map<std::string, SymbolInfo> &infos) {
-  //checking for undefined definitions.
   for (auto it = infos.begin(); it != infos.end(); it++) {
     int count = std::count_if(it->second.uses.begin(), it->second.uses.end(),
-                      [](const TokenMap& s) { return s.def == true && s.typeInit != TOK_OUTPUT; });
+                              [](const TokenMap& s)
+                              { return s.def == true
+                                        && s.typeInit != TOK_OUTPUT; });
     if (count == 0) {
       std::cerr << "exeption token: " << it->first << " ";
       VIEW();
@@ -99,7 +103,8 @@ void checker(std::map<std::string, SymbolInfo> &infos) {
       throw std::logic_error("repeated definitions");
     }
     count = std::count_if(it->second.uses.begin(), it->second.uses.end(),
-                      [](const TokenMap& s) { return s.typeInit == TOK_OUTPUT; });
+                      [](const TokenMap& s)
+                      { return s.typeInit == TOK_OUTPUT; });
     if (count > 1) {
       VIEW();      
       throw std::logic_error("repeated definitions");
@@ -107,7 +112,10 @@ void checker(std::map<std::string, SymbolInfo> &infos) {
   }
 }
 
-std::string assertNextId(Tokens token, std::map<std::string, SymbolInfo> &infos) {
+///Method for verifying the next id and filling in the symbol table.
+
+std::string assertNextId(Tokens token,
+                         std::map<std::string, SymbolInfo> &infos) {
   if (getNextToken() != TOK_ID) {
     CERR("ID reading");
   }   
@@ -119,7 +127,14 @@ std::string assertNextId(Tokens token, std::map<std::string, SymbolInfo> &infos)
   } 
   return arg;
 }
-std::vector<std::string> parseParenthesisInOut(Tokens token, std::map<std::string, SymbolInfo> &infos) {
+
+//===----------------------------------------------------------------------===//
+// checking the expression of the form and filling in the symbol table : 
+//   ... (ID) 
+//===----------------------------------------------------------------------===//
+
+std::vector<std::string>
+parseParenthesisInOut (Tokens token, std::map<std::string, SymbolInfo> &infos) {
   std::vector<std::string> name;
   assertNextToken(TOK_LP);
   name.push_back(assertNextId(token, infos));
@@ -127,7 +142,13 @@ std::vector<std::string> parseParenthesisInOut(Tokens token, std::map<std::strin
   return name;
 }
 
-std::vector<std::string> parseParenthesisID(Tokens token, std::map<std::string, SymbolInfo> &infos) {
+//===----------------------------------------------------------------------===//
+// checking the expression of the form and filling in the symbol table : 
+//   ... (ID, ID) ... 
+//===----------------------------------------------------------------------===//
+
+std::vector<std::string>
+parseParenthesisID(Tokens token, std::map<std::string, SymbolInfo> &infos) {
   Tokens tok;
   std::vector<std::string> args;
   std::string arg;
@@ -143,6 +164,11 @@ std::vector<std::string> parseParenthesisID(Tokens token, std::map<std::string, 
   }
   return args;
 }
+
+//===----------------------------------------------------------------------===//
+// checking the expression of the form and filling in the symbol table : 
+//   ... = AND/OR/NAND/NOR/DFF/NOT ... 
+//===----------------------------------------------------------------------===//
 
 void parseID(std::map<std::string, SymbolInfo> &infos) {
   std::string name = addMap(1, TOK_E, infos); // adding.
@@ -167,6 +193,8 @@ void parseID(std::map<std::string, SymbolInfo> &infos) {
     break;
   }
 }
+
+///Method for building gnet.
 
 std::unique_ptr<GNet> builderGnet(std::map<std::string, SymbolInfo> &infos) {
   std::unique_ptr<GNet> net = std::make_unique<GNet>();
@@ -227,6 +255,13 @@ std::unique_ptr<GNet> builderGnet(std::map<std::string, SymbolInfo> &infos) {
   }
   return net;
 }
+
+//===----------------------------------------------------------------------===//
+// function calling checks, building gnet, checking the expression of the form: 
+// INPUT/OUTPUT ...
+// or
+// ID ...  
+//===----------------------------------------------------------------------===//
 
 std::unique_ptr<GNet> parseBenchFile(const std::string &filename) {
   benchlineno = 1;
