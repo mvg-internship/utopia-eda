@@ -48,8 +48,8 @@ struct SymbolTable {
     FamilyInfo child;
     std::string parentName;
     std::string childName;
-    bool hasIn = 0;
-    bool hasOut = 0;
+    int hasIn = 0;
+    int hasOut = 0;
     bool isVareableAlreadyUsed() {
     return hasIn != 0 || hasOut != 0;
   }
@@ -68,32 +68,52 @@ struct SymbolTable {
   }
     void setInUsing(std::string elementName) {
     auto it = table.find(elementName);
-    it->second.hasIn = 1;
+    it->second.hasIn++;
   }
 
   void setOutUsing(std::string elementName) {
     auto it = table.find(elementName);
-    it->second.hasOut = 1;
+    it->second.hasOut++;
   }
 
   bool isOutUsed(std::string elementName) {
     auto it = table.find(elementName);
-    return it->second.hasOut;
+    return it->second.hasOut != 0;
   }
 
   bool isInUsed(std::string elementName) {
     auto it = table.find(elementName);
-    return it->second.hasIn;
+    return it->second.hasIn != 0;
   }
 
   void findUnused(std::string currentModuleName) {
+    
+    
     for (auto &element : table) {
-      if (!element.second.isVareableAlreadyUsed() 
-          && element.second.parent != LOGIC_GATE_ 
-          && element.second.parentName == currentModuleName) {
+      if(element.second.parentName != currentModuleName)
+        continue;
+      switch (element.second.child) {
+    case INPUT_:
+      if (element.second.hasIn == 1) {
         std::cerr << "Warning!, this signal is declorated but never used: " 
                   << element.first<< std::endl;
       }
+      break;
+    case OUTPUT_:
+      if (element.second.hasOut == 1) {
+        std::cerr << "Warning!, this signal is declorated but never used: " 
+                  << element.first<< std::endl;
+      }
+      break;
+    default:
+      break;
+    }
+      // if (!element.second.isVareableAlreadyUsed() 
+      //     && element.second.parent != LOGIC_GATE_ 
+      //     && element.second.parentName == currentModuleName) {
+      //   std::cerr << "Warning!, this signal is declorated but never used: " 
+      //             << element.first<< std::endl;
+      // }
     }
   }
 
@@ -364,13 +384,15 @@ void buildGnet(SymbolTable &symbolTable,
       auto arg = gates[modules[it->first].variables.front()];      
       auto type = symbol.child;
       auto dffArg =  gates[modules[it->first].variables[1]];
-      std::string outSignal;
+       std::string outSignal;
       switch (type) {
       case DFF_:
         ids.push_back(
           Signal::always(gates[modules[it->first].variables.front()]));
+          symbolTable.setInUsing(modules[it->first].variables.front());
         ids.push_back(
           Signal::always(gates[modules[it->first].variables.back()]));
+          symbolTable.setInUsing(modules[it->first].variables.back());
         currentNet->net->setGate(dffArg, setType(type), ids);
         outSignal = modules[it->first].variables[1];
         break;
@@ -379,25 +401,25 @@ void buildGnet(SymbolTable &symbolTable,
              idsIt != modules[it->first].variables.end(); ++idsIt) {
         auto fId = gates.find(*idsIt);
         ids.push_back(Signal::always(fId->second));
+        symbolTable.setInUsing(*idsIt);
         }
         currentNet->net->setGate(arg, setType(type), ids);
-        outSignal = modules[it->first].variables.front();
+        outSignal = modules[it->first].variables[0];
         break;
       }      
        symbolTable.setOutUsing(outSignal);
-       for (auto idsIt = modules[it->first].variables.begin();
-           idsIt != modules[it->first].variables.end(); ++idsIt) {  
-        if(*idsIt != outSignal) {
-          if(symbolTable.isOutUsed(*idsIt) 
-             && symbolTable.table[*idsIt].parent == WIRE_){
-            symbolTable.setInUsing(*idsIt);
-          } else if (symbolTable.table[*idsIt].parent == WIRE_)
-          {
-            std::cerr << "This wire never been used like out: " << *idsIt 
-                      << std::endl << "line: " << yylineno <<std::endl;
-          }
-        }
-      }
+
+      //  for(auto idsIt : modules[it->first].variables) {  
+      //   if(idsIt != outSignal) {
+      //     if(symbolTable.isOutUsed(idsIt) 
+      //        && symbolTable.table[idsIt].parent == WIRE_){
+      //       symbolTable.setInUsing(idsIt);
+      //     } else if (symbolTable.table[idsIt].parent == WIRE_) {
+      //       std::cerr << "This wire never been used like out: " << idsIt << " Element Out use: " << symbolTable.table[idsIt].hasOut
+      //                 << std::endl << "line: " << yylineno <<std::endl;
+      //     }
+      //   }
+      // }
     }
   }
    
@@ -414,14 +436,25 @@ void buildGnet(SymbolTable &symbolTable,
   }
   //Shown of list elements with thouse gates numbers
   std::cout << "All variables in/out: " << std::endl;
-  for (auto &element : currentNet->elements) { 
-    std::cout << "Gate name: " << gates[element.name];
+  for (auto &element : symbolTable.table) { 
+    if(element.second.parent != LOGIC_GATE_) {
+    std::cout << "Gate name: " << gates[element.first];
     std::cout << " Element in usage: " << 
-      symbolTable.table[element.name].hasIn;
+      symbolTable.table[element.first].hasIn;
     std::cout << " Element out usage: " << 
-      symbolTable.table[element.name].hasOut;
-    std::cout << " Element name: "<< element.name << std::endl;  
+      symbolTable.table[element.first].hasOut;
+    std::cout << " Element name: "<< element.first << std::endl;  
   }
+  }
+  for (auto &element : symbolTable.table) {  
+        if (element.second.parent != WIRE_)
+          continue;
+        if (symbolTable.isInUsed(element.first) && !symbolTable.isOutUsed(element.first)) {
+          std::cerr << "This wire never been used like out: " << element.first
+                      << std::endl << "line: " << yylineno <<std::endl;
+        }
+        
+      }
   symbolTable.findUnused(currentModuleName);
 }
 
@@ -556,7 +589,6 @@ parseLogicGate(Token_T &tok,
                  std::string currentModuleName,
                  std::unordered_map<std::string, ModuleInfo> &modules) {
   KindOfError rc = SUCCESS;
-  
   std::string currentLogicGateName;
   FamilyInfo familyType = FamilyInfo::VOID_;
   familyType = setType(tok);
