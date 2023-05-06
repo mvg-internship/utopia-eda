@@ -24,10 +24,6 @@ struct GNetInfo {
     std::string name;
     FamilyInfo direction; //In or Out
     Gate::Id sourceGate;
-    int  used = 0;//0 if varible not used yet 1 if used
-     bool isVareableAlreadyUsed(const std::string &name) {
-    return used != 0;
-  }
   };
   std::vector<IniType> elements;
 
@@ -41,7 +37,8 @@ struct ModuleInfo {
   int counter = 0;
 
   bool hasSignal(const std::string &value) {
-    return std::find(variables.begin(), variables.end(), value) != variables.end();
+    return std::find(
+             variables.begin(), variables.end(), value) != variables.end();
   }
 };
 
@@ -51,6 +48,11 @@ struct SymbolTable {
     FamilyInfo child;
     std::string parentName;
     std::string childName;
+    bool hasIn = 0;
+    bool hasOut = 0;
+    bool isVareableAlreadyUsed() {
+    return hasIn != 0 || hasOut != 0;
+  }
   };
   std::unordered_map<std::string, Symbol> table;
 
@@ -63,6 +65,36 @@ struct SymbolTable {
     symbol.parentName = "";
     symbol.childName = "";
     table[name] = symbol;
+  }
+    void setInUsing(std::string elementName) {
+    auto it = table.find(elementName);
+    it->second.hasIn = 1;
+  }
+
+  void setOutUsing(std::string elementName) {
+    auto it = table.find(elementName);
+    it->second.hasOut = 1;
+  }
+
+  bool isOutUsed(std::string elementName) {
+    auto it = table.find(elementName);
+    return it->second.hasOut;
+  }
+
+  bool isInUsed(std::string elementName) {
+    auto it = table.find(elementName);
+    return it->second.hasIn;
+  }
+
+  void findUnused(std::string currentModuleName) {
+    for (auto &element : table) {
+      if (!element.second.isVareableAlreadyUsed() 
+          && element.second.parent != LOGIC_GATE_ 
+          && element.second.parentName == currentModuleName) {
+        std::cerr << "Warning!, this signal is declorated but never used: " 
+                  << element.first<< std::endl;
+      }
+    }
   }
 
   void removeSymbol(const std::string &name) {
@@ -104,6 +136,7 @@ struct SymbolTable {
   std::string findChildName(const std::string &name) {
     return table[name].childName;
   }
+  
 };
 
 bool isVariableAlreadyDeclInParentLevel(SymbolTable &table,
@@ -161,7 +194,7 @@ void assertVariable(const std::string &name,
     }
     break;
   case FUNC_INI_:
-    if(!isVariableAlreadyDeclInChildLevel(table, familyNames, name)) {
+    if (!isVariableAlreadyDeclInChildLevel(table, familyNames, name)) {
       table.changeChildName(yytext, familyNames);
 
     } else {
@@ -228,99 +261,77 @@ Token_T getNextToken() {
 
 GateSymbol setType(FamilyInfo type) {
   switch (type) {
-      case NOT_:
-        return GateSymbol::NOT;
-        break;
-      case AND_:
-         return GateSymbol::AND;
-        break;
-      case NAND_:
-        return GateSymbol::NAND;
-        break;
-      case NOR_:
-        return GateSymbol::NOR;
-        break;
-      case XOR_:
-         return GateSymbol::XOR;
-        break;
-      case OR_:
-         return GateSymbol::OR;
-        break;
-      case XNOR_:
-         return GateSymbol::XNOR;
-        break;
-      case DFF_:
-         return GateSymbol::DFF;
-        break;
-      default:
-        break;
-      }
-    return GateSymbol::ZERO;
+  case NOT_:
+    return GateSymbol::NOT;
+    break;
+  case AND_:
+      return GateSymbol::AND;
+    break;
+  case NAND_:
+    return GateSymbol::NAND;
+    break;
+  case NOR_:
+    return GateSymbol::NOR;
+    break;
+  case XOR_:
+      return GateSymbol::XOR;
+    break;
+  case OR_:
+      return GateSymbol::OR;
+    break;
+  case XNOR_:
+      return GateSymbol::XNOR;
+    break;
+  case DFF_:
+      return GateSymbol::DFF;
+    break;
+  default:
+    break;
+  }
+return GateSymbol::ZERO;
 }
 
 FamilyInfo setType(Token_T type) {
   switch (type) {
-      case NOT:
-        return NOT_;
-        break;
-      case AND:
-         return AND_;
-        break;
-      case NAND:
-        return NAND_;
-        break;
-      case NOR:
-        return NOR_;
-        break;
-      case XOR:
-         return XOR_;
-        break;
-      case OR:
-         return OR_;
-        break;
-      case XNOR:
-         return XNOR_;
-        break;
-      case DFF:
-         return DFF_;
-        break;
-      case INPUT:
-         return INPUT_;
-        break;
-      case OUTPUT:
-         return OUTPUT_;
-        break;
-      case WIRE:
-         return WIRE_;
-        break;
-      default:
-        break;
-      }
-  return VOID_;
+  case NOT:
+    return NOT_;
+    break;
+  case AND:
+      return AND_;
+    break;
+  case NAND:
+    return NAND_;
+    break;
+  case NOR:
+    return NOR_;
+    break;
+  case XOR:
+      return XOR_;
+    break;
+  case OR:
+      return OR_;
+    break;
+  case XNOR:
+      return XNOR_;
+    break;
+  case DFF:
+      return DFF_;
+    break;
+  case INPUT:
+      return INPUT_;
+    break;
+  case OUTPUT:
+      return OUTPUT_;
+    break;
+  case WIRE:
+      return WIRE_;
+    break;
+  default:
+    break;
+  }
+return VOID_;
 }
 
-void setDirection(GNetInfo* currentNet, std::string elementName , FamilyInfo direction) {
-  for(auto &element : currentNet->elements) {
-    if(element.name == elementName) {
-      element.direction = direction;
-    }
-  }
-}
-void setUsing(GNetInfo* currentNet, std::string elementName) {
-  for(auto &element : currentNet->elements) {
-    if(element.name == elementName) {
-      element.used = 1;
-    }
-  }
-}
-void findUnused(GNetInfo* currentNet) {
-  for(auto &element : currentNet->elements) {
-    if(!element.isVareableAlreadyUsed(element.name)) {
-      std::cerr << "Warning!, this signal is declorated but never used: " 
-                << element.name << std::endl;
-    }
-  }
-}
 void buildGnet(SymbolTable &symbolTable, 
                std::unordered_map<std::string, GNetInfo> &gnets,
                std::string currentModuleName,
@@ -332,42 +343,63 @@ void buildGnet(SymbolTable &symbolTable,
     if (symbol.parentName != currentModuleName) {
       continue;
     }
-    if (symbol.child == FamilyInfo::INPUT_ && symbol.parent != LOGIC_GATE_) {
+    if (symbol.child == INPUT_ && symbol.parent != LOGIC_GATE_) {
       Gate::Id bb = currentNet->net->addIn();
       gates.insert(std::make_pair(entry.first, bb));
-      setDirection(currentNet,entry.first, INPUT_);
+      symbolTable.setInUsing(entry.first);
     } else if (symbol.parent != LOGIC_GATE_) {
       gates.insert(std::make_pair(entry.first, currentNet->net->newGate()));
     } else {
       continue;
     }
   }
-
   for (auto it = symbolTable.table.begin(); it != symbolTable.table.end();
        it++) {
     SymbolTable::Symbol &symbol = it->second;
     if (symbol.parentName != currentModuleName) {
       continue;
     }
-    if (symbol.parent == FamilyInfo::LOGIC_GATE_ 
-        || symbol.parent == FamilyInfo::FUNC_INI_) {
+    if (symbol.parent == FamilyInfo::LOGIC_GATE_) {
       std::vector<Signal> ids;
       auto arg = gates[modules[it->first].variables.front()];      
-      auto type = symbol.child;      
-      setUsing(currentNet,modules[it->first].variables.front());
-      for (auto idsIt = modules[it->first].variables.begin() + 1;
-           idsIt != modules[it->first].variables.end(); ++idsIt) {
+      auto type = symbol.child;
+      auto dffArg =  gates[modules[it->first].variables[1]];
+      std::string outSignal;
+      switch (type) {
+      case DFF_:
+        ids.push_back(
+          Signal::always(gates[modules[it->first].variables.front()]));
+        ids.push_back(
+          Signal::always(gates[modules[it->first].variables.back()]));
+        currentNet->net->setGate(dffArg, setType(type), ids);
+        outSignal = modules[it->first].variables[1];
+        break;
+      default:
+        for (auto idsIt = modules[it->first].variables.begin() + 1;
+             idsIt != modules[it->first].variables.end(); ++idsIt) {
         auto fId = gates.find(*idsIt);
         ids.push_back(Signal::always(fId->second));
-        setUsing(currentNet,fId->first);
+        }
+        currentNet->net->setGate(arg, setType(type), ids);
+        outSignal = modules[it->first].variables.front();
+        break;
+      }      
+       symbolTable.setOutUsing(outSignal);
+       for (auto idsIt = modules[it->first].variables.begin();
+           idsIt != modules[it->first].variables.end(); ++idsIt) {  
+        if(*idsIt != outSignal) {
+          if(symbolTable.isOutUsed(*idsIt) 
+             && symbolTable.table[*idsIt].parent == WIRE_){
+            symbolTable.setInUsing(*idsIt);
+          } else if (symbolTable.table[*idsIt].parent == WIRE_)
+          {
+            std::cerr << "This wire never been used like out: " << *idsIt 
+                      << std::endl << "line: " << yylineno <<std::endl;
+          }
+        }
       }
-      for (int i = 0; i < modules[it->first].counter; i++) {
-        it++;
-      }
-       currentNet->net->setGate(arg, setType(type), ids);
-       
     }
-    }
+  }
    
   for (auto &entry : symbolTable.table) {
     SymbolTable::Symbol &symbol = entry.second;
@@ -375,22 +407,31 @@ void buildGnet(SymbolTable &symbolTable,
       continue;
     }
     if (symbol.child == FamilyInfo::OUTPUT_) {
-      currentNet->net->addOut(gates[entry.first]);;   
-      setDirection(currentNet,entry.first, OUTPUT_);
-
+      currentNet->net->addOut(gates[entry.first]);   
+      // setDirection(currentNet,entry.first, OUTPUT_);
+      symbolTable.setOutUsing(entry.first);
     }   
   }
+  //Shown of list elements with thouse gates numbers
   std::cout << "All variables in/out: " << std::endl;
-  for (auto &element : currentNet->elements) { //Shown of list elements with thouse gates numbers
-            std::cout << "Gate name: " << gates[element.name];
-            std::cout << " Element usage: " << element.used;
-            std::cout << " Element name: "<< element.name<< std::endl;  
-            
-        }
-  findUnused(currentNet);
+  for (auto &element : currentNet->elements) { 
+    std::cout << "Gate name: " << gates[element.name];
+    std::cout << " Element in usage: " << 
+      symbolTable.table[element.name].hasIn;
+    std::cout << " Element out usage: " << 
+      symbolTable.table[element.name].hasOut;
+    std::cout << " Element name: "<< element.name << std::endl;  
+  }
+  symbolTable.findUnused(currentModuleName);
 }
 
-KindOfError parseGateLevelVerilog() {
+bool parseGateLevelVerilog(const std::string &path, 
+                           std::vector<std::unique_ptr<GNet>> &nets) {
+  yyin = freopen(path.c_str(), "r", stdin);
+  if (!yyin) {
+      std::cerr << "Error: could not open file " << path << std::endl;
+      return false;
+  }
   Token_T tok = START;
   KindOfError rc  = SUCCESS;
   SymbolTable table;
@@ -400,21 +441,20 @@ KindOfError parseGateLevelVerilog() {
     tok = getNextToken();
     if(tok == MODULE) {
       rc = parseModule(tok, table, modules, gnets);
-    }else if(tok == EOF_TOKEN) {
-      std::cout 
-      << " End of file. Check 'errors.txt' for more info about errors" << std::endl;
-      break;
+    } else if(tok == EOF_TOKEN) {
+        break;
     } else {
-      std::cerr << "Error: "<< FAILURE_IN_GATE_LEVEL_VERILOG
-                 << std::endl << "line: " << yylineno << std::endl;
+        std::cerr << "Error: "<< FAILURE_IN_GATE_LEVEL_VERILOG
+                    << std::endl << "line: " << yylineno << std::endl;
+        rc = FAILURE_IN_GATE_LEVEL_VERILOG;
     }
   }
-  for (const auto &gnet_entry : gnets) {
-    std::cout << "Module: " << gnet_entry.first << std::endl;
-    std::cout << *gnet_entry.second.net << std::endl;
-}
-
-  return rc;
+  if (rc == SUCCESS) {
+    for (const auto &gnet_entry : gnets) {
+        nets.push_back(std::make_unique<GNet>(*gnet_entry.second.net));
+    }
+  }
+  return rc == SUCCESS;
 }
 
 KindOfError
@@ -428,7 +468,6 @@ parseModule(Token_T &tok,
   GNetInfo new_gnet_info;
   new_gnet_info.net = std::make_unique<GNet>();
   gnets[currentModuleName] = std::move(new_gnet_info);
-
   if (modules.find(currentModuleName) == modules.end()) { 
     modules[currentModuleName] = {FamilyInfo::MODULE_, {}};
     ASSERT_NEXT_TOKEN(tok, LBRACE, FAILURE_IN_MODULE_NAME);
@@ -550,12 +589,25 @@ parseLogicGate(Token_T &tok,
       rc = FAILURE_IN_ARG;
     }
   }
+
+  auto out = currentLogicGate->variables.begin();
+  switch (familyType)
+  {
+  case DFF_:
+    out = currentLogicGate->variables.begin() + 1;
+    break;
+  
+  default:
+    break;
+  }
   for (auto it = currentLogicGate->variables.begin();
            it != currentLogicGate->variables.end(); ++it) { 
-    if(it != currentLogicGate->variables.begin() && (table.findChild(*it) != INPUT_ && table.findParent(*it) != WIRE_)) {
+    if(it != out && (table.findChild(*it) != INPUT_ 
+       && table.findParent(*it) != WIRE_)) {
       std::cerr << "This variable is not input sygnal: " << *it << std::endl
                 << "line: " << yylineno << std::endl;
-    } else if (it == currentLogicGate->variables.begin() && (table.findChild(*it) != OUTPUT_ && table.findParent(*it) != WIRE_)) {
+    } else if (it == out && (table.findChild(*it) != OUTPUT_ 
+               && table.findParent(*it) != WIRE_)) {
       std::cerr << "This variable is not output sygnal: " << *it << std::endl
                 << "line: " << yylineno << std::endl;
     }
@@ -582,9 +634,7 @@ KindOfError parseNameList(Token_T &tok,
     default:
       if (tok != separate_tok) {
         rc = FAILURE_IN_PARSE_NAME_LIST;
-      } else {
-        break;
-      }
+      } 
       break;
     }
   }
@@ -592,6 +642,15 @@ KindOfError parseNameList(Token_T &tok,
 }
 
 int main(int argc, char *argv[]) {
-  yyin = fopen(argv[1], "r");
-  return parseGateLevelVerilog();
+    std::vector<std::unique_ptr<GNet>> nets;
+    bool success = parseGateLevelVerilog(argv[1], nets);
+    if (success) {
+        std::cout << "Parsing successful" << std::endl;
+        for (const auto &gnet_ptr : nets) {
+            std::cout << "GNet's: " << std::endl << *gnet_ptr << std::endl;
+        }
+    } else {
+        std::cout << "Parsing failed" << std::endl;
+    }
+    return success ? 0 : 1;
 }
