@@ -170,15 +170,15 @@ void parseID(std::map<std::string, SymbolInfo> &infos) {
 
 std::unique_ptr<GNet> builderGnet(std::map<std::string, SymbolInfo> &infos) {
   std::unique_ptr<GNet> net = std::make_unique<GNet>();
-  int dffFlag {0};
+  bool dffFlag = false;
   Gate::Id dffClock = -1;
   for (auto it = infos.begin(); it != infos.end(); it ++) {
     for (const auto &i : it->second.uses) {
       if (i.typeInit == TOK_INPUT) {
           it->second.gateId = net->addIn();
-      } else if (i.typeInit == TOK_DFF && dffFlag == 0) {
+      } else if (i.typeInit == TOK_DFF && dffFlag == false) {
           dffClock = net->addIn();
-          dffFlag = 1;
+          dffFlag = true;
       } else if (i.def == true){
           it->second.gateId = net->newGate();
         break;
