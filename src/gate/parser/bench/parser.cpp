@@ -113,7 +113,6 @@ void checker(std::map<std::string, SymbolInfo> &infos) {
 }
 
 ///Method for verifying the next id and filling in the symbol table.
-
 std::string assertNextId(Tokens token,
                          std::map<std::string, SymbolInfo> &infos) {
   if (getNextToken() != TOK_ID) {
@@ -195,7 +194,6 @@ void parseID(std::map<std::string, SymbolInfo> &infos) {
 }
 
 ///Method for building gnet.
-
 std::unique_ptr<GNet> builderGnet(std::map<std::string, SymbolInfo> &infos) {
   std::unique_ptr<GNet> net = std::make_unique<GNet>();
   bool dffFlag = false;
