@@ -108,12 +108,7 @@ struct SymbolTable {
     default:
       break;
     }
-      // if (!element.second.isVareableAlreadyUsed() 
-      //     && element.second.parent != LOGIC_GATE_ 
-      //     && element.second.parentName == currentModuleName) {
-      //   std::cerr << "Warning!, this signal is declorated but never used: " 
-      //             << element.first<< std::endl;
-      // }
+      
     }
   }
 
@@ -408,18 +403,6 @@ void buildGnet(SymbolTable &symbolTable,
         break;
       }      
        symbolTable.setOutUsing(outSignal);
-
-      //  for(auto idsIt : modules[it->first].variables) {  
-      //   if(idsIt != outSignal) {
-      //     if(symbolTable.isOutUsed(idsIt) 
-      //        && symbolTable.table[idsIt].parent == WIRE_){
-      //       symbolTable.setInUsing(idsIt);
-      //     } else if (symbolTable.table[idsIt].parent == WIRE_) {
-      //       std::cerr << "This wire never been used like out: " << idsIt << " Element Out use: " << symbolTable.table[idsIt].hasOut
-      //                 << std::endl << "line: " << yylineno <<std::endl;
-      //     }
-      //   }
-      // }
     }
   }
    
@@ -430,7 +413,6 @@ void buildGnet(SymbolTable &symbolTable,
     }
     if (symbol.child == FamilyInfo::OUTPUT_) {
       currentNet->net->addOut(gates[entry.first]);   
-      // setDirection(currentNet,entry.first, OUTPUT_);
       symbolTable.setOutUsing(entry.first);
     }   
   }
