@@ -199,13 +199,13 @@ std::unique_ptr<GNet> builderGnet(std::map<std::string, SymbolInfo> &infos) {
   for (auto it = infos.begin(); it != infos.end(); it ++) {
     for (const auto &i : it->second.uses) {
       if (i.typeInit == TOK_INPUT) {
-          it->second.gateId = net->addIn();
+        it->second.gateId = net->addIn();
       } else if (i.typeInit == TOK_DFF && !dffFlag) {
-          dffClock = net->addIn();
-          dffFlag = true;
+        dffClock = net->addIn();
+        dffFlag = true;
       } else if (i.def){
-          it->second.gateId = net->newGate();
-          break;
+        it->second.gateId = net->newGate();
+        break;
       }
     }
   }
@@ -243,7 +243,7 @@ std::unique_ptr<GNet> builderGnet(std::map<std::string, SymbolInfo> &infos) {
       break;
     case TOK_DFF:
       argIds.push_back(Signal::always(dffClock));
-      net->setGate(it->second.gateId, GateSymbol::DFF, argIds );
+      net->setGate(it->second.gateId, GateSymbol::DFF, argIds);
       break;
     default:
       break;
@@ -270,26 +270,26 @@ std::unique_ptr<GNet> parseBenchFile(const std::string &filename) {
     throw std::ios_base::failure(filename);
   }
   try {
-      while (Tokens token = getNextToken()) {
-        switch (token) {
-        case TOK_INPUT:
-        case TOK_OUTPUT:
-          parseParenthesisInOut(token, infos);
-          break;
-        case TOK_ID:
-          parseID(infos);
-          break;
-        default:
-          CERR("need input, output or id");
-          break;
-        }
+    while (Tokens token = getNextToken()) {
+      switch (token) {
+      case TOK_INPUT:
+      case TOK_OUTPUT:
+        parseParenthesisInOut(token, infos);
+        break;
+      case TOK_ID:
+        parseID(infos);
+        break;
+      default:
+        CERR("need input, output or id");
+        break;
       }
-      checker(infos);
-      ref = builderGnet(infos);
+    }
+    checker(infos);
+    ref = builderGnet(infos);
   } catch (std::exception& e) {
-      fclose(benchin);
-      std::cerr << "error in " << e.what() <<  std::endl;       
-      throw;
+    fclose(benchin);
+    std::cerr << "error in " << e.what() <<  std::endl;       
+    throw;
   }
   fclose(benchin);
   return ref;
