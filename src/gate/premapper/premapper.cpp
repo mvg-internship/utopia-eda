@@ -2,11 +2,16 @@
 //
 // Part of the Utopia EDA Project, under the Apache License v2.0
 // SPDX-License-Identifier: Apache-2.0
-// Copyright 2022 ISP RAS (http://www.ispras.ru)
+// Copyright 2022-2023 ISP RAS (http://www.ispras.ru)
 //
 //===----------------------------------------------------------------------===//
 
+#include "gate/model/utils.h"
+#include "gate/premapper/aigmapper.h"
+#include "gate/premapper/migmapper.h"
 #include "gate/premapper/premapper.h"
+#include "gate/premapper/xagmapper.h"
+#include "gate/premapper/xmgmapper.h"
 
 #include <cassert>
 #include <unordered_map>
@@ -15,21 +20,15 @@ namespace eda::gate::premapper {
 
 using Gate = eda::gate::model::Gate;
 using GNet = eda::gate::model::GNet;
+using SignalList = model::Gate::SignalList;
 
-Gate::SignalList getNewInputs(
-    const Gate::SignalList &oldInputs,
-    const PreMapper::GateIdMap &oldToNewGates) {
-  Gate::SignalList newInputs(oldInputs.size());
-
-  for (size_t i = 0; i < oldInputs.size(); i++) {
-    auto oldInput = oldInputs[i];
-    auto newInput = oldToNewGates.find(oldInput.node());
-    assert(newInput != oldToNewGates.end());
-
-    newInputs[i] = Gate::Signal(oldInput.event(), newInput->second);
+PreMapper &getPreMapper(PreBasis basis) {
+  switch(basis) {
+  case PreBasis::MIG: return MigMapper::get();
+  case PreBasis::XAG: return XagMapper::Singleton<XagMapper>::get();
+  case PreBasis::XMG: return XmgMapper::Singleton<XmgMapper>::get();
+  default: return AigMapper::get();
   }
-
-  return newInputs;
 }
 
 std::shared_ptr<GNet> PreMapper::map(const GNet &net,
@@ -37,20 +36,21 @@ std::shared_ptr<GNet> PreMapper::map(const GNet &net,
   auto *newNet = mapGates(net, oldToNewGates);
 
   // Connect the triggers' inputs.
-  for (auto oldTriggerId : net.triggers()) {
+  for (const auto oldTriggerId : net.triggers()) {
     const auto *oldTrigger = Gate::get(oldTriggerId);
 
     auto newTriggerId = oldToNewGates.find(oldTriggerId);
     assert(newTriggerId != oldToNewGates.end());
 
-    auto newInputs = getNewInputs(oldTrigger->inputs(), oldToNewGates);
+    auto newInputs = model::getNewInputs(oldTrigger->inputs(), oldToNewGates);
     newNet->setGate(newTriggerId->second, oldTrigger->func(), newInputs);
   }
 
   return std::shared_ptr<GNet>(newNet);
 }
 
-GNet *PreMapper::mapGates(const GNet &net, GateIdMap &oldToNewGates) const {
+GNet *PreMapper::mapGates(const GNet &net,
+                          GateIdMap &oldToNewGates) const {
   assert(net.isWellFormed() && net.isSorted());
 
   auto *newNet = new GNet(net.getLevel());
@@ -66,7 +66,7 @@ GNet *PreMapper::mapGates(const GNet &net, GateIdMap &oldToNewGates) const {
       oldToNewGates.emplace(oldGateId, newGateId);
     }
 
-    return newNet; 
+    return newNet;
   }
 
   for (const auto *oldSubnet : net.subnets()) {
@@ -86,7 +86,7 @@ Gate::Id PreMapper::mapGate(const Gate &oldGate,
   }
 
   // Just clone the given gate.
-  auto newInputs = getNewInputs(oldGate.inputs(), oldToNewGates);
+  auto newInputs = model::getNewInputs(oldGate.inputs(), oldToNewGates);
   return newNet.addGate(oldGate.func(), newInputs);
 }
 
