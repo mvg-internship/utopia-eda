@@ -40,27 +40,27 @@ using Signal = eda::gate::model::Gate::Signal;
 using Gate = eda::gate::model::Gate;
 using GateSymbol = eda::gate::model::GateSymbol;
 
-struct TokenMap {
+struct VarInfo {
   const bool def;
   Tokens typeInit;  
   int line;
 };
 
 struct SymbolInfo {
-  std::vector<TokenMap> uses;
+  std::vector<VarInfo> uses;
   Gate::Id gateId;
   std::vector<std::string> args;
 };
 
 ///Defines the adding in a infos map.
-std::string addMap(bool def,
-                   Tokens typeInit,
-                   std::map<std::string, SymbolInfo> &infos) {
+SymbolInfo& addVarInfo(bool def,
+                       Tokens typeInit,
+                       std::map<std::string, SymbolInfo> &infos) {
   const std::string name {benchtext};
   auto &inf = infos[name];
-  const TokenMap map {def, typeInit, benchlineno};
+  const VarInfo map {def, typeInit, benchlineno};
   inf.uses.push_back(map);
-  return name;
+  return inf;
 }
 
 Tokens getNextToken() { 
@@ -88,27 +88,26 @@ void assertNextToken(Tokens expectedToken) {
 
 ///Checking for undefined and repeated definitions.
 void checker(std::map<std::string, SymbolInfo> &infos) {
+  int counter1 = 0, counter2 = 0;
   for (auto it = infos.begin(); it != infos.end(); it++) {
-    int count = std::count_if(it->second.uses.begin(), it->second.uses.end(),
-                              [](const TokenMap& s)
-                              { return s.def == true
-                                        && s.typeInit != TOK_OUTPUT; });
-    if (count == 0) {
-      std::cerr << "exeption token: " << it->first << " ";
+    for (auto &i : it->second.uses) {
+      counter1 += i.def && i.typeInit != TOK_OUTPUT;
+      counter2 += i.typeInit == TOK_OUTPUT;
+    }
+    if (!counter1) {
       VIEW();
       throw std::logic_error("unknow definition");
     }
-    if (count > 1) {
+    if (counter1 > 1) {
       VIEW();
       throw std::logic_error("repeated definitions");
     }
-    count = std::count_if(it->second.uses.begin(), it->second.uses.end(),
-                      [](const TokenMap& s)
-                      { return s.typeInit == TOK_OUTPUT; });
-    if (count > 1) {
+    if (counter2 > 1) {
       VIEW();      
       throw std::logic_error("repeated definitions");
     }
+    counter1 = 0;
+    counter2 = 0;
   }
 }
 
@@ -120,9 +119,9 @@ std::string assertNextId(Tokens token,
   }   
   std::string arg {benchtext};
   if (token == TOK_INPUT || token == TOK_OUTPUT) {
-    addMap(1, token, infos);
+    addVarInfo(1, token, infos);
   } else {
-    addMap(0, token, infos);
+    addVarInfo(0, token, infos);
   } 
   return arg;
 }
@@ -155,8 +154,8 @@ parseParenthesisID(Tokens token, std::map<std::string, SymbolInfo> &infos) {
   arg = assertNextId(token, infos);
   args.push_back(arg);
   while ((tok = getNextToken()) == TOK_COMMA) {
-      arg = assertNextId(token, infos);
-      args.push_back(arg);
+    arg = assertNextId(token, infos);
+    args.push_back(arg);
   }
   if (tok != TOK_RP) {
     CERR("right patenthesis");
@@ -170,9 +169,8 @@ parseParenthesisID(Tokens token, std::map<std::string, SymbolInfo> &infos) {
 //===----------------------------------------------------------------------===//
 
 void parseID(std::map<std::string, SymbolInfo> &infos) {
-  std::string name = addMap(1, TOK_E, infos); // adding.
+  auto &info = addVarInfo(1, TOK_E, infos);
   assertNextToken(TOK_E);
-  auto &info = infos[name];
   Tokens token = getNextToken();
   switch (token) { 
   case TOK_AND:
@@ -202,12 +200,12 @@ std::unique_ptr<GNet> builderGnet(std::map<std::string, SymbolInfo> &infos) {
     for (const auto &i : it->second.uses) {
       if (i.typeInit == TOK_INPUT) {
           it->second.gateId = net->addIn();
-      } else if (i.typeInit == TOK_DFF && dffFlag == false) {
+      } else if (i.typeInit == TOK_DFF && !dffFlag) {
           dffClock = net->addIn();
           dffFlag = true;
-      } else if (i.def == true){
+      } else if (i.def){
           it->second.gateId = net->newGate();
-        break;
+          break;
       }
     }
   }
@@ -219,7 +217,7 @@ std::unique_ptr<GNet> builderGnet(std::map<std::string, SymbolInfo> &infos) {
       }
     }
     for (const auto &i : it->second.uses) {
-      if (i.def == true) {
+      if (i.def) {
         tok = i.typeInit;
       }
     }
@@ -265,29 +263,35 @@ std::unique_ptr<GNet> parseBenchFile(const std::string &filename) {
   benchlineno = 1;
   benchin = fopen(filename.c_str(), "r");
   std::unique_ptr<GNet> ref = std::make_unique<GNet>();
-    std::vector<TokenMap> maps;
-    std::map<std::string, SymbolInfo> infos;
-    if (!benchin) {
-      std::cerr << std::endl << "unable to open file: ";
-      throw std::ios_base::failure(filename);
-    }
-    while (Tokens token = getNextToken()) {
-      switch (token) {
-      case TOK_INPUT:
-      case TOK_OUTPUT:
-        parseParenthesisInOut(token, infos);
-        break;
-      case TOK_ID:
-        parseID(infos);
-        break;
-      default:
-        CERR("need input, output or id");
-        break;
+  std::vector<VarInfo> maps;
+  std::map<std::string, SymbolInfo> infos;
+  if (!benchin) {
+    std::cerr << std::endl << "unable to open file: ";
+    throw std::ios_base::failure(filename);
+  }
+  try {
+      while (Tokens token = getNextToken()) {
+        switch (token) {
+        case TOK_INPUT:
+        case TOK_OUTPUT:
+          parseParenthesisInOut(token, infos);
+          break;
+        case TOK_ID:
+          parseID(infos);
+          break;
+        default:
+          CERR("need input, output or id");
+          break;
+        }
       }
-    }
-    checker(infos);
-    ref = builderGnet(infos);
-    fclose(benchin);
+      checker(infos);
+      ref = builderGnet(infos);
+  } catch (std::exception& e) {
+      fclose(benchin);
+      std::cerr << "error in " << e.what() <<  std::endl;       
+      throw;
+  }
+  fclose(benchin);
   return ref;
 }
 
@@ -296,7 +300,7 @@ int main(int argc, char* argv[]) {
     try {
         std::cout << *parseBenchFile(argv[i]);
     } catch (std::exception& e) {
-        std::cerr << "error in " << e.what() <<  std::endl; 
+        std::cerr <<  std::endl; 
     }
   }
   return 0;
