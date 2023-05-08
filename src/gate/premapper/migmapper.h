@@ -58,7 +58,6 @@ protected:
 
   Gate::Id mapMaj(const Gate::SignalList &newInputs,
                   const size_t n0, const size_t n1, GNet &newNet) const;
-
 };
 
 } // namespace eda::gate::premapper

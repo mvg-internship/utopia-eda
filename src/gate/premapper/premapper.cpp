@@ -22,12 +22,11 @@ using Gate = eda::gate::model::Gate;
 using GNet = eda::gate::model::GNet;
 using SignalList = model::Gate::SignalList;
 
-PreMapper &getPreMapper(const PreBasis basis) {
+PreMapper &getPreMapper(PreBasis basis) {
   switch(basis) {
   case PreBasis::MIG: return MigMapper::get();
   case PreBasis::XAG: return XagMapper::Singleton<XagMapper>::get();
   case PreBasis::XMG: return XmgMapper::Singleton<XmgMapper>::get();
-  case PreBasis::AIG: return AigMapper::get();
   default: return AigMapper::get();
   }
 }
@@ -41,7 +40,7 @@ std::shared_ptr<GNet> PreMapper::map(const GNet &net,
     const auto *oldTrigger = Gate::get(oldTriggerId);
 
     auto newTriggerId = oldToNewGates.find(oldTriggerId);
-    assert((newTriggerId != oldToNewGates.end()) && "Invalid new trigger ID");
+    assert(newTriggerId != oldToNewGates.end());
 
     auto newInputs = model::getNewInputs(oldTrigger->inputs(), oldToNewGates);
     newNet->setGate(newTriggerId->second, oldTrigger->func(), newInputs);
@@ -52,19 +51,17 @@ std::shared_ptr<GNet> PreMapper::map(const GNet &net,
 
 GNet *PreMapper::mapGates(const GNet &net,
                           GateIdMap &oldToNewGates) const {
-  assert((net.isWellFormed() && net.isSorted()) &&
-         "Orphans, empty subnets, network is not flat or sorted");
+  assert(net.isWellFormed() && net.isSorted());
 
   auto *newNet = new GNet(net.getLevel());
 
   if (net.isFlat()) {
     for (const auto *oldGate : net.gates()) {
       const auto oldGateId = oldGate->id();
-      assert((oldToNewGates.find(oldGateId) == oldToNewGates.end()) &&
-             "Invalid new gate ID");
+      assert(oldToNewGates.find(oldGateId) == oldToNewGates.end());
 
       const auto newGateId = mapGate(*oldGate, oldToNewGates, *newNet);
-      assert((newGateId != Gate::INVALID) && "Invalid gate used");
+      assert(newGateId != Gate::INVALID);
 
       oldToNewGates.emplace(oldGateId, newGateId);
     }

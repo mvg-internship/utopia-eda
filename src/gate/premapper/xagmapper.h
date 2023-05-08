@@ -14,10 +14,8 @@
 namespace eda::gate::premapper {
 
 /**
- * \brief Implements a netlist-to-XAG pre-mapper.
+ * \brief Implements an netlist-to-XAG pre-mapper.
  * \author <a href="mailto:nsromanov_1@edu.hse.ru">Nikita Romanov</a>
- *
- * Pre-mapper transforms netlist to XAG (Xor-And-Inverter Graph) basis.
  */
 class XagMapper : public AigMapper, public util::Singleton<XagMapper> {
   friend class util::Singleton<XagMapper>;
