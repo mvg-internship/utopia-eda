@@ -10,6 +10,8 @@
 #include "gate/debugger/checker.h"
 #include "gate/model/gate.h"
 #include "gate/model/gnet.h"
+#include "gate/optimizer/rwmanager.h"
+#include "gate/optimizer/rwdatabase.h"
 #include "gate/premapper/migmapper.h"
 #include "gate/premapper/premapper.h"
 #include "gate/premapper/xagmapper.h"
@@ -24,6 +26,7 @@
 
 #include "easylogging++.h"
 
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <map>
@@ -45,6 +48,7 @@ struct RtlContext {
 
   using AigMapper = eda::gate::premapper::AigMapper;
   using Checker = eda::gate::debugger::Checker;
+  using RWDatabase = eda::gate::optimizer::RWDatabase;
   using Compiler = eda::rtl::compiler::Compiler;
   using Library = eda::rtl::library::FLibraryDefault;
   using MigMapper = eda::gate::premapper::MigMapper;
@@ -66,6 +70,8 @@ struct RtlContext {
   PreMapper::GateIdMap gmap;
 
   bool equal;
+
+  RWDatabase *techLib;
 };
 
 void dump(const GNet &net) {
@@ -84,6 +90,17 @@ void dump(const GNet &net) {
   std::cout << "N=" << net.nGates() << std::endl;
   std::cout << "I=" << net.nSourceLinks() << std::endl;
   std::cout << "O=" << net.nTargetLinks() << std::endl;
+}
+
+bool fillingTechLib(RtlContext &context, NetData &data) {
+  bool exist = std::filesystem::exists(context.file);
+  if (!exist) {
+    return false;
+  }
+  context.techLib = RewriteManager::get().createDatabase(context.file);
+  translateLibertyToDesign(context.file, data);
+  data.fillDatabase(context.techLib);
+  return true;
 }
 
 bool parse(RtlContext &context) {
@@ -206,10 +223,16 @@ int main(int argc, char **argv) {
 
   int result = 0;
 
-  for (auto file : options.rtl.files()) {
-    RtlContext context(file, options.rtl);
-    result |= rtlMain(context);
+  if (!options.rtl.libertyFile.empty()) {
+    RtlContext context(options.rtl.libertyFile, options.rtl);
+    NetData data;
+    result |= fillingTechLib(context, data);
+    }
+  } else {
+    for (auto file : options.rtl.files()) {
+      RtlContext context(file, options.rtl);
+      result |= rtlMain(context);
+    }
   }
-
   return result;
 }
