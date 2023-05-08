@@ -10,6 +10,8 @@
 #include "gate/debugger/checker.h"
 #include "gate/model/gate.h"
 #include "gate/model/gnet.h"
+#include "gate/library/liberty/net_data.h"
+#include "gate/library/liberty/translate.h"
 #include "gate/optimizer/rwmanager.h"
 #include "gate/optimizer/rwdatabase.h"
 #include "gate/premapper/migmapper.h"
