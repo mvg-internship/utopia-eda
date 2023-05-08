@@ -169,7 +169,7 @@ Gate::Id AigMapper::mapAnd(const Gate::SignalList &newInputs,
 //===----------------------------------------------------------------------===//
 
 Gate::Id AigMapper::mapOr(const Gate::SignalList &newInputs,
-                          const bool sign, GNet &newNet) const {
+                          bool sign, GNet &newNet) const {
   // OR(x[1],...,x[n]) = NOT(AND(NOT(x[1]),...,NOT(x[n]))).
   Gate::SignalList negInputs(newInputs.size());
   for (size_t i = 0; i < newInputs.size(); i++) {
@@ -181,9 +181,9 @@ Gate::Id AigMapper::mapOr(const Gate::SignalList &newInputs,
 }
 
 Gate::Id AigMapper::mapOr(const Gate::SignalList &newInputs,
-                          const size_t n0,
-                          const size_t n1,
-                          const bool sign,
+                          size_t n0,
+                          size_t n1,
+                          bool sign,
                           GNet &newNet) const {
   if (n1 > 0) {
     return mapVal(sign, newNet);
@@ -230,15 +230,17 @@ Gate::Id AigMapper::mapXor(const Gate::SignalList &newInputs,
 }
 
 Gate::Id AigMapper::mapXor(const Gate::SignalList &newInputs,
-                           const size_t n0,
-                           const size_t n1,
-                           const bool sign,
+                           size_t n0,
+                           size_t n1,
+                           bool sign,
                            GNet &newNet) const {
-  if (n1 > 0) {
-    return mapXor(newInputs, sign ^ (n1 & 1), newNet);
-  }
+  bool newSign = sign ^ (n1 & 1);
 
-  return mapXor(newInputs, sign, newNet);
+  if (newInputs.empty()) {
+    return mapVal(newSign, newNet);
+  }
+  
+  return mapXor(newInputs, newSign, newNet);
 }
 
 } // namespace eda::gate::premapper
