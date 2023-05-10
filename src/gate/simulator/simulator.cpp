@@ -30,11 +30,11 @@ Compiled::OP Compiled::getOp(const Gate &gate) const {
   case GateSymbol::NAND  : return getNand(n);
   case GateSymbol::NOR   : return getNor(n);
   case GateSymbol::XNOR  : return getXnor(n);
+  case GateSymbol::MAJ   : return getMaj(n);
   case GateSymbol::LATCH : return getLatch(n);
   case GateSymbol::DFF   : return getDff(n);
   case GateSymbol::DFFrs : return getDffrs(n);
-  default: uassert(false,
-                   "Unsupported func symbol: " << gate.func() << std::endl);
+  default: uassert(false, "Unsupported gate: " << gate.func() << std::endl);
   }
 
   return getZero(0);
