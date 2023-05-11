@@ -8,45 +8,48 @@
 
 #pragma once
 
+#include "gate/debugger/checker.h"
 #include "gate/model/gnet.h"
 
 #include <memory>
 
-namespace eda::gate::model {
+using namespace eda::gate::model;
 
 // (x1 | ... | xN).
-std::shared_ptr<GNet> makeOr(const unsigned N,
+std::shared_ptr<GNet> makeOr(unsigned N,
                              Gate::SignalList &inputs,
                              Gate::Id &outputId);
 // (x1 & ... & xN).
-std::shared_ptr<GNet> makeAnd(const unsigned N,
+std::shared_ptr<GNet> makeAnd(unsigned N,
                               Gate::SignalList &inputs,
                               Gate::Id &outputId);
 // ~(x1 | ... | xN).
-std::shared_ptr<GNet> makeNor(const unsigned N,
+std::shared_ptr<GNet> makeNor(unsigned N,
                               Gate::SignalList &inputs,
                               Gate::Id &outputId);
 // ~(x1 & ... & xN).
-std::shared_ptr<GNet> makeNand(const unsigned N,
+std::shared_ptr<GNet> makeNand(unsigned N,
                                Gate::SignalList &inputs,
                                Gate::Id &outputId);
 // (~x1 | ... | ~xN).
-std::shared_ptr<GNet> makeOrn(const unsigned N,
+std::shared_ptr<GNet> makeOrn(unsigned N,
                               Gate::SignalList &inputs,
                               Gate::Id &outputId);
 // (~x1 & ... & ~xN).
-std::shared_ptr<GNet> makeAndn(const unsigned N,
+std::shared_ptr<GNet> makeAndn(unsigned N,
                                Gate::SignalList &inputs,
                                Gate::Id &outputId);
 // Maj(x1, x2, ..., xN).
-std::shared_ptr<GNet> makeMaj(const unsigned N,
+std::shared_ptr<GNet> makeMaj(unsigned N,
+                              Gate::SignalList &inputs,
+                              Gate::Id &outputId);
+
+// UDP(x1, x2, ..., xN).
+std::shared_ptr<GNet> makeUdp(unsigned N,
                               Gate::SignalList &inputs,
                               Gate::Id &outputId);
 
 // Random hierarchical network.
-std::shared_ptr<GNet> makeRand(const std::size_t nGates,
-                               const std::size_t nSubnets);
+std::shared_ptr<GNet> makeRand(size_t nGates, size_t nSubnets);
 
 void dump(const GNet &net);
-
-} // namespace eda::gate::model
