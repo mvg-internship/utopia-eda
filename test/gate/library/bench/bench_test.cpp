@@ -1,0 +1,68 @@
+//===----------------------------------------------------------------------===//
+//
+// Part of the Utopia EDA Project, under the Apache License v2.0
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2023 ISP RAS (http://www.ispras.ru)
+//
+//===----------------------------------------------------------------------===//
+
+#include "gate/library/liberty/net_data.h"
+#include "parser.h"
+#include "gtest/gtest.h"
+
+#include <filesystem>
+
+namespace GModel = eda::gate::model;
+
+using eda::gate::model::GateSymbol;
+using GateId = eda::gate::model::Gate::Id;
+
+static std::unique_ptr<GModel::GNet> createLogicGate(GateSymbol symbol) {
+  std::unique_ptr<GModel::GNet> net = std::make_unique<GModel::GNet>();
+  GateId a = net->addIn();
+  GateId out;
+  if (symbol != GateSymbol::DFF || symbol != GateSymbol::NOT) {
+    GateId b = net->addIn();
+    out = net->addGate(symbol, a, b);
+  } else {
+    out = net->addGate(symbol, a);
+  }
+  net->addOut(out);
+  net->sortTopologically();
+  return net;
+}
+
+inline static bool benchParser() {
+  bool answer = true;
+  const std::filesystem::path subCatalog = "test/data/gate/bench";
+  const std::filesystem::path homePath = std::string(getenv("UTOPIA_HOME"));
+  const std::filesystem::path prefixPath = homePath / subCatalog;
+  const std::vector<std::string> files { "s27.bench", "s298.bench" };
+  for (const auto &file : files) {
+    const std::string filename = prefixPath / file;
+    answer *= parseBenchFile(filename);
+  }
+  return answer;
+}
+
+TEST(ISCAS, parse) {
+  EXPECT_EQ(benchParser(), true);
+}
+
+TEST(benchTest, truthTableNot) {
+  auto notGate = createLogicGate(GateSymbol::NOT);
+  std::vector<uint64_t> expected = { 1 };
+  EXPECT_EQ(NetData::buildTruthTab(notGate.get()), expected);
+}
+
+TEST(benchTest, truthTableOr) {
+  auto orGate = createLogicGate(GateSymbol::OR);
+  std::vector<uint64_t> expected = { 14 };
+  EXPECT_EQ(NetData::buildTruthTab(orGate.get()), expected);
+}
+
+TEST(benchTest, truthTableAnd) {
+  auto andGate = createLogicGate(GateSymbol::AND);
+  std::vector<uint64_t> expected = { 8 };
+  EXPECT_EQ(NetData::buildTruthTab(andGate.get()), expected);
+}
