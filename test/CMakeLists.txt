@@ -23,13 +23,21 @@ enable_testing()
 
 add_executable(utest
   gate/debugger/checker_test.cpp
+  gate/debugger/rnd_checker_complex_test.cpp
+  gate/debugger/rnd_checker_test.cpp
   gate/model/gnet_test.cpp
   gate/optimizer/rwdatabase_test.cpp
+ gate/library/liberty/liberty_test.cpp
   gate/parserGnet/testGnet.cpp
+  gate/premapper/migmapper/migmapper_test.cpp
+  gate/premapper/xagmapper/xag_test.cpp
+  gate/premapper/xagmapper/xag_verilog_test.cpp
+  gate/premapper/xmgmapper/xmgmapper_test.cpp
   gate/printer/graphml_test.cpp
   gate/simulator/simulator_test.cpp
   gate/transformer/bdd_test.cpp
   lib/minisat/minisat_test.cpp
+  rtl/library/adder_test.cpp
   rtl/parser/ril/ril_test.cpp
   rtl/library/arithmetic_test.cpp
   util/fm_test.cpp

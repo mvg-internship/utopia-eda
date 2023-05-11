@@ -2,7 +2,7 @@
 //
 // Part of the Utopia EDA Project, under the Apache License v2.0
 // SPDX-License-Identifier: Apache-2.0
-// Copyright 2021 ISP RAS (http://www.ispras.ru)
+// Copyright 2021-2023 ISP RAS (http://www.ispras.ru)
 //
 //===----------------------------------------------------------------------===//
 
@@ -17,11 +17,11 @@
 using namespace eda::gate::model;
 
 // gate(x1, ..., xN).
-static std::unique_ptr<GNet> makeNet(GateSymbol gate,
+static std::shared_ptr<GNet> makeNet(GateSymbol gate,
                                      unsigned N,
                                      Gate::SignalList &inputs,
                                      Gate::Id &outputId) {
-  auto net = std::make_unique<GNet>();
+  auto net = std::make_shared<GNet>();
 
   for (unsigned i = 0; i < N; i++) {
     const Gate::Id inputId = net->addIn();
@@ -36,22 +36,22 @@ static std::unique_ptr<GNet> makeNet(GateSymbol gate,
 }
 
 // gate(~x1, ..., ~xN).
-static std::unique_ptr<GNet> makeNetn(GateSymbol gate,
+static std::shared_ptr<GNet> makeNetn(GateSymbol gate,
                                       unsigned N,
                                       Gate::SignalList &inputs,
                                       Gate::Id &outputId) {
-  auto net = std::make_unique<GNet>();
+  auto net = std::make_shared<GNet>();
 
-  Gate::SignalList andInputs;
+  Gate::SignalList gateInputs;
   for (unsigned i = 0; i < N; i++) {
     const Gate::Id inputId = net->addIn();
     inputs.push_back(Gate::Signal::always(inputId));
 
     const Gate::Id notGateId = net->addNot(inputId);
-    andInputs.push_back(Gate::Signal::always(notGateId));
+    gateInputs.push_back(Gate::Signal::always(notGateId));
   }
 
-  auto gateId = net->addGate(gate, inputs);
+  auto gateId = net->addGate(gate, gateInputs);
   outputId = net->addOut(gateId);
 
   net->sortTopologically();
@@ -59,14 +59,14 @@ static std::unique_ptr<GNet> makeNetn(GateSymbol gate,
 }
 
 // (x1 | ... | xN).
-std::unique_ptr<GNet> makeOr(unsigned N,
+std::shared_ptr<GNet> makeOr(unsigned N,
                              Gate::SignalList &inputs,
                              Gate::Id &outputId) {
   return makeNet(GateSymbol::OR, N, inputs, outputId);
 }
 
 // (x1 & ... & xN).
-std::unique_ptr<GNet> makeAnd(unsigned N,
+std::shared_ptr<GNet> makeAnd(unsigned N,
                               Gate::SignalList &inputs,
                               Gate::Id &outputId) {
   return makeNet(GateSymbol::AND, N, inputs, outputId);
@@ -74,14 +74,14 @@ std::unique_ptr<GNet> makeAnd(unsigned N,
 
 
 // ~(x1 | ... | xN).
-std::unique_ptr<GNet> makeNor(unsigned N,
+std::shared_ptr<GNet> makeNor(unsigned N,
                               Gate::SignalList &inputs,
                               Gate::Id &outputId) {
   return makeNet(GateSymbol::NOR, N, inputs, outputId);
 }
 
 // ~(x1 & ... & xN).
-std::unique_ptr<GNet> makeNand(unsigned N,
+std::shared_ptr<GNet> makeNand(unsigned N,
                                Gate::SignalList &inputs,
                                Gate::Id &outputId) {
   return makeNet(GateSymbol::NAND, N, inputs, outputId);
@@ -89,24 +89,38 @@ std::unique_ptr<GNet> makeNand(unsigned N,
 
 
 // (~x1 | ... | ~xN).
-std::unique_ptr<GNet> makeOrn(unsigned N,
+std::shared_ptr<GNet> makeOrn(unsigned N,
                               Gate::SignalList &inputs,
                               Gate::Id &outputId) {
   return makeNetn(GateSymbol::OR, N, inputs, outputId);
 }
 
 // (~x1 & ... & ~xN).
-std::unique_ptr<GNet> makeAndn(unsigned N,
+std::shared_ptr<GNet> makeAndn(unsigned N,
                                Gate::SignalList &inputs,
                                Gate::Id &outputId) {
   return makeNetn(GateSymbol::AND, N, inputs, outputId);
 }
 
+// Maj(x1, x2, ..., xN).
+std::shared_ptr<GNet> makeMaj(unsigned N,
+                              Gate::SignalList &inputs,
+                              Gate::Id &outputId) {
+  return makeNet(GateSymbol::MAJ, N, inputs, outputId);
+}
+
+// UDP(x1, x2, ..., xN).
+std::shared_ptr<GNet> makeUdp(unsigned N,
+                              Gate::SignalList &inputs,
+                              Gate::Id &outputId) {
+  GateSymbol UDP = GateSymbol::create("udp");
+  return makeNet(UDP, N, inputs, outputId);
+}
+
 // Random hierarchical network.
-std::unique_ptr<GNet> makeRand(std::size_t nGates,
-                               std::size_t nSubnets) {
-  assert(nGates >= 2);
-  auto net = std::make_unique<GNet>();
+std::shared_ptr<GNet> makeRand(size_t nGates, size_t nSubnets) {
+  assert((nGates >= 2) && "Small number of gates");
+  auto net = std::make_shared<GNet>();
 
   // Create subnets.
   for (std::size_t i = 0; i < nSubnets; i++) {
@@ -215,6 +229,13 @@ std::unique_ptr<GNet> makeRand(std::size_t nGates,
   return net;
 }
 
+void dump(const GNet &net) {
+  std::cout << net << '\n';
+  std::cout << "N=" << net.nGates() << '\n';
+  std::cout << "I=" << net.nSourceLinks() << '\n';
+  std::cout << "O=" << net.nTargetLinks() << '\n';
+}
+
 TEST(GNetTest, GNetOrTest) {
   Gate::SignalList inputs;
   Gate::Id outputId;
@@ -257,13 +278,58 @@ TEST(GNetTest, GNetAndnTest) {
   EXPECT_TRUE(net != nullptr);
 }
 
+TEST(GNetTest, GNetMajTest) {
+  Gate::SignalList inputs;
+  Gate::Id outputId;
+  auto net = makeMaj(7, inputs, outputId);
+  EXPECT_TRUE(net != nullptr);
+}
+
+TEST(GNetTest, GNetUdpTest) {
+  Gate::SignalList inputs;
+  Gate::Id outputId;
+  auto net = makeUdp(6, inputs, outputId);
+  EXPECT_TRUE(net != nullptr);
+}
+
 TEST(GNetTest, GNetRandTest) {
   auto net = makeRand(1024, 256);
   EXPECT_TRUE(net != nullptr);
 }
 
+TEST(GNetTest, GNetAddTest) {
+  Gate::SignalList inputs1;
+  Gate::Id outputId1;
+  auto net1 = makeOr(16, inputs1, outputId1);
+
+  auto net = std::make_shared<GNet>();
+  net->addNet(*net1);
+
+  for (auto *gate : net1->gates()) {
+    EXPECT_TRUE(net->contains(gate->id()));
+  }
+}
+
 TEST(GNetTest, GNetRandTestIssue11877) {
   auto net = makeRand(7, 5);
   EXPECT_TRUE(net != nullptr);
+}
+
+TEST(GNetTest, GNetWithCheckerTest) {
+  eda::gate::debugger::Checker checker;
+  auto net = makeRand(7, 5);
+  std::unordered_map<Gate::Id, Gate::Id> testMap = {};
+  auto netCloned = net.get()->clone(testMap);
+  EXPECT_TRUE(checker.areEqual(*net, *netCloned, testMap));
+}
+
+TEST(GNetTest, GNetEdgesTest) {
+  auto net = makeRand(7, 5);
+  EXPECT_TRUE(net.get()->clone()->nEdges() == net.get()->nEdges());
+}
+
+TEST(GNetTest, GNetAddressTest) {
+  auto net = makeRand(7, 5);
+  EXPECT_TRUE(net.get()->clone() != net.get());
 }
 

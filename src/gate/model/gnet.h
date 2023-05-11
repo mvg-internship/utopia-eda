@@ -81,6 +81,7 @@ public:
   using GateId      = Gate::Id;
   using GateIdList  = std::vector<GateId>;
   using GateIdSet   = std::unordered_set<GateId>;
+  using GateIdMap   = std::unordered_map<GateId, GateId>;
   using SubnetId    = unsigned;
   using SubnetIdSet = std::set<SubnetId>;
   using Link        = Gate::Link;
@@ -342,6 +343,32 @@ public:
   void setGate(GateId gid, GateSymbol func, GateId lhs, GateId rhs) {
     setGate(gid, func, Signal::always(lhs), Signal::always(rhs));
   }
+  
+  /// Adds a majority function.
+  GateId addMaj(const Signal &lhs, const Signal &mhs, const Signal &rhs) {
+    return addGate(GateSymbol::MAJ, SignalList{lhs, mhs, rhs});
+  }
+
+  /// Adds a majority function.
+  GateId addMaj(GateId lhs, GateId mhs, GateId rhs) {
+    return addGate(GateSymbol::MAJ, SignalList{Signal::always(lhs),
+                                               Signal::always(mhs),
+                                               Signal::always(rhs)});
+  }
+
+  /// Changes the given gate to the majority function.
+  void setMaj(GateId gid, const Signal &lhs,
+                          const Signal &mhs,
+                          const Signal &rhs) {
+    setGate(gid, GateSymbol::MAJ, SignalList{lhs, mhs, rhs});
+  }
+
+  /// Changes the given gate to the majority function.
+  void setMaj(GateId gid, GateId lhs, GateId mhs, GateId rhs) {
+    setGate(gid, GateSymbol::MAJ, SignalList{Signal::always(lhs),
+                                             Signal::always(mhs),
+                                             Signal::always(rhs)});
+  }
 
   DEFINE_GATE0_METHODS(GateSymbol::IN,   addIn,   setIn)
   DEFINE_GATE1_METHODS(GateSymbol::OUT,  addOut,  setOut)
@@ -505,6 +532,20 @@ public:
 
   /// Sorts the gates in topological order.
   void sortTopologically();
+
+   //===--------------------------------------------------------------------===//
+  // Cloning
+  //===--------------------------------------------------------------------===//
+
+  GNet* clone();
+
+  /** Clones the net.
+   *  The input map provides correspondence between gates of the original
+   *  net and gates of the cloned one.
+   *  @param oldToNewId Stores correspondence between gates.
+   *  @return The clone of this net.
+   */
+  GNet* clone(std::unordered_map<Gate::Id, Gate::Id> &oldToNewId);
 
 private:
   //===--------------------------------------------------------------------===//

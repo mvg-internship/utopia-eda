@@ -218,7 +218,7 @@ public:
     };
 
     const OP opOr3 = [this](I out, IV in) {
-      memory[out] = memory[in[0]] || memory[in[1]] || memory[in[3]];
+      memory[out] = memory[in[0]] || memory[in[1]] || memory[in[2]];
     };
 
     const OP opOrN = [this](I out, IV in) {
@@ -357,6 +357,35 @@ public:
       case  2: return opXnor2;
       case  3: return opXnor3;
       default: return opXnorN;
+      }
+    }
+
+    //------------------------------------------------------------------------//
+    // MAJ
+    //------------------------------------------------------------------------//
+
+    const OP opMaj3 = [this](I out, IV in) {
+      memory[out] = (memory[in[0]] + memory[in[1]] + memory[in[2]]) >= 2;
+    };
+
+    const OP opMajN = [this](I out, IV in) {
+      const size_t n = in.size();
+      const size_t k = (n >> 1);
+
+      unsigned w = memory[in[n - 1]];
+      for (size_t i = 0; i < k; i++) {
+        w += memory[in[(i << 1)]];
+        w += memory[in[(i << 1)|1]];
+      }
+
+      memory[out] = (w > k);
+    };
+
+    OP getMaj(I arity) const {
+      switch (arity) {
+      case  1: return opNop;
+      case  3: return opMaj3;
+      default: return opMajN;
       }
     }
 

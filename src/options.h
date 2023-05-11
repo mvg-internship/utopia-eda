@@ -2,13 +2,15 @@
 //
 // Part of the Utopia EDA Project, under the Apache License v2.0
 // SPDX-License-Identifier: Apache-2.0
-// Copyright 2021 ISP RAS (http://www.ispras.ru)
+// Copyright 2021-2023 ISP RAS (http://www.ispras.ru)
 //
 //===----------------------------------------------------------------------===//
 
 #pragma once
 
 #include "CLI/CLI.hpp"
+#include "gate/debugger/base_checker.h"
+#include "gate/premapper/premapper.h"
 #include "nlohmann/json.hpp"
 
 #include <fstream>
@@ -17,6 +19,18 @@
 #include <vector>
 
 using Json = nlohmann::json;
+NLOHMANN_JSON_SERIALIZE_ENUM( eda::gate::debugger::options::LecType, {
+  {eda::gate::debugger::options::RND, "rnd"},
+  {eda::gate::debugger::options::DEFAULT, "default"},
+  {eda::gate::debugger::options::BDD, "bdd"},
+})
+
+NLOHMANN_JSON_SERIALIZE_ENUM( eda::gate::premapper::PreBasis, {
+    {eda::gate::premapper::AIG, "aig"},
+    {eda::gate::premapper::MIG, "mig"},
+    {eda::gate::premapper::XAG, "xag"},
+    {eda::gate::premapper::XMG, "xmg"},
+})
 
 class AppOptions {
 public:
@@ -82,6 +96,13 @@ protected:
     }
   }
 
+  template<class T>
+  static void get(Json json, const std::string &key, T &value) {
+    if (json.contains(key)) {
+      value = json[key].get<T>();
+    }
+  }
+
   Json toJson(const CLI::App *app) const {
     Json json;
 
@@ -117,17 +138,43 @@ protected:
   const bool isRoot;
   CLI::App *options;
 };
-
+using LecType = eda::gate::debugger::options::LecType;
+static constexpr const char *LEC_TYPE = "lec";
 struct RtlOptions final : public AppOptions {
+
+  eda::gate::debugger::options::LecType lecType = LecType::DEFAULT;
+
+  const std::map<std::string, LecType> lecTypeMap {
+    {"rnd", LecType::RND},
+    {"default", LecType::DEFAULT},
+    {"bdd", LecType::BDD},
+  };
+  using PreBasis = eda::gate::premapper::PreBasis;
+
   static constexpr const char *ID = "rtl";
 
-  static constexpr const char *PRINT_GRAPHML  = "print-graphml";
+static constexpr const char *PREMAP_BASIS  = "premap-basis";
+static constexpr const char *PRINT_GRAPHML  = "print-graphml";
+
+  const std::map<std::string, PreBasis> preBasisMap {
+    {"aig", PreBasis::AIG},
+    {"mig", PreBasis::MIG},
+    {"xag", PreBasis::XAG},
+    {"xmg", PreBasis::XMG}
+  };
 
   RtlOptions(AppOptions &parent):
       AppOptions(parent, ID, "Logical synthesis") {
     // Named options.
     options->add_option(cli(PRINT_GRAPHML),  printGraphml,  "Print Gnet in GraphML format")
            ->expected(1);    
+    options->add_option(cli(LEC_TYPE), lecType, "Type of LEC")
+        ->expected(1)
+            ->transform(CLI::CheckedTransformer(lecTypeMap, CLI::ignore_case));
+    options->add_option(cli(PREMAP_BASIS), preBasis, "Premapper basis")
+        ->expected(1)
+            ->transform(CLI::CheckedTransformer(preBasisMap, CLI::ignore_case));
+
     // Input file(s).
     options->allow_extras();
   }
@@ -137,9 +184,12 @@ struct RtlOptions final : public AppOptions {
   }
 
   void fromJson(Json json) override {
+    get(json, LEC_TYPE, lecType);
+    get(json, PREMAP_BASIS, preBasis);
     get(json, PRINT_GRAPHML,  printGraphml);
   }
 
+  PreBasis preBasis = PreBasis::AIG;
   std::string printGraphml;
 };
 

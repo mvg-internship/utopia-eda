@@ -11,10 +11,12 @@
 
 #include "gtest/gtest.h"
 
-using namespace eda::printer::graphMl;
+using GNet = eda::gate::model::GNet;
+
+namespace eda::printer::graphMl {
 
 int graphMlTest() {
-  const GNet test = *makeRand(1000, 1000);
+  const GNet test = *eda::gate::model::makeRand(1000, 1000);
   toGraphMl::printer(std::cout, test);
   return 0;
 }
