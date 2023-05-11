@@ -8,12 +8,12 @@
 #include "config.h"
 #include "gate/debugger/base_checker.h"
 #include "gate/debugger/checker.h"
-#include "gate/model/gate.h"
-#include "gate/model/gnet.h"
 #include "gate/library/liberty/net_data.h"
 #include "gate/library/liberty/translate.h"
-#include "gate/optimizer/rwmanager.h"
+#include "gate/model/gate.h"
+#include "gate/model/gnet.h"
 #include "gate/optimizer/rwdatabase.h"
+#include "gate/optimizer/rwmanager.h"
 #include "gate/premapper/migmapper.h"
 #include "gate/premapper/premapper.h"
 #include "gate/premapper/xagmapper.h"
@@ -72,8 +72,6 @@ struct RtlContext {
   PreMapper::GateIdMap gmap;
 
   bool equal;
-
-  RWDatabase *techLib;
 };
 
 void dump(const GNet &net) {
@@ -94,15 +92,11 @@ void dump(const GNet &net) {
   std::cout << "O=" << net.nTargetLinks() << std::endl;
 }
 
-bool fillingTechLib(RtlContext &context, NetData &data) {
-  bool exist = std::filesystem::exists(context.file);
-  if (!exist) {
-    return false;
-  }
-  context.techLib = RewriteManager::get().createDatabase(context.file);
-  translateLibertyToDesign(context.file, data);
-  data.fillDatabase(context.techLib);
-  return true;
+void fillingTechLib(std::string namefile) {
+  NetData data;
+  auto techLib = eda::gate::optimizer::RewriteManager::get().createDatabase(namefile);
+  translateLibertyToDesign(namefile, data);
+  data.fillDatabase(*techLib);
 }
 
 bool parse(RtlContext &context) {
@@ -199,15 +193,11 @@ int main(int argc, char **argv) {
   int result = 0;
 
   if (!options.rtl.libertyFile.empty()) {
-    RtlContext context(options.rtl.libertyFile, options.rtl);
-    NetData data;
-    result |= fillingTechLib(context, data);
-    }
-  } else {
-    for (auto file : options.rtl.files()) {
-      RtlContext context(file, options.rtl);
-      result |= rtlMain(context);
-    }
+    fillingTechLib(options.rtl.libertyFile);
+  }
+  for (auto file : options.rtl.files()) {
+    RtlContext context(file, options.rtl);
+    result |= rtlMain(context);
   }
   return result;
 }

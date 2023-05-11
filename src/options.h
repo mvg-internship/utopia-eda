@@ -10,8 +10,8 @@
 
 #include "CLI/CLI.hpp"
 #include "gate/debugger/base_checker.h"
-#include "gate/premapper/premapper.h"
 #include "gate/library/liberty/translate.h"
+#include "gate/premapper/premapper.h"
 #include "nlohmann/json.hpp"
 
 #include <fstream>
@@ -171,10 +171,10 @@ struct RtlOptions final : public AppOptions {
         ->expected(1)
             ->transform(CLI::CheckedTransformer(lecTypeMap, CLI::ignore_case));
     // Named options.
-    options->add_option(cli(PREMAP_BASIS), preBasis, "Premapper basis")
-    optimizer_temp
-           ->expected(1)
-           ->transform(CLI::CheckedTransformer(preBasisMap, CLI::ignore_case));
+//     options->add_option(cli(PREMAP_BASIS), preBasis, "Premapper basis")
+//     optimizer_temp
+//            ->expected(1)
+//            ->transform(CLI::CheckedTransformer(preBasisMap, CLI::ignore_case));
     options->add_option(
         cli(LIBERTY),
         libertyFile,
