@@ -49,10 +49,12 @@ public:
     XOR,
     /// Sheffer's stroke: OUT = ~(X & Y (& ...)).
     NAND,
-    /// Peirce's arrow: OUT <= ~(X | Y (| ...)).
+    /// Peirce's arrow: OUT = ~(X | Y (| ...)).
     NOR,
-    /// Exclusive NOR: OUT <= ~(X + Y (+ ...) (mod 2)).
+    /// Exclusive NOR: OUT = ~(X + Y (+ ...) (mod 2)).
     XNOR,
+    /// Majority function: OUT = Majority(X, Y, ...).
+    MAJ,
 
     //--------------------------------------------------------------------------
     // Flip-flops and latches
@@ -68,11 +70,16 @@ public:
     /// Q(t) = RST(level1) ? 0 : (SET(level1) ? 1 : (CLK(posedge) ? D : Q(t-1))).
     DFFrs,
 
-    /// Invalid gate = number of gate symbols.
+    /// Number of pre-defined gate symbols.
     XXX
   };
 
+  /// Creates an uninterpreted custom gate symbol.
+  static GateSymbol create(const std::string &name);
+
 private:
+  constexpr static size_t N_GATE_SYMBOLS = 16536;
+
   struct GateDescriptor {
     std::string name;
     bool isConstant;
@@ -109,7 +116,8 @@ public:
 private:
   Value _value;
 
-  static GateDescriptor _desc[XXX];
+  static GateDescriptor _desc[N_GATE_SYMBOLS];
+  static uint16_t _next;
 };
 
 std::ostream& operator <<(std::ostream &out, GateSymbol gate);

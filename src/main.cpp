@@ -2,17 +2,21 @@
 //
 // Part of the Utopia EDA Project, under the Apache License v2.0
 // SPDX-License-Identifier: Apache-2.0
-// Copyright 2021 ISP RAS (http://www.ispras.ru)
+// Copyright 2021-2023 ISP RAS (http://www.ispras.ru)
 //
 //===----------------------------------------------------------------------===//
-
 #include "config.h"
+#include "gate/debugger/base_checker.h"
 #include "gate/debugger/checker.h"
 #include "gate/model/gate.h"
 #include "gate/model/gnet.h"
-#include "gate/premapper/aigmapper.h"
+#include "gate/premapper/migmapper.h"
+#include "gate/premapper/premapper.h"
+#include "gate/premapper/xagmapper.h"
+#include "gate/premapper/xmgmapper.h"
 #include "options.h"
 #include "rtl/compiler/compiler.h"
+#include "rtl/library/arithmetic.h"
 #include "rtl/library/flibrary.h"
 #include "rtl/model/net.h"
 #include "rtl/parser/ril/parser.h"
@@ -39,11 +43,15 @@ struct RtlContext {
   using Gate = eda::gate::model::Gate;
   using Link = Gate::Link;
 
-  using Library = eda::rtl::library::FLibraryDefault;
-  using Compiler = eda::rtl::compiler::Compiler;
-  using PreMapper = eda::gate::premapper::PreMapper;
   using AigMapper = eda::gate::premapper::AigMapper;
   using Checker = eda::gate::debugger::Checker;
+  using Compiler = eda::rtl::compiler::Compiler;
+  using Library = eda::rtl::library::FLibraryDefault;
+  using MigMapper = eda::gate::premapper::MigMapper;
+  using PreBasis = eda::gate::premapper::PreBasis;
+  using PreMapper = eda::gate::premapper::PreMapper;
+  using XagMapper = eda::gate::premapper::XagMapper;
+  using XmgMapper = eda::gate::premapper::XmgMapper;
 
   RtlContext(const std::string &file, const RtlOptions &options):
     file(file), options(options) {}
@@ -116,7 +124,9 @@ bool compile(RtlContext &context) {
 bool premap(RtlContext &context) {
   LOG(INFO) << "RTL premap";
 
-  auto &premapper = RtlContext::AigMapper::get();
+  auto &premapper =
+      eda::gate::premapper::getPreMapper(context.options.preBasis);
+
   context.gnet1 = premapper.map(*context.gnet0, context.gmap);
 
   std::cout << "------ G-net #1 ------" << std::endl;
@@ -126,41 +136,14 @@ bool premap(RtlContext &context) {
 }
 
 bool check(RtlContext &context) {
-  using Link = RtlContext::Link;
-  using GateBinding = RtlContext::Checker::GateBinding;
-
   LOG(INFO) << "RTL check";
 
-  RtlContext::Checker checker;
-  GateBinding ibind, obind, tbind;
+  auto &checker = eda::gate::debugger::getChecker(context.options.lecType);
 
   assert(context.gnet0->nSourceLinks() == context.gnet1->nSourceLinks());
   assert(context.gnet0->nTargetLinks() == context.gnet1->nTargetLinks());
 
-  // Input-to-input correspondence.
-  for (auto oldSourceLink : context.gnet0->sourceLinks()) {
-    auto newSourceId = context.gmap[oldSourceLink.target];
-    ibind.insert({oldSourceLink, Link(newSourceId)});
-  }
-
-  // Output-to-output correspondence.
-  for (auto oldTargetLink : context.gnet0->targetLinks()) {
-    auto newTargetId = context.gmap[oldTargetLink.source];
-    obind.insert({oldTargetLink, Link(newTargetId)});
-  }
-
-  // Trigger-to-trigger correspondence.
-  for (auto oldTriggerId : context.gnet0->triggers()) {
-    auto newTriggerId = context.gmap[oldTriggerId];
-    tbind.insert({Link(oldTriggerId), Link(newTriggerId)});
-  }
-
-  RtlContext::Checker::Hints hints;
-  hints.sourceBinding  = std::make_shared<GateBinding>(std::move(ibind));
-  hints.targetBinding  = std::make_shared<GateBinding>(std::move(obind));
-  hints.triggerBinding = std::make_shared<GateBinding>(std::move(tbind));
-
-  context.equal = checker.areEqual(*context.gnet0, *context.gnet1, hints);
+  context.equal = checker.areEqual(*context.gnet0, *context.gnet1, context.gmap);
   std::cout << "equivalent=" << context.equal << std::endl;
 
   return true;
