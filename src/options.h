@@ -121,9 +121,13 @@ protected:
 struct RtlOptions final : public AppOptions {
   static constexpr const char *ID = "rtl";
 
+  static constexpr const char *PRINT_GRAPHML  = "print-graphml";
+
   RtlOptions(AppOptions &parent):
       AppOptions(parent, ID, "Logical synthesis") {
-
+    // Named options.
+    options->add_option(cli(PRINT_GRAPHML),  printGraphml,  "Print Gnet in GraphML format")
+           ->expected(1);    
     // Input file(s).
     options->allow_extras();
   }
@@ -131,6 +135,12 @@ struct RtlOptions final : public AppOptions {
   std::vector<std::string> files() const {
     return options->remaining();
   }
+
+  void fromJson(Json json) override {
+    get(json, PRINT_GRAPHML,  printGraphml);
+  }
+
+  std::string printGraphml;
 };
 
 struct HlsOptions final : public AppOptions {
@@ -142,6 +152,7 @@ struct HlsOptions final : public AppOptions {
   static constexpr const char *OUTPUT_LIB  = "output-lib";
   static constexpr const char *OUTPUT_TOP  = "output-top";
   static constexpr const char *OUTPUT_TEST = "output-test";
+  
 
   HlsOptions(AppOptions &parent):
       AppOptions(parent, ID, "High-level synthesis") {

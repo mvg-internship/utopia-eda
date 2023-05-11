@@ -11,6 +11,7 @@
 #include "gate/model/gate.h"
 #include "gate/model/gnet.h"
 #include "gate/premapper/aigmapper.h"
+#include "gate/printer/graphml.h"
 #include "options.h"
 #include "rtl/compiler/compiler.h"
 #include "rtl/library/arithmetic.h"
@@ -110,7 +111,6 @@ bool compile(RtlContext &context) {
 
   std::cout << "------ G-net #0 ------" << std::endl;
   dump(*context.gnet0);
-
   return true;
 }
 
@@ -164,6 +164,14 @@ bool check(RtlContext &context) {
   context.equal = checker.areEqual(*context.gnet0, *context.gnet1, hints);
   std::cout << "equivalent=" << context.equal << std::endl;
 
+  return true;
+}
+
+bool print(RtlContext &context) {
+  std::ofstream fout;
+  fout.open(context.options.printGraphml);
+  eda::printer::graphMl::toGraphMl::printer(fout, *context.gnet1);
+  fout.close();
   return true;
 }
 
