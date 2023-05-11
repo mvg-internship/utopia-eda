@@ -11,9 +11,33 @@
 #include "headerFile"
 #include "gate/parser/bench/tokens.h"
 
+#include <algorithm>
 #include <iostream>
+#include <map>
+#include <vector>
 
 extern "C" int scan_token();
+
+struct VarInfo {
+  const bool def;
+  Tokens typeInit;  
+  int line;
+};
+
+struct SymbolInfo {
+  std::vector<VarInfo> uses;
+  std::vector<std::string> args;
+};
+
+SymbolInfo& addVarInfo(bool def,
+                       Tokens typeInit,
+                       std::map<std::string, SymbolInfo> &infos) {
+  const std::string name {benchtext};
+  auto &inf = infos[name];
+  const VarInfo map {def, typeInit, benchlineno};
+  inf.uses.push_back(map);
+  return inf;
+}
 
 Tokens getNextToken() { 
   return static_cast<Tokens>(scan_token());
@@ -23,13 +47,13 @@ void assertNextToken(Tokens expectedToken) {
   if (getNextToken() != expectedToken) {
     switch (expectedToken) {
     case TOK_LP:
-      throw;
+      CERR("left parenthesis");
       break;
     case TOK_RP:
-      throw;
+      CERR("right patenthesis");
       break;
     case TOK_E:
-      throw;
+      CERR("expected equal");
       break;
     default:
       break;
@@ -37,31 +61,73 @@ void assertNextToken(Tokens expectedToken) {
   }
 }
 
-void assertNextId() {
-  if (getNextToken() != TOK_ID) {
-    throw;
+void checker(std::map<std::string, SymbolInfo> &infos) {
+  int counter1 = 0, counter2 = 0;
+  for (auto it = infos.begin(); it != infos.end(); it++) {
+    for (auto &i : it->second.uses) {
+      counter1 += i.def && i.typeInit != TOK_OUTPUT;
+      counter2 += i.typeInit == TOK_OUTPUT;
+    }
+    if (!counter1) {
+      VIEW();
+      throw std::logic_error("unknow definition");
+    }
+    if (counter1 > 1) {
+      VIEW();
+      throw std::logic_error("repeated definitions");
+    }
+    if (counter2 > 1) {
+      VIEW();      
+      throw std::logic_error("repeated definitions");
+    }
+    counter1 = 0;
+    counter2 = 0;
   }
 }
 
-void parseParenthesisInOut () {
-  assertNextToken(TOK_LP);
-  assertNextId(token, infos);
-  assertNextToken(TOK_RP);
+std::string assertNextId(Tokens token,
+                         std::map<std::string, SymbolInfo> &infos) {
+  if (getNextToken() != TOK_ID) {
+    CERR("ID reading");
+  }   
+  std::string arg {benchtext};
+  if (token == TOK_INPUT || token == TOK_OUTPUT) {
+    addVarInfo(1, token, infos);
+  } else {
+    addVarInfo(0, token, infos);
+  } 
+  return arg;
 }
 
-void parseParenthesisID() {
-  Tokens tok;
+std::vector<std::string>
+parseParenthesisInOut (Tokens token, std::map<std::string, SymbolInfo> &infos) {
+  std::vector<std::string> name;
   assertNextToken(TOK_LP);
-  assertNextId();
+  name.push_back(assertNextId(token, infos));
+  assertNextToken(TOK_RP);
+  return name;
+}
+
+std::vector<std::string>
+parseParenthesisID(Tokens token, std::map<std::string, SymbolInfo> &infos) {
+  Tokens tok;
+  std::vector<std::string> args;
+  std::string arg;
+  assertNextToken(TOK_LP);
+  arg = assertNextId(token, infos);
+  args.push_back(arg);
   while ((tok = getNextToken()) == TOK_COMMA) {
-    assertNextId();
+    arg = assertNextId(token, infos);
+    args.push_back(arg);
   }
   if (tok != TOK_RP) {
-    throw;
+    CERR("right patenthesis");
   }
+  return args;
 }
 
-void parseID() {
+void parseID(std::map<std::string, SymbolInfo> &infos) {
+  auto &info = addVarInfo(1, TOK_E, infos);
   assertNextToken(TOK_E);
   Tokens token = getNextToken();
   switch (token) { 
@@ -69,14 +135,16 @@ void parseID() {
   case TOK_OR:
   case TOK_NAND:
   case TOK_NOR:
-    parseParenthesisID();
+    info.uses.back().typeInit = token;
+    info.args = parseParenthesisID(token, infos);
     break;
   case TOK_DFF:
   case TOK_NOT:
-    parseParenthesisInOut();
+    info.uses.back().typeInit = token;
+    info.args = parseParenthesisInOut(token, infos);
     break;
   default:
-    throw;
+    CERR("expected function");
     break;
   }
 }
@@ -84,28 +152,35 @@ void parseID() {
 bool parseBenchFile(const std::string &filename) {
   benchlineno = 1;
   benchin = fopen(filename.c_str(), "r");
+  std::unique_ptr<GNet> ref = std::make_unique<GNet>();
+  std::vector<VarInfo> maps;
+  std::map<std::string, SymbolInfo> infos;
   try {
     if (!benchin) {
-        throw;
+        std::cerr << std::endl << "unable to open file: ";
+        throw std::ios_base::failure(filename);
     }
     while (Tokens token = getNextToken()) {
       switch (token) {
       case TOK_INPUT:
       case TOK_OUTPUT:
-        parseParenthesisInOut(token);
+        parseParenthesisInOut(token, infos);
         break;
       case TOK_ID:
-        parseID();
+        parseID(infos);
         break;
       default:
-        throw;
+        CERR("need input, output or id");
         break;
       }
     }
-  } catch (...) {
+    checker(infos);
+    ref = builderGnet(infos);
+  } catch (std::exception& e) {
     fclose(benchin);
-    return false;
+    std::cerr << "error in " << e.what() <<  std::endl; 
+    return false;      
   }
   fclose(benchin);
-  return true;
+  return ref;
 }
