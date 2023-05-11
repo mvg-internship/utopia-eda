@@ -22,12 +22,11 @@ using Gate = eda::gate::model::Gate;
 using GNet = eda::gate::model::GNet;
 using SignalList = model::Gate::SignalList;
 
-PreMapper &getPreMapper(const PreBasis basis) {
+PreMapper &getPreMapper(PreBasis basis) {
   switch(basis) {
   case PreBasis::MIG: return MigMapper::get();
   case PreBasis::XAG: return XagMapper::Singleton<XagMapper>::get();
   case PreBasis::XMG: return XmgMapper::Singleton<XmgMapper>::get();
-  case PreBasis::AIG: return AigMapper::get();
   default: return AigMapper::get();
   }
 }
@@ -52,8 +51,7 @@ std::shared_ptr<GNet> PreMapper::map(const GNet &net,
 
 GNet *PreMapper::mapGates(const GNet &net,
                           GateIdMap &oldToNewGates) const {
-  assert((net.isWellFormed() && net.isSorted()) &&
-         "Orphans, empty subnets, network is not flat or sorted");
+  assert(net.isWellFormed() && net.isSorted());
 
   auto *newNet = new GNet(net.getLevel());
 

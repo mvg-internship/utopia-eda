@@ -52,3 +52,5 @@ Gate::Id XagMapper::mapXor(const Gate::SignalList &newInputs,
 }
 
 } // namespace eda::gate::premapper
+
+} // namespace eda::gate::premapper

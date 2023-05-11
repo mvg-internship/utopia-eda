@@ -67,7 +67,7 @@ FLibrary::Out FLibraryDefault::synth(size_t outSize,
 
   GNet::Out out(outSize);
   for (size_t i = 0; i < out.size(); i++) {
-    out[i] = net.addGate((value[i] ? GateSymbol::ONE : GateSymbol::ZERO), {});
+    out[i] = value[i] ? net.addOne() : net.addZero();
   }
 
   return out;
@@ -80,7 +80,7 @@ FLibrary::Out FLibraryDefault::synth(size_t outSize,
 
   GNet::Out targets(outSize);
   for (size_t i = 0; i < out.size(); i++) {
-    targets[i] = net.addGate(GateSymbol::OUT, {Signal::always(out[i])});
+    targets[i] = net.addOut(out[i]);
   }
 
   return targets;
@@ -163,6 +163,43 @@ FLibrary::Out FLibraryDefault::synth(const Out &out,
   }
 
   // Return the given outputs.
+  return out;
+}
+
+FLibrary::Out FLibraryDefault::synthSimpleAdder(size_t outSize, const In &in, GNet &net) {
+
+  const auto &term1 = in[0];
+  const auto &term2 = in[1];
+
+  Out out(outSize);
+
+  Signal carrybit = Signal(0);
+  Signal clause = Signal(0);
+  Signal clause1 = Signal(0);
+  Signal clause2 = Signal(0);
+  Signal clause3 = Signal(0);
+
+  for (size_t i = 0; i < outSize; i++) {
+    auto termWire1 = Signal::always(term1[i]);
+    auto termWire2 = Signal::always(term2[i]);
+    auto sum = net.addGate(GateSymbol::XOR, {termWire1, termWire2});
+
+    if (i == 0) {
+      out[i] = sum;
+      carrybit = Signal::always(net.addGate(GateSymbol::AND, {termWire1, termWire2}));
+    } else {
+      out[i] = net.addGate(GateSymbol::XOR, {Signal::always(sum), carrybit});
+
+      // counting carrybit
+      // carrybit = (term1 & term2) || (term1 & previous carrybit) || (term2 & previous carrybit)
+
+      clause1 = Signal::always(net.addGate(GateSymbol::AND, {termWire1, termWire2}));
+      clause2 = Signal::always(net.addGate(GateSymbol::AND, {termWire1, carrybit}));
+      clause3 = Signal::always(net.addGate(GateSymbol::AND, {termWire2, carrybit}));
+      clause = Signal::always(net.addGate(GateSymbol::OR, {clause1, clause2}));
+      carrybit = Signal::always(net.addGate(GateSymbol::OR, {clause, clause3}));
+    }
+  }
   return out;
 }
 

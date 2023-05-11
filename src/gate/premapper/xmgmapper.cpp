@@ -28,7 +28,6 @@ Gate::Id XmgMapper::mapXor(const Gate::SignalList &newInputs,
   size_t l = 0;
   size_t r = 1;
   while (r < inputs.size()) {
-
     // XOR(x,y) = XOR(x,y)
     // XNOR(x,y) = NOT(XOR(x,y))
     const auto x = inputs[l];
@@ -50,5 +49,7 @@ Gate::Id XmgMapper::mapXor(const Gate::SignalList &newInputs,
 
   return inputs[l].node();
 }
+
+} // namespace eda::gate::premapper
 
 } // namespace eda::gate::premapper

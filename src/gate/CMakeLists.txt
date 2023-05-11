@@ -1,6 +1,10 @@
 add_library(Gate OBJECT
-  debugger/encoder.cpp
+  debugger/base_checker.cpp
+  debugger/bdd_checker.cpp
   debugger/checker.cpp
+  debugger/encoder.cpp
+  debugger/miter.cpp
+  debugger/rnd_checker.cpp
   debugger/symexec.cpp
   model/gate.cpp
   model/gnet.cpp
@@ -13,6 +17,8 @@ add_library(Gate OBJECT
   premapper/xagmapper.cpp
   premapper/xmgmapper.cpp
   printer/graphml.cpp
+  printer/dot.cpp
+  parser/gate_verilog_parser.cpp
   simulator/simulator.cpp
   transformer/bdd.cpp
   transformer/hmetis.cpp
