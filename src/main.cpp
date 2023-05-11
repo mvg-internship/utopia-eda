@@ -128,6 +128,7 @@ bool premap(RtlContext &context) {
       eda::gate::premapper::getPreMapper(context.options.preBasis);
 
   context.gnet1 = premapper.map(*context.gnet0, context.gmap);
+  context.gnet1->sortTopologically();
 
   std::cout << "------ G-net #1 ------" << std::endl;
   dump(*context.gnet1);

@@ -255,11 +255,17 @@ Gate::Id MigMapper::mapXor(const Gate::SignalList &newInputs,
 Gate::Id MigMapper::mapXor(const Gate::SignalList &newInputs,
                            const size_t n0, const size_t n1,
                            const bool sign, GNet &newNet) const {
-  if (n1 > 1) {
-    return mapXor(newInputs, sign ^ (n1 & 1), newNet);
+  bool newSign = sign ^ (n1 & 1);
+
+  if (newInputs.empty()) {
+    return mapVal(newSign, newNet);
   }
 
-  return mapXor(newInputs, sign, newNet);
+  if (newInputs.size() == 1) {
+    return mapNop(newInputs, newSign, newNet);
+  }
+
+  return mapXor(newInputs, newSign, newNet);
 }
 
 //===----------------------------------------------------------------------===//

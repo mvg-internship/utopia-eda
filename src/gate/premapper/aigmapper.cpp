@@ -134,7 +134,7 @@ Gate::Id AigMapper::mapAnd(const Gate::SignalList &newInputs,
     Gate::Id gateId;
     if (model::areIdentical(x, y)) {
       // AND(x,x) = x.
-      gateId = mapNop({x}, sign, newNet);
+      gateId = mapNop({x}, true, newNet);
     } else if (model::areContrary(x, y)) {
       // AND(x,NOT(x)) = 0.
       gateId = mapVal(!sign, newNet);
@@ -239,7 +239,11 @@ Gate::Id AigMapper::mapXor(const Gate::SignalList &newInputs,
   if (newInputs.empty()) {
     return mapVal(newSign, newNet);
   }
-  
+
+  if (newInputs.size() == 1) {
+    return mapNop(newInputs, newSign, newNet);
+  }
+
   return mapXor(newInputs, newSign, newNet);
 }
 
