@@ -5,15 +5,15 @@
 // Copyright 2021-2023 ISP RAS (http://www.ispras.ru)
 //
 //===----------------------------------------------------------------------===//
+
 #include "config.h"
-#include "gate/debugger/base_checker.h"
 #include "gate/debugger/checker.h"
-#include "gate/library/liberty/net_data.h"
-#include "gate/library/liberty/translate.h"
 #include "gate/model/gate.h"
 #include "gate/model/gnet.h"
-#include "gate/optimizer/rwdatabase.h"
-#include "gate/optimizer/rwmanager.h"
+#include "gate/library/liberty/net_data.h"
+#include "gate/library/liberty/translate.h"
+#include "gate/optimizer/optimizer.h"
+#include "gate/optimizer/strategy/exhaustive_search_optimizer.h"
 #include "gate/premapper/migmapper.h"
 #include "gate/premapper/premapper.h"
 #include "gate/premapper/xagmapper.h"
@@ -28,7 +28,6 @@
 
 #include "easylogging++.h"
 
-#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <map>
@@ -50,7 +49,6 @@ struct RtlContext {
 
   using AigMapper = eda::gate::premapper::AigMapper;
   using Checker = eda::gate::debugger::Checker;
-  using RWDatabase = eda::gate::optimizer::RWDatabase;
   using Compiler = eda::rtl::compiler::Compiler;
   using Library = eda::rtl::library::FLibraryDefault;
   using MigMapper = eda::gate::premapper::MigMapper;
@@ -59,29 +57,32 @@ struct RtlContext {
   using XagMapper = eda::gate::premapper::XagMapper;
   using XmgMapper = eda::gate::premapper::XmgMapper;
 
-  RtlContext(const std::string &file, const RtlOptions &options):
-    file(file), options(options) {}
+  RtlContext(const std::string &file, const RtlOptions &options) :
+          file(file), options(options) {}
 
   const std::string file;
   const RtlOptions &options;
 
-  std::shared_ptr<VNet> vnet;
-  std::shared_ptr<GNet> gnet0;
-  std::shared_ptr<GNet> gnet1;
+  std::shared_ptr <VNet> vnet;
+  std::shared_ptr <GNet> gnet0;
+  std::shared_ptr <GNet> gnet1;
+  std::shared_ptr <GNet> gnet2;
 
   PreMapper::GateIdMap gmap;
 
   bool equal;
+
+  std::string libertyFile;
 };
 
 void dump(const GNet &net) {
   std::cout << net << std::endl;
 
-  for (auto source : net.sourceLinks()) {
+  for (auto source: net.sourceLinks()) {
     const auto *gate = RtlContext::Gate::get(source.target);
     std::cout << *gate << std::endl;
   }
-  for (auto target : net.targetLinks()) {
+  for (auto target: net.targetLinks()) {
     const auto *gate = RtlContext::Gate::get(target.source);
     std::cout << *gate << std::endl;
   }
@@ -90,13 +91,6 @@ void dump(const GNet &net) {
   std::cout << "N=" << net.nGates() << std::endl;
   std::cout << "I=" << net.nSourceLinks() << std::endl;
   std::cout << "O=" << net.nTargetLinks() << std::endl;
-}
-
-void fillingTechLib(std::string namefile) {
-  NetData data;
-  auto techLib = eda::gate::optimizer::RewriteManager::get().createDatabase(namefile);
-  translateLibertyToDesign(namefile, data);
-  data.fillDatabase(*techLib);
 }
 
 bool parse(RtlContext &context) {
@@ -138,7 +132,7 @@ bool premap(RtlContext &context) {
   LOG(INFO) << "RTL premap";
 
   auto &premapper =
-      eda::gate::premapper::getPreMapper(context.options.preBasis);
+          eda::gate::premapper::getPreMapper(context.options.preBasis);
 
   context.gnet1 = premapper.map(*context.gnet0, context.gmap);
 
@@ -148,25 +142,67 @@ bool premap(RtlContext &context) {
   return true;
 }
 
+bool optimize(RtlContext &context) {
+  GNet *gnet2 = context.gnet1->clone();
+
+  eda::gate::optimizer::optimize(gnet2, 4,
+                            eda::gate::optimizer::ExhausitiveSearchOptimizer(context.options.libertyFile.c_str()));
+
+  context.gnet2 = std::shared_ptr<GNet>(gnet2);
+
+  std::cout << "------ G-net #2 ------" << std::endl;
+  dump(*context.gnet2);
+
+  return true;
+}
+
 bool check(RtlContext &context) {
+  using Link = RtlContext::Link;
+  using GateBinding = RtlContext::Checker::GateBinding;
+
   LOG(INFO) << "RTL check";
 
-  auto &checker = eda::gate::debugger::getChecker(context.options.lecType);
+  RtlContext::Checker checker;
+  GateBinding ibind, obind, tbind;
 
   assert(context.gnet0->nSourceLinks() == context.gnet1->nSourceLinks());
   assert(context.gnet0->nTargetLinks() == context.gnet1->nTargetLinks());
 
-  context.equal = checker.areEqual(*context.gnet0, *context.gnet1, context.gmap);
+  // Input-to-input correspondence.
+  for (auto oldSourceLink: context.gnet0->sourceLinks()) {
+    auto newSourceId = context.gmap[oldSourceLink.target];
+    ibind.insert({oldSourceLink, Link(newSourceId)});
+  }
+
+  // Output-to-output correspondence.
+  for (auto oldTargetLink: context.gnet0->targetLinks()) {
+    auto newTargetId = context.gmap[oldTargetLink.source];
+    obind.insert({oldTargetLink, Link(newTargetId)});
+  }
+
+  // Trigger-to-trigger correspondence.
+  for (auto oldTriggerId: context.gnet0->triggers()) {
+    auto newTriggerId = context.gmap[oldTriggerId];
+    tbind.insert({Link(oldTriggerId), Link(newTriggerId)});
+  }
+
+  RtlContext::Checker::Hints hints;
+  hints.sourceBinding = std::make_shared<GateBinding>(std::move(ibind));
+  hints.targetBinding = std::make_shared<GateBinding>(std::move(obind));
+  hints.triggerBinding = std::make_shared<GateBinding>(std::move(tbind));
+
+  context.equal = checker.areEqual(*context.gnet0, *context.gnet1, hints);
   std::cout << "equivalent=" << context.equal << std::endl;
 
   return true;
 }
 
 int rtlMain(RtlContext &context) {
-  if (!parse(context))   { return -1; }
+  if (!parse(context)) { return -1; }
   if (!compile(context)) { return -1; }
-  if (!premap(context))  { return -1; }
-  if (!check(context))   { return -1; }
+  if (!premap(context)) { return -1; }
+  if (!optimize(context)) { return -1; }
+  if (!check(context)) { return -1; }
 
   return 0;
 }
@@ -186,17 +222,15 @@ int main(int argc, char **argv) {
 
   try {
     options.initialize("config.json", argc, argv);
-  } catch(const CLI::ParseError &e) {
+  } catch (const CLI::ParseError &e) {
     return options.exit(e);
   }
 
   int result = 0;
-
-  if (!options.rtl.libertyFile.empty()) {
-    fillingTechLib(options.rtl.libertyFile);
-  }
+  std::string libFile = options.rtl.libertyFile;
   for (auto file : options.rtl.files()) {
     RtlContext context(file, options.rtl);
+    context.libertyFile = libFile;
     result |= rtlMain(context);
   }
   return result;

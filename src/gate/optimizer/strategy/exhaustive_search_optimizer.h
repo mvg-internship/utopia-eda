@@ -16,10 +16,10 @@ namespace eda::gate::optimizer {
   class ExhausitiveSearchOptimizer : public OptimizerVisitor {
 
   public:
-    ExhausitiveSearchOptimizer() {
+    ExhausitiveSearchOptimizer(const char *namefile) {
       RewriteManager rewriteManager;
-      rewriteManager.initialize();
-      rwdb = rewriteManager.getDatabase();
+      rewriteManager.initialize(namefile);
+      rwdb = rewriteManager.getDatabase(namefile);
     }
 
     bool checkOptimize(const BoundGNet &option,

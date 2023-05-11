@@ -6,6 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
+#include "gate/library/liberty/translate.h"
+#include "gate/library/liberty/net_data.h"
 #include "gate/optimizer/database/abc.h"
 #include "gate/optimizer/rwdatabase.h"
 #include "gate/optimizer/rwmanager.h"
@@ -19,6 +21,13 @@ void RewriteManager::initialize(const std::string &library) {
   if (library == DEFAULT) {
     auto database = std::make_shared<RWDatabase>();
     initializeAbcRwDatabase(*database);
+    db.emplace(library, database);
+  }
+  else {
+    auto database = std::make_shared<RWDatabase>();
+    NetData data;
+    translateLibertyToDesign(library, data);
+    data.fillDatabase(*database);
     db.emplace(library, database);
   }
 }
