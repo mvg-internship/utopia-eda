@@ -63,6 +63,17 @@ SymbolInfo& addVarInfo(bool def,
   return inf;
 }
 
+SymbolInfo& addVarDef(Tokens typeInit,
+                        std::map<std::string, SymbolInfo> &infos) {
+  return addVarInfo(true, typeInit, infos);
+}
+
+SymbolInfo& addVarUse(Tokens typeInit,
+                        std::map<std::string, SymbolInfo> &infos) {
+  return addVarInfo(false, typeInit, infos);
+}
+
+
 Tokens getNextToken() { 
   return static_cast<Tokens>(scan_token());
 }
@@ -88,26 +99,26 @@ void assertNextToken(Tokens expectedToken) {
 
 ///Checking for undefined and repeated definitions.
 void checker(std::map<std::string, SymbolInfo> &infos) {
-  int counter1 = 0, counter2 = 0;
+  int counterDef = 0, counterOut = 0;
   for (auto it = infos.begin(); it != infos.end(); it++) {
     for (auto &i : it->second.uses) {
-      counter1 += i.def && i.typeInit != TOK_OUTPUT;
-      counter2 += i.typeInit == TOK_OUTPUT;
+      counterDef += i.def && i.typeInit != TOK_OUTPUT;
+      counterOut += i.typeInit == TOK_OUTPUT;
     }
-    if (!counter1) {
+    if (!counterDef) {
       VIEW();
       throw std::logic_error("unknow definition");
     }
-    if (counter1 > 1) {
+    if (counterDef > 1) {
       VIEW();
       throw std::logic_error("repeated definitions");
     }
-    if (counter2 > 1) {
+    if (counterOut > 1) {
       VIEW();      
       throw std::logic_error("repeated definitions");
     }
-    counter1 = 0;
-    counter2 = 0;
+    counterDef = 0;
+    counterOut = 0;
   }
 }
 
@@ -119,9 +130,9 @@ std::string assertNextId(Tokens token,
   }   
   std::string arg {benchtext};
   if (token == TOK_INPUT || token == TOK_OUTPUT) {
-    addVarInfo(1, token, infos);
+    addVarDef(token, infos);
   } else {
-    addVarInfo(0, token, infos);
+    addVarUse(token, infos);
   } 
   return arg;
 }
@@ -169,7 +180,7 @@ parseParenthesisID(Tokens token, std::map<std::string, SymbolInfo> &infos) {
 //===----------------------------------------------------------------------===//
 
 void parseID(std::map<std::string, SymbolInfo> &infos) {
-  auto &info = addVarInfo(1, TOK_E, infos);
+  auto &info = addVarDef(TOK_E, infos);
   assertNextToken(TOK_E);
   Tokens token = getNextToken();
   switch (token) { 
@@ -263,7 +274,6 @@ std::unique_ptr<GNet> parseBenchFile(const std::string &filename) {
   benchlineno = 1;
   benchin = fopen(filename.c_str(), "r");
   std::unique_ptr<GNet> ref = std::make_unique<GNet>();
-  std::vector<VarInfo> maps;
   std::map<std::string, SymbolInfo> infos;
   if (!benchin) {
     std::cerr << std::endl << "unable to open file: ";
