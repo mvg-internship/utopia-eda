@@ -6,9 +6,9 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "gate/premapper/mapper/mapper_test.h"
 #include "gate/debugger/checker.h"
 #include "gate/model/gnet_test.h"
+#include "gate/premapper/mapper/mapper_test.h"
 
 #include "gate/premapper/migmapper.h"
 

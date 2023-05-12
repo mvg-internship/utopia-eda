@@ -33,22 +33,20 @@
 #include <sstream>
 #include <string>
 
+// RIL tests for XAG-mapper
+// Verify equivalence of premapped networks for arithmetic operations '+', '-', '*' described on ril
 
 struct RtlContext {
   using VNet = eda::rtl::model::Net;
   using GNet = eda::gate::model::GNet;
   using Gate = eda::gate::model::Gate;
   using Link = Gate::Link;
-
-  using AigMapper = eda::gate::premapper::AigMapper;
   using Checker = eda::gate::debugger::Checker;
   using Compiler = eda::rtl::compiler::Compiler;
   using Library = eda::rtl::library::FLibraryDefault;
-  using MigMapper = eda::gate::premapper::MigMapper;
   using PreBasis = eda::gate::premapper::PreBasis;
   using PreMapper = eda::gate::premapper::PreMapper;
   using XagMapper = eda::gate::premapper::XagMapper;
-  using XmgMapper = eda::gate::premapper::XmgMapper;
 
   RtlContext(const std::string &file):
     file(file) {}

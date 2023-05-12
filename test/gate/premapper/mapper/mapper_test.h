@@ -8,11 +8,11 @@
 
 #pragma once
 
+#include "gate/debugger/checker.h"
 #include "gate/premapper/aigmapper.h"
 #include "gate/premapper/migmapper.h"
 #include "gate/premapper/xagmapper.h"
 #include "gate/premapper/xmgmapper.h"
-#include "gate/debugger/checker.h"
 
 using Gate = eda::gate::model::Gate;
 using GateBinding = std::unordered_map<Gate::Link, Gate::Link>;
