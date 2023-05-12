@@ -12,6 +12,7 @@
 #include "gate/debugger/checker.h"
 #include "gate/model/gate.h"
 #include "gate/model/gnet.h"
+#include "gate/model/gnet_test.h"
 #include "gate/premapper/migmapper.h"
 #include "gate/premapper/premapper.h"
 #include "gate/premapper/xagmapper.h"
@@ -63,8 +64,6 @@ struct RtlContext {
   bool equal;
 };
 
-void dump(const GNet &net);
-
 bool parse(RtlContext &context) {
   LOG(INFO) << "RTL parse: " << context.file;
 
@@ -110,7 +109,7 @@ bool premap(RtlContext &context) {
   context.gnet1->sortTopologically();
 
   std::cout << "------ G-net #1 ------" << std::endl;
-  dump(*context.gnet1);
+  eda::gate::model::dump(*context.gnet1);
 
   return true;
 }
