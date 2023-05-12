@@ -154,6 +154,7 @@ struct RtlOptions final : public AppOptions {
   static constexpr const char *ID = "rtl";
 
   static constexpr const char *PREMAP_BASIS  = "premap-basis";
+  static constexpr const char *PRINT_GRAPHML  = "print-graphml";
 
   const std::map<std::string, PreBasis> preBasisMap {
     {"aig", PreBasis::AIG},
@@ -172,6 +173,9 @@ struct RtlOptions final : public AppOptions {
     options->add_option(cli(PREMAP_BASIS), preBasis, "Premapper basis")
         ->expected(1)
             ->transform(CLI::CheckedTransformer(preBasisMap, CLI::ignore_case));
+    options->add_option(cli(PRINT_GRAPHML), printGraphml,
+                        "Print Gnet in GraphML format")
+        ->expected(1);
 
     // Input file(s).
     options->allow_extras();

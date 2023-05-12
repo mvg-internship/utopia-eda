@@ -14,6 +14,7 @@
 #include "gate/premapper/premapper.h"
 #include "gate/premapper/xagmapper.h"
 #include "gate/premapper/xmgmapper.h"
+#include "gate/printer/graphml.h"
 #include "options.h"
 #include "rtl/compiler/compiler.h"
 #include "rtl/library/arithmetic.h"
@@ -146,6 +147,14 @@ bool check(RtlContext &context) {
   context.equal = checker.areEqual(*context.gnet0, *context.gnet1, context.gmap);
   std::cout << "equivalent=" << context.equal << std::endl;
 
+  return true;
+}
+
+bool print(RtlContext &context) {
+  std::ofstream fout;
+  fout.open(context.options.printGraphml);
+  eda::printer::graphMl::toGraphMl::printer(fout, *context.gnet1);
+  fout.close();
   return true;
 }
 
