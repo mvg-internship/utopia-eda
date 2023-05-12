@@ -34,7 +34,7 @@ static std::unique_ptr<GModel::GNet> createLogicGate(GateSymbol symbol) {
 
 inline static bool benchParser() {
   bool answer = true;
-  const std::filesystem::path subCatalog = "test/data/gate/bench";
+  const std::filesystem::path subCatalog = "test/data/bench";
   const std::filesystem::path homePath = std::string(getenv("UTOPIA_HOME"));
   const std::filesystem::path prefixPath = homePath / subCatalog;
   const std::vector<std::string> files { "s27.bench", "s298.bench" };
@@ -49,19 +49,19 @@ TEST(ISCAS, parse) {
   EXPECT_EQ(benchParser(), true);
 }
 
-TEST(benchTest, truthTableNot) {
+TEST(gnetBuildTest, truthTableNot) {
   auto notGate = createLogicGate(GateSymbol::NOT);
   std::vector<uint64_t> expected = { 1 };
   EXPECT_EQ(NetData::buildTruthTab(notGate.get()), expected);
 }
 
-TEST(benchTest, truthTableOr) {
+TEST(gnetBuildTest, truthTableOr) {
   auto orGate = createLogicGate(GateSymbol::OR);
   std::vector<uint64_t> expected = { 14 };
   EXPECT_EQ(NetData::buildTruthTab(orGate.get()), expected);
 }
 
-TEST(benchTest, truthTableAnd) {
+TEST(gnetBuildTest, truthTableAnd) {
   auto andGate = createLogicGate(GateSymbol::AND);
   std::vector<uint64_t> expected = { 8 };
   EXPECT_EQ(NetData::buildTruthTab(andGate.get()), expected);
