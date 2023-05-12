@@ -64,12 +64,12 @@ SymbolInfo& addVarInfo(bool def,
 }
 
 SymbolInfo& addVarDef(Tokens typeInit,
-                        std::map<std::string, SymbolInfo> &infos) {
+                      std::map<std::string, SymbolInfo> &infos) {
   return addVarInfo(true, typeInit, infos);
 }
 
 SymbolInfo& addVarUse(Tokens typeInit,
-                        std::map<std::string, SymbolInfo> &infos) {
+                      std::map<std::string, SymbolInfo> &infos) {
   return addVarInfo(false, typeInit, infos);
 }
 
