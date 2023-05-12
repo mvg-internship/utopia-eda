@@ -670,50 +670,10 @@ void GNet::sortTopologically() {
 }
 
 //===--------------------------------------------------------------------===//
-// Cloning 
+// Cloning
 //===--------------------------------------------------------------------===//
 
 /// Clones the net.
-GNet *GNet::clone() {
-  if (_gates.empty()) {
-    return new GNet(_level);
-  }
-  std::unordered_map<Gate::Id, Gate::Id> oldToNewId = {};
-  return clone(oldToNewId);
-}
-
-GNet *GNet::clone(std::unordered_map<Gate::Id, Gate::Id> &oldToNewId) {
-  GNet *resultNet = new GNet(_level);
-
-  assert(oldToNewId.empty());
-
-  for (Gate *gate : _gates) {
-    oldToNewId[gate->id()] = resultNet->newGate();
-  }
-  
-  for (Gate *gate : _gates) {
-    SignalList newSignals;
-    newSignals.reserve(gate->_inputs.capacity());
-    for (Signal signal : gate->inputs()) {
-      newSignals.push_back(Signal(signal.event(), oldToNewId[signal.node()]));
-    }
-    Gate::Id newGateId = oldToNewId[gate->id()];
-    resultNet->setGate(newGateId, gate->func(), newSignals);
-  }
-
-  if (!_subnets.empty()) {
-    for (GNet *subnet : _subnets) {
-      resultNet->addSubnet(subnet->clone(oldToNewId));
-    }
-  }
-  resultNet->sortTopologically(); 
-  return resultNet; 
-}
-
-//===----------------------------------------------------------------------===//
-// Cloning
-//===----------------------------------------------------------------------===//
-
 GNet *GNet::clone() {
   if (_gates.empty()) {
     return new GNet(_level);
@@ -732,8 +692,10 @@ GNet *GNet::clone(std::unordered_map<Gate::Id, Gate::Id> &oldToNewId) {
   }
 
   for (auto *gate : _gates) {
+
     SignalList newSignals;
     newSignals.reserve(gate->_inputs.capacity());
+
     for (auto signal : gate->inputs()) {
       newSignals.emplace_back(signal.event(), oldToNewId[signal.node()]);
     }
