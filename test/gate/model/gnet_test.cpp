@@ -14,11 +14,11 @@
 #include <cassert>
 #include <random>
 
-namespace eda::gate::model {
+using namespace eda::gate::model;
 
 // gate(x1, ..., xN).
 static std::shared_ptr<GNet> makeNet(GateSymbol gate,
-                                     const unsigned N,
+                                     unsigned N,
                                      Gate::SignalList &inputs,
                                      Gate::Id &outputId) {
   auto net = std::make_shared<GNet>();
@@ -37,21 +37,21 @@ static std::shared_ptr<GNet> makeNet(GateSymbol gate,
 
 // gate(~x1, ..., ~xN).
 static std::shared_ptr<GNet> makeNetn(GateSymbol gate,
-                                      const unsigned N,
+                                      unsigned N,
                                       Gate::SignalList &inputs,
                                       Gate::Id &outputId) {
   auto net = std::make_shared<GNet>();
 
-  Gate::SignalList andInputs;
+  Gate::SignalList gateInputs;
   for (unsigned i = 0; i < N; i++) {
     const Gate::Id inputId = net->addIn();
     inputs.push_back(Gate::Signal::always(inputId));
 
     const Gate::Id notGateId = net->addNot(inputId);
-    andInputs.push_back(Gate::Signal::always(notGateId));
+    gateInputs.push_back(Gate::Signal::always(notGateId));
   }
 
-  auto gateId = net->addGate(gate, inputs);
+  auto gateId = net->addGate(gate, gateInputs);
   outputId = net->addOut(gateId);
 
   net->sortTopologically();
@@ -59,14 +59,14 @@ static std::shared_ptr<GNet> makeNetn(GateSymbol gate,
 }
 
 // (x1 | ... | xN).
-std::shared_ptr<GNet> makeOr(const unsigned N,
+std::shared_ptr<GNet> makeOr(unsigned N,
                              Gate::SignalList &inputs,
                              Gate::Id &outputId) {
   return makeNet(GateSymbol::OR, N, inputs, outputId);
 }
 
 // (x1 & ... & xN).
-std::shared_ptr<GNet> makeAnd(const unsigned N,
+std::shared_ptr<GNet> makeAnd(unsigned N,
                               Gate::SignalList &inputs,
                               Gate::Id &outputId) {
   return makeNet(GateSymbol::AND, N, inputs, outputId);
@@ -74,14 +74,14 @@ std::shared_ptr<GNet> makeAnd(const unsigned N,
 
 
 // ~(x1 | ... | xN).
-std::shared_ptr<GNet> makeNor(const unsigned N,
+std::shared_ptr<GNet> makeNor(unsigned N,
                               Gate::SignalList &inputs,
                               Gate::Id &outputId) {
   return makeNet(GateSymbol::NOR, N, inputs, outputId);
 }
 
 // ~(x1 & ... & xN).
-std::shared_ptr<GNet> makeNand(const unsigned N,
+std::shared_ptr<GNet> makeNand(unsigned N,
                                Gate::SignalList &inputs,
                                Gate::Id &outputId) {
   return makeNet(GateSymbol::NAND, N, inputs, outputId);
@@ -89,29 +89,36 @@ std::shared_ptr<GNet> makeNand(const unsigned N,
 
 
 // (~x1 | ... | ~xN).
-std::shared_ptr<GNet> makeOrn(const unsigned N,
+std::shared_ptr<GNet> makeOrn(unsigned N,
                               Gate::SignalList &inputs,
                               Gate::Id &outputId) {
   return makeNetn(GateSymbol::OR, N, inputs, outputId);
 }
 
 // (~x1 & ... & ~xN).
-std::shared_ptr<GNet> makeAndn(const unsigned N,
+std::shared_ptr<GNet> makeAndn(unsigned N,
                                Gate::SignalList &inputs,
                                Gate::Id &outputId) {
   return makeNetn(GateSymbol::AND, N, inputs, outputId);
 }
 
 // Maj(x1, x2, ..., xN).
-std::shared_ptr<GNet> makeMaj(const unsigned N,
+std::shared_ptr<GNet> makeMaj(unsigned N,
                               Gate::SignalList &inputs,
                               Gate::Id &outputId) {
   return makeNet(GateSymbol::MAJ, N, inputs, outputId);
 }
 
+// UDP(x1, x2, ..., xN).
+std::shared_ptr<GNet> makeUdp(unsigned N,
+                              Gate::SignalList &inputs,
+                              Gate::Id &outputId) {
+  GateSymbol UDP = GateSymbol::create("udp");
+  return makeNet(UDP, N, inputs, outputId);
+}
+
 // Random hierarchical network.
-std::shared_ptr<GNet> makeRand(const std::size_t nGates,
-                               const std::size_t nSubnets) {
+std::shared_ptr<GNet> makeRand(size_t nGates, size_t nSubnets) {
   assert((nGates >= 2) && "Small number of gates");
   auto net = std::make_shared<GNet>();
 
@@ -132,7 +139,7 @@ std::shared_ptr<GNet> makeRand(const std::size_t nGates,
   std::uniform_int_distribution<Gate::Id> gateDist(minGateId, maxGateId);
 
   std::size_t minArity = 0u;
-  std::size_t maxArity = 7 < nGates - 1 ? 7 : nGates - 1;
+  std::size_t maxArity = std::min(static_cast<std::size_t>(7), nGates - 1);
   std::uniform_int_distribution<std::size_t> arityDist(minArity, maxArity);
 
   for (std::size_t n = 0; n < 4; n++) {
@@ -271,9 +278,36 @@ TEST(GNetTest, GNetAndnTest) {
   EXPECT_TRUE(net != nullptr);
 }
 
+TEST(GNetTest, GNetMajTest) {
+  Gate::SignalList inputs;
+  Gate::Id outputId;
+  auto net = makeMaj(7, inputs, outputId);
+  EXPECT_TRUE(net != nullptr);
+}
+
+TEST(GNetTest, GNetUdpTest) {
+  Gate::SignalList inputs;
+  Gate::Id outputId;
+  auto net = makeUdp(6, inputs, outputId);
+  EXPECT_TRUE(net != nullptr);
+}
+
 TEST(GNetTest, GNetRandTest) {
   auto net = makeRand(1024, 256);
   EXPECT_TRUE(net != nullptr);
+}
+
+TEST(GNetTest, GNetAddTest) {
+  Gate::SignalList inputs1;
+  Gate::Id outputId1;
+  auto net1 = makeOr(16, inputs1, outputId1);
+
+  auto net = std::make_shared<GNet>();
+  net->addNet(*net1);
+
+  for (auto *gate : net1->gates()) {
+    EXPECT_TRUE(net->contains(gate->id()));
+  }
 }
 
 TEST(GNetTest, GNetRandTestIssue11877) {
@@ -281,4 +315,21 @@ TEST(GNetTest, GNetRandTestIssue11877) {
   EXPECT_TRUE(net != nullptr);
 }
 
-} // namespace eda::gate::model
+TEST(GNetTest, GNetWithCheckerTest) {
+  eda::gate::debugger::Checker checker;
+  auto net = makeRand(7, 5);
+  std::unordered_map<Gate::Id, Gate::Id> testMap = {};
+  auto netCloned = net.get()->clone(testMap);
+  EXPECT_TRUE(checker.areEqual(*net, *netCloned, testMap));
+}
+
+TEST(GNetTest, GNetEdgesTest) {
+  auto net = makeRand(7, 5);
+  EXPECT_TRUE(net.get()->clone()->nEdges() == net.get()->nEdges());
+}
+
+TEST(GNetTest, GNetAddressTest) {
+  auto net = makeRand(7, 5);
+  EXPECT_TRUE(net.get()->clone() != net.get());
+}
+

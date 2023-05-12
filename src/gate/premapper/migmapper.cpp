@@ -61,7 +61,7 @@ Gate::Id MigMapper::mapIn(GNet &newNet) const {
 Gate::Id MigMapper::mapOut(const Gate::SignalList &newInputs,
                            const size_t n0, const size_t n1,
                            GNet &newNet) const {
-  assert((newInputs.size() + n0 + n1 == 1) && "Input size error of mapOut\n");
+  assert((newInputs.size() + n0 + n1 == 1) && "Only single input is allowed");
 
   // Constant output.
   if (n0 > 0 || n1 > 0) {
@@ -109,7 +109,7 @@ Gate::Id MigMapper::mapNop(const Gate::SignalList &newInputs,
 Gate::Id MigMapper::mapNop(const Gate::SignalList &newInputs,
                            const size_t n0, const size_t n1,
                            const bool sign, GNet &newNet) const {
-  assert((newInputs.size() + n0 + n1 == 1) && "Too many sources for nop\n");
+  assert((newInputs.size() + n0 + n1 == 1) && "Only single input is allowed");
 
   if (n0 > 0 || n1 > 0) {
     return mapVal((n0 > 0) ^ sign, newNet);
@@ -255,7 +255,7 @@ Gate::Id MigMapper::mapXor(const Gate::SignalList &newInputs,
 Gate::Id MigMapper::mapXor(const Gate::SignalList &newInputs,
                            const size_t n0, const size_t n1,
                            const bool sign, GNet &newNet) const {
-  if (n1 > 0) {
+  if (n1 > 1) {
     return mapXor(newInputs, sign ^ (n1 & 1), newNet);
   }
 
@@ -310,7 +310,7 @@ Gate::Id MigMapper::mapMaj(const Gate::SignalList &newInputs,
                            GNet &newNet) const {
   size_t inputSize = newInputs.size();
   assert(((inputSize + n0 + n1) % 2 == 1) && (inputSize + n0 + n1 >= 3)
-                                          && "Invalid number of inputs\n");
+                                          && "Invalid number of inputs");
 
   if (inputSize == 0) {
     return mapVal((n1 > n0), newNet);

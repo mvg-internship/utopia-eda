@@ -36,7 +36,7 @@ int testFM(int passes, double r, HyperGraph &hgraph,
   FMAlgo algo(hgraph.getEptr(), hgraph.getEind(), hgraph.getWeights(), r,
               passes);
 
-  algo.fm();  
+  algo.fm();
   if(hgraph.getWeights().size() <= 100) {
     hgraph.print(algo.getSides());
   }
@@ -80,7 +80,7 @@ void testLinked(const FMAlgoConfig &config, const std::string &configPath,
 
   int cutsetFm = testFM(config.passes, config.r, graph, outPath);
   //int cutsetK = testKahypar(config.r, graph, configPath, outPath);
-  
+
   std::cout << "FM cutset : " << cutsetFm << '\n';
   //std::cout << "Kahypar cutset : " << cutsetK << std::endl;
 }
@@ -128,7 +128,7 @@ void testGate(const eda::gate::model::GNet &net, int passes, double r,
 
   int cutsetFm = testFM(passes, r, hgraph, outPath);
   //int cutsetK = testKahypar(r, hgraph, configPath, outPath);
-  
+
   std::cout << "FM cutset : " << cutsetFm << '\n';
   //std::cout << "Kahypar cutset : " << cutsetK << std::endl;
 }
@@ -143,7 +143,7 @@ TEST(FMTest, BookPartitionTest) {
 }
 
 TEST(FMTest, GatePartitionTest) {
-  auto net = eda::gate::model::makeRand(1024, 256);
+  auto net = makeRand(1024, 256);
   std::cout<<"NET GENERATED\n";
   const std::string pathOut = "test/data/fm/test_gate_out.txt";
 
