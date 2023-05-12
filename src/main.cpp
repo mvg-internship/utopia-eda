@@ -8,6 +8,8 @@
 #include "config.h"
 #include "gate/debugger/base_checker.h"
 #include "gate/debugger/checker.h"
+#include "gate/library/liberty/net_data.h"
+#include "gate/library/liberty/translate.h"
 #include "gate/model/gate.h"
 #include "gate/model/gnet.h"
 #include "gate/optimizer/optimizer.h"
@@ -48,6 +50,7 @@ struct RtlContext {
   using AigMapper = eda::gate::premapper::AigMapper;
   using Checker = eda::gate::debugger::Checker;
   using Compiler = eda::rtl::compiler::Compiler;
+  using RewriteManager = eda::gate::optimizer::RewriteManager;
   using Library = eda::rtl::library::FLibraryDefault;
   using MigMapper = eda::gate::premapper::MigMapper;
   using PreBasis = eda::gate::premapper::PreBasis;
@@ -69,6 +72,8 @@ struct RtlContext {
   PreMapper::GateIdMap gmap;
 
   bool equal;
+  std::string techLib = "abc";
+
 };
 
 void dump(const GNet &net) {
@@ -87,6 +92,13 @@ void dump(const GNet &net) {
   std::cout << "N=" << net.nGates() << std::endl;
   std::cout << "I=" << net.nSourceLinks() << std::endl;
   std::cout << "O=" << net.nTargetLinks() << std::endl;
+}
+
+void fillingTechLib(std::string namefile) {
+  auto db = RtlContext::RewriteManager::get().createDatabase(namefile);
+  NetData data;
+  translateLibertyToDesign(namefile, data);
+  data.fillDatabase(*db);
 }
 
 bool parse(RtlContext &context) {
@@ -142,7 +154,7 @@ bool optimize(RtlContext &context) {
   GNet *gnet2 = context.gnet1->clone();
 
   eda::gate::optimizer::optimize(gnet2, 4,
-                            eda::gate::optimizer::ExhausitiveSearchOptimizer());
+                            eda::gate::optimizer::ExhausitiveSearchOptimizer(context.techLib.c_str()));
 
   context.gnet2 = std::shared_ptr<GNet>(gnet2);
 
@@ -197,9 +209,18 @@ int main(int argc, char **argv) {
   }
 
   int result = 0;
+  RtlContext::RewriteManager globalRewriteManager;
+  std::string temp;
 
+  if (!options.rtl.libertyFile.empty()) {
+    fillingTechLib(options.rtl.libertyFile);
+    temp = options.rtl.libertyFile;
+  }
   for (auto file: options.rtl.files()) {
     RtlContext context(file, options.rtl);
+    if (!temp.empty()) {
+      context.techLib = temp;
+    }
     result |= rtlMain(context);
   }
 

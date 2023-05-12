@@ -34,6 +34,12 @@ public:
     return *i->second;
   }
   
+  std::shared_ptr<RWDatabase> createDatabase(const std::string &library) {
+    auto database = std::make_shared<RWDatabase>();
+    db.emplace(library, database);
+    return database;
+  }
+
 private:
   std::unordered_map<std::string, std::shared_ptr<RWDatabase>> db;
 };

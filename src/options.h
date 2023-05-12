@@ -154,6 +154,7 @@ struct RtlOptions final : public AppOptions {
   static constexpr const char *ID = "rtl";
 
   static constexpr const char *PREMAP_BASIS  = "premap-basis";
+  static constexpr const char *LIBERTY  = "load-lib";
 
   const std::map<std::string, PreBasis> preBasisMap {
     {"aig", PreBasis::AIG},
@@ -172,6 +173,9 @@ struct RtlOptions final : public AppOptions {
     options->add_option(cli(PREMAP_BASIS), preBasis, "Premapper basis")
         ->expected(1)
             ->transform(CLI::CheckedTransformer(preBasisMap, CLI::ignore_case));
+    options->add_option(cli(LIBERTY), libertyFile,
+        "Is used to filling Technical Library. Requires .lib files.")
+            ->expected(1);
 
     // Input file(s).
     options->allow_extras();
@@ -184,9 +188,11 @@ struct RtlOptions final : public AppOptions {
   void fromJson(Json json) override {
     get(json, LEC_TYPE, lecType);
     get(json, PREMAP_BASIS, preBasis);
+    get(json, LIBERTY,  libertyFile);
   }
 
   PreBasis preBasis = PreBasis::AIG;
+  std::string libertyFile;
 };
 
 struct HlsOptions final : public AppOptions {

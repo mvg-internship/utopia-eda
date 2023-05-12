@@ -23,7 +23,9 @@ void NetData::fillDatabase(RWDatabase &database) {
     RWDatabase::InputId id = 0;
     RWDatabase::BoundGNet bounder;
     for (auto link: net->sourceLinks()) {
-      bounder.bindings.emplace(id++, link.target);
+      bounder.inputsDelay.emplace(id, 1);
+      bounder.bindings.emplace(id, link.target);
+      ++id;
     }
     RWDatabase::TruthTable key = NetData::buildTruthTab(net.get())[0];
     bounder.net.reset(net.release());
