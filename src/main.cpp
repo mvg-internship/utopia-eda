@@ -209,7 +209,6 @@ int main(int argc, char **argv) {
   }
 
   int result = 0;
-  RtlContext::RewriteManager globalRewriteManager;
   std::string temp;
 
   if (!options.rtl.libertyFile.empty()) {
