@@ -13,7 +13,7 @@
 
 #include <memory>
 
-using namespace eda::gate::model;
+namespace eda::gate::model {
 
 // (x1 | ... | xN).
 std::shared_ptr<GNet> makeOr(unsigned N,
@@ -53,3 +53,5 @@ std::shared_ptr<GNet> makeUdp(unsigned N,
 std::shared_ptr<GNet> makeRand(size_t nGates, size_t nSubnets);
 
 void dump(const GNet &net);
+
+} // namespace eda::gate::model

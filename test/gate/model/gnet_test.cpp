@@ -14,7 +14,7 @@
 #include <cassert>
 #include <random>
 
-using namespace eda::gate::model;
+namespace eda::gate::model {
 
 // gate(x1, ..., xN).
 static std::shared_ptr<GNet> makeNet(GateSymbol gate,
@@ -293,7 +293,7 @@ TEST(GNetTest, GNetUdpTest) {
 }
 
 TEST(GNetTest, GNetRandTest) {
-  auto net = makeRand(1024, 256);
+  auto net = eda::gate::model::makeRand(1024, 256);
   EXPECT_TRUE(net != nullptr);
 }
 
@@ -311,7 +311,7 @@ TEST(GNetTest, GNetAddTest) {
 }
 
 TEST(GNetTest, GNetRandTestIssue11877) {
-  auto net = makeRand(7, 5);
+  auto net = eda::gate::model::makeRand(7, 5);
   EXPECT_TRUE(net != nullptr);
 }
 
@@ -333,3 +333,4 @@ TEST(GNetTest, GNetAddressTest) {
   EXPECT_TRUE(net.get()->clone() != net.get());
 }
 
+} // namespace eda::gate::model
