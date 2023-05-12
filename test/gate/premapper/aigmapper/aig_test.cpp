@@ -15,6 +15,8 @@
 #include <memory>
 #include <random>
 
+// The tests check the equivalence of nets with single gates and their premapped nets
+
 TEST(AigPremapperTest, AigNotOneInputTest) {
   std::shared_ptr<GNet> net = makeSingleGateNet(GateSymbol::NOT, 1);
   GateIdMap gmap;

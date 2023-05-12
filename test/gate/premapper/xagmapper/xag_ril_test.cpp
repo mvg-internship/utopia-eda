@@ -34,7 +34,7 @@
 #include <string>
 
 // RIL tests for XAG-mapper
-// Verify equivalence of premapped networks for arithmetic operations '+', '-', '*' described on ril
+// Verify equivalence of premapped networks for arithmetic operations '+', '-', '*' described on RIL
 
 struct RtlContext {
   using VNet = eda::rtl::model::Net;
@@ -149,7 +149,7 @@ TEST(XagPremapperRilTest, XagMulTest) {
   EXPECT_TRUE(rtlMain(context));
 }
 
-//BDD have no dff trigger gate support!
+// TODO: BDD have no dff trigger gate support!
 
 //TEST(XagPremapperRilTest, XagTestTest) {
 //  RtlContext context("data/ril/test.ril");

@@ -137,7 +137,7 @@ Gate::Id MigMapper::mapAnd(const Gate::SignalList &newInputs,
     Gate::Id gateId;
     if (model::areIdentical(x, y)) {
       // AND(x,x) = x.
-      gateId = mapNop({x}, sign, newNet);
+      gateId = mapNop({x}, true, newNet);
     } else if (model::areContrary(x, y)) {
       // AND(x,NOT(x)) = 0.
       gateId = mapVal(!sign, newNet);
@@ -184,7 +184,7 @@ Gate::Id MigMapper::mapOr(const Gate::SignalList &newInputs,
       Gate::Id gateId;
       if (model::areIdentical(x, y)) {
         // OR(x,x) = x.
-        gateId = mapNop({x}, sign, newNet);
+        gateId = mapNop({x}, true, newNet);
       } else if (model::areContrary(x, y)) {
         // OR(x,NOT(x)) = 1.
         gateId = mapVal(sign, newNet);
@@ -224,22 +224,15 @@ Gate::Id MigMapper::mapXor(const Gate::SignalList &newInputs,
   size_t left = 0;
   size_t right = 1;
   while (right < inputs.size()) {
-    // XOR (x,y)=AND(NAND(x,y),NAND(NOT(x),NOT(y))): 7 AND and NOT gates.
-    // XNOR(x,y)=AND(NAND(x,NOT(y)),NAND(NOT(x),y)): 7 AND and NOT gates.
-    const auto x1 = mapNop({inputs[left]}, true, newNet);
-    const auto y1 = mapNop({inputs[right]}, sign, newNet);
-    const auto x2 = mapNop({inputs[left]}, false, newNet);
-    const auto y2 = mapNop({inputs[right]}, !sign, newNet);
+    // XOR (x,y)=AND(OR(x,y),NAND(x,y)): 4 AND and NOT gates.
+    // XNOR(x,y)=NAND(OR(x,y),NAND(x,y)): 5 AND and NOT gates.
 
-    const auto z1 = mapAnd({Gate::Signal::always(x1), 
-                            Gate::Signal::always(y1)},
-                            false, newNet);
-    const auto z2 = mapAnd({Gate::Signal::always(x2),
-                            Gate::Signal::always(y2)},
-                            false, newNet);
+    const auto z1 = mapOr({inputs[left], inputs[right]}, true, newNet);
+    const auto z2 = mapAnd({inputs[left], inputs[right]}, false, newNet);
+    
     const auto id = mapAnd({Gate::Signal::always(z1),
                             Gate::Signal::always(z2)},
-                            true, newNet);
+                            sign, newNet);
 
     inputs.push_back(Gate::Signal::always(id));
 
