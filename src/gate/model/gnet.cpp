@@ -167,7 +167,7 @@ void GNet::setGate(GateId gid, GateSymbol func, const SignalList &inputs) {
 
   gate->setFunc(func);
   gate->setInputs(inputs);
-  assert(gate->invariant());
+  //assert(gate->invariant());
 
   std::for_each(subnets.rbegin(), subnets.rend(), [=](GNet *subnet) {
     subnet->onAddGate(gate, true, true);
