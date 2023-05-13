@@ -42,7 +42,7 @@ std::shared_ptr<GNet> makeSingleGateNetn(GateSymbol gate,
   return net;
 }
 
-// gate(x1,~x2).
+// gate(x1, ~x2).
 std::shared_ptr<GNet> makeSingleGateNetOppositeInputs(GateSymbol gate) {
   std::shared_ptr<GNet> net = std::make_shared<GNet>();
 

@@ -53,4 +53,22 @@ Gate::SignalList getNewInputs(const Gate &oldGate,
   return newInputs;
 }
 
+void dump(const GNet &net) {
+  std::cout << net << '\n';
+
+  for (auto source : net.sourceLinks()) {
+    const auto *gate = Gate::get(source.target);
+    std::cout << *gate << std::endl;
+  }
+  for (auto target : net.targetLinks()) {
+    const auto *gate = Gate::get(target.source);
+    std::cout << *gate << std::endl;
+  }
+
+  std::cout << std::endl;
+  std::cout << "N=" << net.nGates() << '\n';
+  std::cout << "I=" << net.nSourceLinks() << '\n';
+  std::cout << "O=" << net.nTargetLinks() << '\n';
+}
+
 } // namespace eda::gate::model

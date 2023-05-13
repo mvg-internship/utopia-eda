@@ -6,26 +6,9 @@
 //
 //===----------------------------------------------------------------------===//
 #include "tool/rtl_context.h"
+#include "gate/model/utils.h"
 
 namespace eda::tool {
-
-void dump(const GNet &net) {
-  std::cout << net << std::endl;
-
-  for (auto source : net.sourceLinks()) {
-    const auto *gate = Gate::get(source.target);
-    std::cout << *gate << std::endl;
-  }
-  for (auto target : net.targetLinks()) {
-    const auto *gate = Gate::get(target.source);
-    std::cout << *gate << std::endl;
-  }
-
-  std::cout << std::endl;
-  std::cout << "N=" << net.nGates() << std::endl;
-  std::cout << "I=" << net.nSourceLinks() << std::endl;
-  std::cout << "O=" << net.nTargetLinks() << std::endl;
-}
 
 bool parse(RtlContext &context) {
   LOG(INFO) << "RTL parse: " << context.file;
@@ -57,7 +40,7 @@ bool compile(RtlContext &context) {
   context.gnet0->sortTopologically();
 
   std::cout << "------ G-net #0 ------" << std::endl;
-  dump(*context.gnet0);
+  eda::gate::model::dump(*context.gnet0);
 
   return true;
 }
@@ -72,7 +55,7 @@ bool premap(RtlContext &context, PreBasis basis) {
   context.gnet1->sortTopologically();
 
   std::cout << "------ G-net #1 ------" << std::endl;
-  dump(*context.gnet1);
+  eda::gate::model::dump(*context.gnet1);
 
   return true;
 }

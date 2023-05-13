@@ -39,6 +39,9 @@ using XmgMapper = eda::gate::premapper::XmgMapper;
 
 namespace eda::tool {
 
+/**
+ * \brief Implements a tool for processing RIL networks.
+ */
 struct RtlContext {
   RtlContext(const std::string &file):
     file(file) {}
@@ -53,8 +56,6 @@ struct RtlContext {
 
   bool equal;
 };
-
-void dump(const GNet &net);
 
 bool parse(RtlContext &context);
 

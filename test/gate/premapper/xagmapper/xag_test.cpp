@@ -27,7 +27,6 @@ using Link = Gate::Link;
  * Check basis gate correct mapping
  */
 
-
 // Not gate tests
 TEST(XagPremapperTest, XagNotOneInputTest) {
   // Create network
@@ -155,4 +154,3 @@ TEST(XagPremapperTest, XagNandTwoOppositeInputsTest) {
   std::shared_ptr<GNet> premapped = premap(net, gmap, PreBasis::AIG);
   EXPECT_TRUE(checkEquivalence(net, premapped, gmap));
 }
-
