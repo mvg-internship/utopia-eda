@@ -24,6 +24,8 @@ using PreBasis = eda::gate::premapper::PreBasis;
 
 std::shared_ptr<GNet> makeSingleGateNet(GateSymbol gate, const unsigned N);
 std::shared_ptr<GNet> makeSingleGateNetn(GateSymbol gate, const unsigned N);
+std::shared_ptr<GNet> makeSingleGateNetOppositeInputs(GateSymbol gate);
+
 std::shared_ptr<GNet> premap(std::shared_ptr<GNet> net,
                              GateIdMap &gmap,
                              PreBasis basis);
@@ -31,3 +33,4 @@ std::shared_ptr<GNet> premap(std::shared_ptr<GNet> net,
 bool checkEquivalence(const std::shared_ptr<GNet> net,
                       const std::shared_ptr<GNet> premapped,
                       GateIdMap &gmap);
+
