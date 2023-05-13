@@ -140,7 +140,7 @@ Gate::Id MigMapper::mapAnd(const Gate::SignalList &newInputs,
       gateId = mapNop({x}, true, newNet);
     } else if (model::areContrary(x, y)) {
       // AND(x,NOT(x)) = 0.
-      gateId = mapVal(!sign, newNet);
+      gateId = mapVal(false, newNet);
     } else {
       // AND(x,y).
       gateId = newNet.addMaj(x, y, Gate::Signal::always(valId));
@@ -187,7 +187,7 @@ Gate::Id MigMapper::mapOr(const Gate::SignalList &newInputs,
         gateId = mapNop({x}, true, newNet);
       } else if (model::areContrary(x, y)) {
         // OR(x,NOT(x)) = 1.
-        gateId = mapVal(sign, newNet);
+        gateId = mapVal(true, newNet);
       } else {
         // OR(x,y).
         gateId = newNet.addMaj(x, y, Gate::Signal::always(valId));
