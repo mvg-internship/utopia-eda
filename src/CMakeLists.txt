@@ -33,6 +33,7 @@ add_compile_options(-g3 -Wall -Wignored-qualifiers -DYYERROR_VERBOSE)
 add_subdirectory(util)
 add_subdirectory(gate)
 add_subdirectory(rtl)
+add_subdirectory(tool)
 
 # The project library.
 add_library(${MAIN_LIBRARY})
@@ -44,6 +45,7 @@ target_link_libraries(${MAIN_LIBRARY}
   Utopia::Gate
   Utopia::RTL
   Utopia::RILParser
+  Utopia::Tool
 )
 
 # The project executable.
