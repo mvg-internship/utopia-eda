@@ -5,20 +5,28 @@ FLEX_TARGET(GateVerilogLexer
   DEFINES_FILE "${CMAKE_CURRENT_BINARY_DIR}/header_file"
 )
 
-add_executable(parser.gverilog
-  Parser_test.cpp
-  ${FLEX_GateVerilogLexer_OUTPUTS}
-)
-
-add_library(GateVerilogParser OBJECT
-  Parser_test.cpp
+# Создаем библиотеку без функции main
+add_library(GateVerilogParser OBJECT Parser_test.cpp
   ${FLEX_GateVerilogLexer_OUTPUTS}
 )
 
 target_include_directories(GateVerilogParser
   PUBLIC
     ${PROJECT_SOURCE_DIR}/src
+  PRIVATE
+    ${PROJECT_BINARY_DIR}/src
+    ${CMAKE_CURRENT_BINARY_DIR}
+)
 
+# Создаем исполняемый файл с функцией main
+add_executable(parser.gverilog
+  parser_main.cpp
+  $<TARGET_OBJECTS:GateVerilogParser>
+)
+
+target_include_directories(parser.gverilog
+  PUBLIC
+    ${PROJECT_SOURCE_DIR}/src
   PRIVATE
     ${PROJECT_BINARY_DIR}/src
     ${CMAKE_CURRENT_BINARY_DIR}
@@ -27,13 +35,4 @@ target_include_directories(GateVerilogParser
 target_link_libraries(parser.gverilog
   PRIVATE
     ueda
-)
-
-target_include_directories(parser.gverilog
-  PUBLIC
-    ${PROJECT_SOURCE_DIR}/src
-
-  PRIVATE
-    ${PROJECT_BINARY_DIR}/src
-    ${CMAKE_CURRENT_BINARY_DIR}
 )

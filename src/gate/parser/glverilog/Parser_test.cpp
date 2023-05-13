@@ -678,16 +678,3 @@ KindOfError parseNameList(Token_T &tok,
   return rc;
 }
 
-// int main(int argc, char *argv[]) {
-//     std::vector<std::unique_ptr<GNet>> nets;
-//     bool success = parseGateLevelVerilog(argv[1], nets);
-//     if (success) {
-//         std::cout << "Parsing successful" << std::endl;
-//         for (const auto &gnet_ptr : nets) {
-//             std::cout << "GNet's: " << std::endl << *gnet_ptr << std::endl;
-//         }
-//     } else {
-//         std::cout << "Parsing failed" << std::endl;
-//     }
-//     return success ? 0 : 1;
-// }
