@@ -28,6 +28,7 @@
 
 #include "easylogging++.h"
 
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <map>
@@ -94,10 +95,15 @@ void dump(const GNet &net) {
   std::cout << "O=" << net.nTargetLinks() << std::endl;
 }
 
-void fillingTechLib(std::string namefile) {
+static inline std::string getName(std::string &path) {
+  return std::filesystem::path(path).filename();
+}
+
+void fillingTechLib(std::string path) {
+  std::string namefile = getName(path);
   auto db = RtlContext::RewriteManager::get().createDatabase(namefile);
   NetData data;
-  translateLibertyToDesign(namefile, data);
+  translateLibertyToDesign(path, data);
   data.fillDatabase(*db);
 }
 
@@ -209,16 +215,16 @@ int main(int argc, char **argv) {
   }
 
   int result = 0;
-  std::string temp;
+  std::string nameFileLibrary;
 
   if (!options.rtl.libertyFile.empty()) {
     fillingTechLib(options.rtl.libertyFile);
-    temp = options.rtl.libertyFile;
+    nameFileLibrary = getName(options.rtl.libertyFile);
   }
   for (auto file: options.rtl.files()) {
     RtlContext context(file, options.rtl);
-    if (!temp.empty()) {
-      context.techLib = temp;
+    if (!nameFileLibrary.empty()) {
+      context.techLib = nameFileLibrary;
     }
     result |= rtlMain(context);
   }
