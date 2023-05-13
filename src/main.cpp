@@ -38,7 +38,7 @@ int main(int argc, char **argv) {
 
   try {
     options.initialize("config.json", argc, argv);
-  } catch(const CLI::ParseError &e) {
+  } catch (const CLI::ParseError &e) {
     return options.exit(e);
   }
 
