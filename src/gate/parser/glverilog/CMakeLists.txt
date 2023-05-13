@@ -9,6 +9,21 @@ add_executable(parser.gverilog
   Parser_test.cpp
   ${FLEX_GateVerilogLexer_OUTPUTS}
 )
+
+add_library(GateVerilogParser OBJECT
+  Parser_test.cpp
+  ${FLEX_GateVerilogLexer_OUTPUTS}
+)
+
+target_include_directories(GateVerilogParser
+  PUBLIC
+    ${PROJECT_SOURCE_DIR}/src
+
+  PRIVATE
+    ${PROJECT_BINARY_DIR}/src
+    ${CMAKE_CURRENT_BINARY_DIR}
+)
+
 target_link_libraries(parser.gverilog
   PRIVATE
     ueda

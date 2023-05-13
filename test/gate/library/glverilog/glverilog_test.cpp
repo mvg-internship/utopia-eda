@@ -7,8 +7,9 @@
 //===----------------------------------------------------------------------===//
 
 #include "gate/library/liberty/net_data.h"
-#include "parser.h"
+//#include "parser.h"
 #include "gtest/gtest.h"
+#include "gate/parser/glverilog/parse_fu.h"
 #include <stdexcept>
 #include <filesystem>
 
@@ -34,13 +35,14 @@ static std::unique_ptr<GModel::GNet> createLogicGate(GateSymbol symbol) {
 
 inline static bool glverilogParser() {
   bool answer = true;
+  std::vector<std::unique_ptr<GModel::GNet>> nets;
   const std::filesystem::path subCatalog = "test/data/glverilog/ISCAS";
   const std::filesystem::path homePath = std::string(getenv("UTOPIA_HOME"));
   const std::filesystem::path prefixPath = homePath / subCatalog;
   const std::vector<std::string> files { "c17.v", "c432.v" };
   for (const auto &file : files) {
     const std::string filename = prefixPath / file;
-    answer *= parseGateLevelVerilog(filename);
+    answer *= parseGateLevelVerilog(filename, nets);
   }
   return answer;
 }
