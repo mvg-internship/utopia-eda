@@ -34,11 +34,15 @@ struct ModuleInfo {
   FamilyInfo type;
   std::vector<std::string> variables;
   std::string area;
-  int counter = 0;
+  bool correct = 1;
 
   bool hasSignal(const std::string &value) {
     return std::find(
              variables.begin(), variables.end(), value) != variables.end();
+  }
+
+  void hasError () {
+    correct = 0;
   }
 };
 
@@ -193,6 +197,7 @@ void assertVariable(const std::string &name,
     } else {
       std::cerr << "This variable declarated twice:  " << name << std::endl
                 << "line: " << yylineno << std::endl;
+       modules[familyNames].hasError();
     }
     break;
   case INPUT_:
@@ -206,6 +211,7 @@ void assertVariable(const std::string &name,
                 << " parent Name: " << table.findParentName(name)
                 << " child type: " << table.findChild(name) << std::endl
                 << "line: " << yylineno << std::endl;
+      modules[familyNames].hasError();
     }
     break;
   case FUNC_INI_:
@@ -216,12 +222,14 @@ void assertVariable(const std::string &name,
       std::cerr << "This variable: " << name 
                 << " declarated twice" << std::endl
                 << "line: " << yylineno << std::endl;
+      modules[familyNames].hasError();
     }
     break;
   case LOGIC_GATE_:
     if (!isVariableAlreadyDeclInParentLevel(table, familyNames, name)) {
       std::cerr << "This variable wasn't declorated in this module: " << name 
                 << std::endl << "line: " << yylineno << std::endl;
+      modules[familyNames].hasError();
     }
     break;
   default:
@@ -382,13 +390,13 @@ void buildGnet(SymbolTable &symbolTable,
        std::string outSignal;
       switch (type) {
       case DFF_:
-        ids.push_back(
-          Signal::always(gates[modules[it->first].variables.front()]));
+        // ids.push_back(
+        //   Signal::always(gates[modules[it->first].variables.front()]));
           symbolTable.setInUsing(modules[it->first].variables.front());
-        ids.push_back(
-          Signal::always(gates[modules[it->first].variables.back()]));
+        // ids.push_back(
+        //   Signal::always(gates[modules[it->first].variables.back()]));
           symbolTable.setInUsing(modules[it->first].variables.back());
-        currentNet->net->setGate(dffArg, setType(type), ids);
+        currentNet->net->setDff(dffArg,gates[modules[it->first].variables.back()],gates[modules[it->first].variables.front()]);
         outSignal = modules[it->first].variables[1];
         break;
       default:
@@ -434,6 +442,7 @@ void buildGnet(SymbolTable &symbolTable,
         if (symbolTable.isInUsed(element.first) && !symbolTable.isOutUsed(element.first)) {
           std::cerr << "This wire never been used like out: " << element.first
                       << std::endl << "line: " << yylineno <<std::endl;
+          modules[currentModuleName].hasError();
         }
         
       }
@@ -452,7 +461,7 @@ bool parseGateLevelVerilog(const std::string &path,
   SymbolTable table;
   std::unordered_map<std::string, GNetInfo> gnets;
   std::unordered_map<std::string, ModuleInfo> modules;
-  while (tok != EOF_TOKEN) {
+  while (tok != EOF_TOKEN && rc == SUCCESS) {
     tok = getNextToken();
     if(tok == MODULE) {
       rc = parseModule(tok, table, modules, gnets);
@@ -463,12 +472,17 @@ bool parseGateLevelVerilog(const std::string &path,
                     << std::endl << "line: " << yylineno << std::endl;
         rc = FAILURE_IN_GATE_LEVEL_VERILOG;
     }
+   
+  if(rc != SUCCESS) {
+    return false;
+    break;
   }
-  if (rc == SUCCESS) {
-    for (const auto &gnet_entry : gnets) {
-        nets.push_back(std::make_unique<GNet>(*gnet_entry.second.net));
+  }
+   if (rc == SUCCESS) {
+      for (const auto &gnet_entry : gnets) {
+          nets.push_back(std::make_unique<GNet>(*gnet_entry.second.net));
+      }
     }
-  }
   return rc == SUCCESS;
 }
 
@@ -503,6 +517,7 @@ parseModule(Token_T &tok,
     tok = getNextToken();
   } else {
     std::cerr << "Module name " << yytext << " using twice" << std::endl;
+    modules[currentModuleName].hasError();
   }
   while (rc == SUCCESS && tok != ENDMODULE) {
     switch (tok) {
@@ -526,7 +541,10 @@ parseModule(Token_T &tok,
       break;
     }
   }
-  buildGnet(table, gnets, currentModuleName, modules); 
+  buildGnet(table, gnets, currentModuleName, modules);
+  if (modules[currentModuleName].correct == 0) {
+    rc = FAILURE_IN_GATE_LEVEL_VERILOG;
+  } 
   return rc;
 }
 
@@ -582,6 +600,7 @@ parseLogicGate(Token_T &tok,
     std::cerr << "This name alredy exsist: " << currentLogicGateName
               << std::endl
               << "line: " << yylineno << std::endl;
+    modules[currentModuleName].hasError();
   }
   *currentLogicGate = {
     FamilyInfo::LOGIC_GATE_, {}, currentModuleName};
@@ -620,10 +639,12 @@ parseLogicGate(Token_T &tok,
        && table.findParent(*it) != WIRE_)) {
       std::cerr << "This variable is not input sygnal: " << *it << std::endl
                 << "line: " << yylineno << std::endl;
+      modules[currentModuleName].hasError();
     } else if (it == out && (table.findChild(*it) != OUTPUT_ 
                && table.findParent(*it) != WIRE_)) {
       std::cerr << "This variable is not output sygnal: " << *it << std::endl
                 << "line: " << yylineno << std::endl;
+      modules[currentModuleName].hasError();
     }
   }
   ASSERT_NEXT_TOKEN(tok, SEMICOLON, FAILURE_IN_MODULE_INCAPTULATION);
