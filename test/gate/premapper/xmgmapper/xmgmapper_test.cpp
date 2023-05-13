@@ -61,7 +61,7 @@ bool xmgEquivalenceCheck(const std::shared_ptr<GNet> &net,
   hints.sourceBinding = std::make_shared<GateBinding>(std::move(inputBind));
   hints.targetBinding = std::make_shared<GateBinding>(std::move(outputBind));
   hints.triggerBinding = std::make_shared<GateBinding>(std::move(triggerBind));
-  
+
   return checker.areEqual(*net, *xmgMapped, hints);
 }
 
@@ -81,7 +81,7 @@ void xmgMap(const std::shared_ptr<GNet> &net) {
 TEST(XmgMapperTest, XmgMapperOrTest) {
   Gate::SignalList inputs;
   Gate::Id outputId;
-  auto net = eda::gate::model::makeOr(3, inputs, outputId);
+  auto net = makeOr(3, inputs, outputId);
   xmgMap(net);
   EXPECT_TRUE(net != nullptr);
 }
@@ -89,7 +89,7 @@ TEST(XmgMapperTest, XmgMapperOrTest) {
 TEST(XmgMapperTest, XmgMapperAndTest) {
   Gate::SignalList inputs;
   Gate::Id outputId;
-  auto net = eda::gate::model::makeAnd(2, inputs, outputId);
+  auto net = makeAnd(2, inputs, outputId);
   xmgMap(net);
   EXPECT_TRUE(net != nullptr);
 }
@@ -97,7 +97,7 @@ TEST(XmgMapperTest, XmgMapperAndTest) {
 TEST(XmgMapperTest, XmgMapperMajOf3Test) {
   Gate::SignalList inputs;
   Gate::Id outputId;
-  auto net = eda::gate::model::makeMaj(3, inputs, outputId);
+  auto net = makeMaj(3, inputs, outputId);
   xmgMap(net);
   EXPECT_TRUE(net != nullptr);
 }
@@ -105,7 +105,7 @@ TEST(XmgMapperTest, XmgMapperMajOf3Test) {
 TEST(XmgMapperTest, XmgMapperMajOf5Test) {
   Gate::SignalList inputs;
   Gate::Id outputId;
-  auto net = eda::gate::model::makeMaj(5, inputs, outputId);
+  auto net = makeMaj(5, inputs, outputId);
   xmgMap(net);
   EXPECT_TRUE(net != nullptr);
 }
@@ -113,7 +113,7 @@ TEST(XmgMapperTest, XmgMapperMajOf5Test) {
 TEST(XmgMapperTest, XmgMapperNorTest) {
   Gate::SignalList inputs;
   Gate::Id outputId;
-  auto net = eda::gate::model::makeNor(2, inputs, outputId);
+  auto net = makeNor(2, inputs, outputId);
   xmgMap(net);
   EXPECT_TRUE(net != nullptr);
 }
@@ -121,7 +121,7 @@ TEST(XmgMapperTest, XmgMapperNorTest) {
 TEST(XmgMapperTest, XmgMapperNandTest) {
   Gate::SignalList inputs;
   Gate::Id outputId;
-  auto net = eda::gate::model::makeNand(2, inputs, outputId);
+  auto net = makeNand(2, inputs, outputId);
   xmgMap(net);
   EXPECT_TRUE(net != nullptr);
 }
@@ -129,7 +129,7 @@ TEST(XmgMapperTest, XmgMapperNandTest) {
 TEST(XmgMapperTest, XmgMapperOrnTest) {
   Gate::SignalList inputs;
   Gate::Id outputId;
-  auto net = eda::gate::model::makeOrn(2, inputs, outputId);
+  auto net = makeOrn(2, inputs, outputId);
   xmgMap(net);
   EXPECT_TRUE(net != nullptr);
 }
@@ -137,7 +137,7 @@ TEST(XmgMapperTest, XmgMapperOrnTest) {
 TEST(XmgMapperTest, XmgMapperAndnTest) {
   Gate::SignalList inputs;
   Gate::Id outputId;
-  auto net = eda::gate::model::makeAndn(2, inputs, outputId);
+  auto net = makeAndn(2, inputs, outputId);
   xmgMap(net);
   EXPECT_TRUE(net != nullptr);
 }
