@@ -20,7 +20,7 @@ using namespace eda::utils::graph;
 namespace eda::gate::model {
 
 //===----------------------------------------------------------------------===//
-// Constructors/Destructors 
+// Constructors/Destructors
 //===----------------------------------------------------------------------===//
 
 unsigned GNet::_counter = 0;
@@ -31,8 +31,8 @@ GNet::GNet(unsigned level):
     _nConnects(0),
     _nGatesInSubnets(0),
     _isSorted(true) {
-  const size_t N = std::max(1024*1024 >> (5*level), 64);
-  const size_t M = std::max(1024 >> level, 64);
+  const size_t N = 1024;
+  const size_t M = 64;
 
   _gates.reserve(N);
   _flags.reserve(N);
@@ -44,7 +44,7 @@ GNet::GNet(unsigned level):
 }
 
 //===----------------------------------------------------------------------===//
-// Gates 
+// Gates
 //===----------------------------------------------------------------------===//
 
 bool GNet::hasCombFlow(GateId gid, const SignalList &inputs) const {
@@ -132,7 +132,7 @@ GNet::GateId GNet::addGate(Gate *gate, SubnetId sid) {
   GateFlags flags{0, sid, gindex};
   _flags.insert({gid, flags});
 
-  onAddGate(gate, false);
+  onAddGate(gate, true, false);
 
   // Do some integrity checks.
   assert(!(_sourceLinks.empty() &&
@@ -149,6 +149,8 @@ GNet::GateId GNet::addGate(Gate *gate, SubnetId sid) {
 void GNet::setGate(GateId gid, GateSymbol func, const SignalList &inputs) {
   // ASSERT: All inputs belong to the net (no need to modify the upper nets).
   // ASSERT: Adding the given inputs does not lead to combinational cycles.
+  assert(contains(gid));
+
   auto *gate = Gate::get(gid);
 
   std::vector<GNet*> subnets;
@@ -159,16 +161,16 @@ void GNet::setGate(GateId gid, GateSymbol func, const SignalList &inputs) {
     subnet = (sid != INV_SUBNET) ? subnet->_subnets[sid] : nullptr;
   }
 
-  std::for_each(subnets.begin(), subnets.end(), [gate](GNet *subnet) {
-    subnet->onRemoveGate(gate, true);
+  std::for_each(subnets.begin(), subnets.end(), [=](GNet *subnet) {
+    subnet->onRemoveGate(gate, true, true);
   });
 
   gate->setFunc(func);
   gate->setInputs(inputs);
   assert(gate->invariant());
 
-  std::for_each(subnets.rbegin(), subnets.rend(), [gate](GNet *subnet) {
-    subnet->onAddGate(gate, true);
+  std::for_each(subnets.rbegin(), subnets.rend(), [=](GNet *subnet) {
+    subnet->onAddGate(gate, true, true);
   });
 
   // Do some integrity checks.
@@ -201,14 +203,14 @@ void GNet::removeGate(GateId gid) {
     }
   }
 
-  auto *gate = Gate::get(gid); 
+  auto *gate = Gate::get(gid);
   auto *last = _gates.back();
 
   _gates[flags.gindex] = last;
   _gates.erase(std::end(_gates) - 1, std::end(_gates));
   getFlags(last->id()).gindex = flags.gindex;
 
-  onRemoveGate(gate, false);
+  onRemoveGate(gate, true, false);
   _flags.erase(i);
 
   // Do some integrity checks.
@@ -218,7 +220,41 @@ void GNet::removeGate(GateId gid) {
           _triggers.empty()) == _gates.empty());
 }
 
-void GNet::onAddGate(Gate *gate, bool withLinks) {
+void GNet::onAddGate(Gate *gate, bool updateBoundary, bool withLinks) {
+  const auto gid = gate->id();
+
+  if (updateBoundary) {
+    updateBoundaryLinksOnAdd(gate, withLinks);
+  }
+
+  if (gate->isValue()) {
+    _constants.insert(gid);
+  } else if (gate->isTrigger()) {
+    _triggers.insert(gid);
+  }
+
+  _nConnects += gate->arity();
+  _isSorted = (_gates.size() <= 1);
+}
+
+void GNet::onRemoveGate(Gate *gate, bool updateBoundary, bool withLinks) {
+  const auto gid = gate->id();
+
+  if (updateBoundary) {
+    updateBoundaryLinksOnRemove(gate, withLinks);
+  }
+
+  if (gate->isValue()) {
+    _constants.erase(gid);
+  } else if (gate->isTrigger()) {
+    _triggers.erase(gid);
+  }
+
+  _nConnects -= gate->arity();
+  _isSorted = (_gates.size() <= 1);
+}
+
+void GNet::updateBoundaryLinksOnAdd(Gate *gate, bool withLinks) {
   const auto gid = gate->id();
 
   // Remove the links that became internal from the boundary.
@@ -261,18 +297,9 @@ void GNet::onAddGate(Gate *gate, bool withLinks) {
       }
     }
   }
-
-  if (gate->isValue()) {
-    _constants.insert(gid);
-  } else if (gate->isTrigger()) {
-    _triggers.insert(gid);
-  }
-
-  _nConnects += gate->arity();
-  _isSorted = (_gates.size() <= 1);
 }
 
-void GNet::onRemoveGate(Gate *gate, bool withLinks) {
+void GNet::updateBoundaryLinksOnRemove(Gate *gate, bool withLinks) {
   const auto gid = gate->id();
 
   // Remove the links from the source boundary.
@@ -315,19 +342,10 @@ void GNet::onRemoveGate(Gate *gate, bool withLinks) {
       }
     }
   }
-
-  if (gate->isValue()) {
-    _constants.erase(gid);
-  } else if (gate->isTrigger()) {
-    _triggers.erase(gid);
-  }
-
-  _nConnects -= gate->arity();
-  _isSorted = (_gates.size() <= 1);
 }
 
 //===----------------------------------------------------------------------===//
-// Subnets 
+// Subnets
 //===----------------------------------------------------------------------===//
 
 GNet::SubnetId GNet::newSubnet() {
@@ -340,29 +358,31 @@ void GNet::addNet(const GNet &net) {
   const auto nS = _subnets.size();
 
   _gates.insert(std::end(_gates),
-    std::begin(net._gates), std::end(net._gates));
+      std::begin(net._gates), std::end(net._gates));
   _subnets.insert(std::end(_subnets),
-    std::begin(net._subnets), std::end(net._subnets));
+      std::begin(net._subnets), std::end(net._subnets));
   _emptySubnets.insert(
-    std::begin(net._emptySubnets), std::end(net._emptySubnets));
+      std::begin(net._emptySubnets), std::end(net._emptySubnets));
   _constants.insert(
-    std::begin(net._constants), std::end(net._constants));
+      std::begin(net._constants), std::end(net._constants));
   _triggers.insert(
-    std::begin(net._triggers), std::end(net._triggers));
+      std::begin(net._triggers), std::end(net._triggers));
 
   _nConnects += net._nConnects;
   _nGatesInSubnets += net._nGatesInSubnets;
 
-  discard_if(_sourceLinks,
-    [this](Link link) { return !checkSourceLink(link); });
+  discard_if(_sourceLinks, [this](Link link) {
+    return !checkSourceLink(link);
+  });
   for (auto link : net._sourceLinks) {
     if (checkSourceLink(link)) {
       _sourceLinks.insert(link);
     }
   }
 
-  discard_if(_targetLinks,
-    [this](Link link) { return !checkTargetLink(link); });
+  discard_if(_targetLinks, [this](Link link) {
+    return !checkTargetLink(link);
+  });
   for (auto link : net._targetLinks) {
     if (checkTargetLink(link)) {
       _targetLinks.insert(link);
@@ -405,7 +425,7 @@ void GNet::moveGate(GateId gid, SubnetId dst) {
   const auto src = i->second.subnet;
   assert(src == INV_SUBNET || src < _subnets.size());
 
-  if (src == dst) 
+  if (src == dst)
     return;
 
   if (src != INV_SUBNET) {
@@ -509,7 +529,7 @@ void GNet::removeEmptySubnets() {
     for (const auto *gate : subnet->gates()) {
       getFlags(gate->id()).subnet -= nRemoved;
     }
- 
+
     // Shift the subnets.
     _subnets[i - nRemoved] = subnet;
   }
@@ -572,7 +592,7 @@ struct Subgraph final {
       }
 
       nE += outEdges.size();
-    }   
+    }
   }
 
   size_t nNodes() const { return nV; }
@@ -650,7 +670,7 @@ void GNet::sortTopologically() {
 }
 
 //===--------------------------------------------------------------------===//
-// Cloning 
+// Cloning
 //===--------------------------------------------------------------------===//
 
 /// Clones the net.
@@ -658,40 +678,44 @@ GNet *GNet::clone() {
   if (_gates.empty()) {
     return new GNet(_level);
   }
+
   std::unordered_map<Gate::Id, Gate::Id> oldToNewId = {};
   return clone(oldToNewId);
 }
 
 GNet *GNet::clone(std::unordered_map<Gate::Id, Gate::Id> &oldToNewId) {
-  GNet *resultNet = new GNet(_level);
-
+  auto *resultNet = new GNet(_level);
   assert(oldToNewId.empty());
 
-  for (Gate *gate : _gates) {
+  for (auto *gate : _gates) {
     oldToNewId[gate->id()] = resultNet->newGate();
   }
-  
-  for (Gate *gate : _gates) {
+
+  for (auto *gate : _gates) {
+
     SignalList newSignals;
     newSignals.reserve(gate->_inputs.capacity());
-    for (Signal signal : gate->inputs()) {
-      newSignals.push_back(Signal(signal.event(), oldToNewId[signal.node()]));
+
+    for (auto signal : gate->inputs()) {
+      newSignals.emplace_back(signal.event(), oldToNewId[signal.node()]);
     }
-    Gate::Id newGateId = oldToNewId[gate->id()];
+
+    auto newGateId = oldToNewId[gate->id()];
     resultNet->setGate(newGateId, gate->func(), newSignals);
   }
 
   if (!_subnets.empty()) {
-    for (GNet *subnet : _subnets) {
+    for (auto *subnet : _subnets) {
       resultNet->addSubnet(subnet->clone(oldToNewId));
     }
   }
-  resultNet->sortTopologically(); 
-  return resultNet; 
+
+  resultNet->sortTopologically();
+  return resultNet;
 }
 
 //===----------------------------------------------------------------------===//
-// Output 
+// Output
 //===----------------------------------------------------------------------===//
 
 std::ostream& operator <<(std::ostream &out, const GNet &net) {
