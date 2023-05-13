@@ -304,14 +304,3 @@ std::unique_ptr<GNet> parseBenchFile(const std::string &filename) {
   fclose(benchin);
   return ref;
 }
-
-int main(int argc, char* argv[]) {
-  for (int i = 1; i < argc; i++) {
-    try {
-        std::cout << *parseBenchFile(argv[i]);
-    } catch (std::exception& e) {
-        std::cerr <<  std::endl; 
-    }
-  }
-  return 0;
-}
