@@ -22,6 +22,22 @@ ParseResult parse(RtlContext &context) {
     return PARSE_RIL;
   }
 
+  try {
+    context.gnet0 = parseBenchFile(context.file);
+  } catch (std::exception& e) {
+    fclose(benchin);
+    std::cerr << "error in " << e.what() <<  std::endl; 
+  }
+  if (context.gnet0) {
+    return PARSE_NETLIST;
+  }
+
+  std::vector<std::unique_ptr<GNet>> nets;
+  if (parseGateVerilog(context.file, nets)) {
+    context.gnet0 = std::move(nets[0]);
+    return PARSE_NETLIST;
+  }
+
   LOG(ERROR) << "Could not parse the file";
   return PARSE_INVALID;
 }
