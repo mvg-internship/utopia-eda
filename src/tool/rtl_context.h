@@ -38,6 +38,7 @@ using PreBasis = eda::gate::premapper::PreBasis;
 using PreMapper = eda::gate::premapper::PreMapper;
 using XagMapper = eda::gate::premapper::XagMapper;
 using XmgMapper = eda::gate::premapper::XmgMapper;
+using ESOptimizer = eda::gate::optimizer::ExhausitiveSearchOptimizer;
 
 namespace eda::tool {
 
@@ -53,7 +54,7 @@ struct RtlContext {
   std::shared_ptr<VNet> vnet;
   std::shared_ptr<GNet> gnet0;
   std::shared_ptr<GNet> gnet1;
-  std::shared_ptr <GNet> gnet2;
+  std::shared_ptr<GNet> gnet2;
 
   PreMapper::GateIdMap gmap;
 

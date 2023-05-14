@@ -63,8 +63,7 @@ bool premap(RtlContext &context, PreBasis basis) {
 bool optimize(RtlContext &context) {
   GNet *gnet2 = context.gnet1->clone();
 
-  eda::gate::optimizer::optimize(gnet2, 4,
-                            eda::gate::optimizer::ExhausitiveSearchOptimizer());
+  eda::gate::optimizer::optimize(gnet2, 4, ESOptimizer());
 
   context.gnet2 = std::shared_ptr<GNet>(gnet2);
 
