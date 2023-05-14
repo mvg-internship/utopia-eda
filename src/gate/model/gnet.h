@@ -123,7 +123,7 @@ public:
   ~GNet() = default;
 
   //===--------------------------------------------------------------------===//
-  // Properties 
+  // Properties
   //===--------------------------------------------------------------------===//
 
   /// Checks whether the net is top-level.
@@ -167,7 +167,7 @@ public:
   }
 
   //===--------------------------------------------------------------------===//
-  // Statistics 
+  // Statistics
   //===--------------------------------------------------------------------===//
 
   unsigned id() const {
@@ -215,7 +215,7 @@ public:
   }
 
   //===--------------------------------------------------------------------===//
-  // Gates 
+  // Gates
   //===--------------------------------------------------------------------===//
 
   /// Returns the collection of gates.
@@ -246,6 +246,11 @@ public:
   /// Gets a gate by index.
   const Gate *gate(size_t index) const {
     return _gates[index];
+  }
+
+  /// Gets a gate w/ the given function and inputs (or nullptr).
+  const Gate *gate(GateSymbol func, const SignalList &inputs) const {
+    return Gate::get(_id, func, inputs);
   }
 
   /// Checks whether the net contains the gate.
@@ -287,8 +292,24 @@ public:
   /// Modifies the existing gate.
   void setGate(GateId gid, GateSymbol func, const SignalList &inputs);
 
-  /// Removes the gate from the net.
+  /// Moves the gate outside the net keeping the links unchanged.
   void removeGate(GateId gid);
+
+  //===--------------------------------------------------------------------===//
+  // Modification Methods
+  //===--------------------------------------------------------------------===//
+
+  /// Disconnect the gate's inputs from their drivers.
+  void disconnectInputs(GateId gid) {
+    setGate(gid, GateSymbol::IN, SignalList{});
+  }
+
+  /// Erases the gate w/ zero fanout from the net including the related links.
+  void eraseGate(GateId gid) {
+    assert(Gate::get(gid)->fanout() == 0);
+    disconnectInputs(gid);
+    removeGate(gid);
+  }
 
   //===--------------------------------------------------------------------===//
   // Convenience Methods
@@ -335,7 +356,8 @@ public:
   }
 
   /// Changes the given gate to the two-inputs gate.
-  void setGate(GateId gid, GateSymbol func, const Signal &lhs, const Signal &rhs) {
+  void setGate(GateId gid, GateSymbol func, const Signal &lhs,
+                                            const Signal &rhs) {
     setGate(gid, func, SignalList{lhs, rhs});
   }
 
@@ -343,7 +365,7 @@ public:
   void setGate(GateId gid, GateSymbol func, GateId lhs, GateId rhs) {
     setGate(gid, func, Signal::always(lhs), Signal::always(rhs));
   }
-  
+
   /// Adds a majority function.
   GateId addMaj(const Signal &lhs, const Signal &mhs, const Signal &rhs) {
     return addGate(GateSymbol::MAJ, SignalList{lhs, mhs, rhs});
@@ -424,7 +446,7 @@ public:
   }
 
   //===--------------------------------------------------------------------===//
-  // Subnets 
+  // Subnets
   //===--------------------------------------------------------------------===//
 
   /// Returns the collection of subnets.
@@ -558,10 +580,7 @@ private:
 
   /// Adds the gate to the net if the gate is a new one.
   GateId addGateIfNew(Gate *gate, SubnetId sid = INV_SUBNET) {
-    if (contains(gate->id())) {
-      return gate->id();
-    }
-    return addGate(gate, sid);
+    return contains(gate->id()) ? gate->id() : addGate(gate, sid);
   }
 
   /// Adds the subnet to the net.
@@ -588,9 +607,14 @@ private:
   }
 
   /// Updates the net state when adding a gate.
-  void onAddGate(Gate *gate, bool withLinks);
+  void onAddGate(Gate *gate, bool updateBoundary, bool withLinks);
   /// Updates the net state when removing a gate.
-  void onRemoveGate(Gate *gate, bool withLinks);
+  void onRemoveGate(Gate *gate, bool updateBoundary, bool withLinks);
+
+  /// Updates the source/target links when adding a gate.
+  void updateBoundaryLinksOnAdd(Gate *gate, bool withLinks);
+  /// Updates the source/target links when removing a gate.
+  void updateBoundaryLinksOnRemove(Gate *gate, bool withLinks);
 
   //===--------------------------------------------------------------------===//
   // Internal Fields

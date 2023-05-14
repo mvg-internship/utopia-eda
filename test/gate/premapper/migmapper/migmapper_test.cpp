@@ -8,6 +8,7 @@
 
 #include "gate/debugger/checker.h"
 #include "gate/model/gnet_test.h"
+#include "gate/premapper/mapper/mapper_test.h"
 
 #include "gate/premapper/migmapper.h"
 
@@ -17,105 +18,65 @@
 #include <cassert>
 #include <iostream>
 
-using Checker = eda::gate::debugger::Checker;
-using Gate = eda::gate::model::Gate;
-using GateBinding = Checker::GateBinding;
 using GateIdMap = eda::gate::premapper::MigMapper::GateIdMap;
-using GNet = eda::gate::model::GNet;
-using Hints = Checker::Hints;
-using Link = eda::gate::model::Gate::Link;
 using MigMapper = eda::gate::premapper::MigMapper;
-
-void initializeMigBinds(const GNet &net,
-                        GateIdMap &gmap,
-                        GateBinding &ibind,
-                        GateBinding &obind) {
-  // Input-to-input correspondence.
-  for (const auto oldSourceLink : net.sourceLinks()) {
-    auto newSourceId = gmap[oldSourceLink.target];
-    ibind.insert({oldSourceLink, Link(newSourceId)});
-  }
-
-  // Output-to-output correspondence.
-  for (const auto oldTargetLink : net.targetLinks()) {
-    auto newTargetId = gmap[oldTargetLink.source];
-    obind.insert({oldTargetLink, Link(newTargetId)});
-  }
-}
-
-std::shared_ptr<GNet> migMap(std::shared_ptr<GNet> net, GateIdMap &gmap) {
-  eda::gate::premapper::MigMapper migMapper;
-  std::shared_ptr<GNet> migMapped = migMapper.map(*net, gmap);
-  //dump(*net);
-  //dump(*migMapped);
-  migMapped->sortTopologically();
-  return migMapped;
-}
-
-bool checkMigEquivalence(const std::shared_ptr<GNet> net,
-                         const std::shared_ptr<GNet> migMapped,
-                         GateIdMap &gmap) {
-  // Initialize binds
-  GateBinding ibind, obind;
-  initializeMigBinds(*net, gmap, ibind, obind);
-  eda::gate::debugger::Checker::Hints hints;
-  hints.sourceBinding  = std::make_shared<GateBinding>(std::move(ibind));
-  hints.targetBinding  = std::make_shared<GateBinding>(std::move(obind));
-  // check equivalence
-  eda::gate::debugger::Checker checker;
-  bool equal = checker.areEqual(*net, *migMapped, hints);
-  return equal;
-}
 
 TEST(MigMapperTest, MigMapperOrTest) {
   Gate::SignalList inputs;
   Gate::Id outputId;
-  auto net = eda::gate::model::makeOr(1024, inputs, outputId);
+  auto net = makeOr(1024, inputs, outputId);
   GateIdMap gmap;
-  std::shared_ptr<GNet> migMapped = migMap(net, gmap);
-  EXPECT_TRUE(checkMigEquivalence(net, migMapped, gmap));
+  std::shared_ptr<GNet> migMapped = premap(net, gmap, PreBasis::MIG);
+  EXPECT_TRUE(checkEquivalence(net, migMapped, gmap));
 }
 
 TEST(MigMapperTest, MigMapperAndTest) {
   Gate::SignalList inputs;
   Gate::Id outputId;
-  auto net = eda::gate::model::makeAnd(1024, inputs, outputId);
+  auto net = makeAnd(1024, inputs, outputId);
   GateIdMap gmap;
-  std::shared_ptr<GNet> migMapped = migMap(net, gmap);
-  EXPECT_TRUE(checkMigEquivalence(net, migMapped, gmap));
+  std::shared_ptr<GNet> migMapped = premap(net, gmap, PreBasis::MIG);
+  EXPECT_TRUE(checkEquivalence(net, migMapped, gmap));
+}
+
+TEST(MigMapperTest, MigMapperXorTest) {
+  std::shared_ptr<GNet> net = makeSingleGateNet(GateSymbol::XOR, 512);
+  GateIdMap gmap;
+  std::shared_ptr<GNet> migMapped = premap(net, gmap, PreBasis::MIG);
+  EXPECT_TRUE(checkEquivalence(net, migMapped, gmap));
 }
 
 TEST(MigMapperTest, MigMapperMajOf3Test) {
   Gate::SignalList inputs;
   Gate::Id outputId;
-  auto net = eda::gate::model::makeMaj(3, inputs, outputId);
+  auto net = makeMaj(3, inputs, outputId);
   GateIdMap gmap;
-  std::shared_ptr<GNet> migMapped = migMap(net, gmap);
-  EXPECT_TRUE(checkMigEquivalence(net, migMapped, gmap));
+  std::shared_ptr<GNet> migMapped = premap(net, gmap, PreBasis::MIG);
+  EXPECT_TRUE(checkEquivalence(net, migMapped, gmap));
 }
 
 TEST(MigMapperTest, MigMapperMajOf5Test) {
   Gate::SignalList inputs;
   Gate::Id outputId;
-  auto net = eda::gate::model::makeMaj(5, inputs, outputId);
+  auto net = makeMaj(5, inputs, outputId);
   GateIdMap gmap;
-  std::shared_ptr<GNet> migMapped = migMap(net, gmap);
-  EXPECT_TRUE(checkMigEquivalence(net, migMapped, gmap));
+  std::shared_ptr<GNet> migMapped = premap(net, gmap, PreBasis::MIG);
+  EXPECT_TRUE(checkEquivalence(net, migMapped, gmap));
 }
 
 TEST(MigMapperTest, MigMapperMajOf7Test) {
   Gate::SignalList inputs;
   Gate::Id outputId;
-  auto net = eda::gate::model::makeMaj(7, inputs, outputId);
+  auto net = makeMaj(7, inputs, outputId);
   GateIdMap gmap;
-  std::shared_ptr<GNet> migMapped = migMap(net, gmap);
-  EXPECT_TRUE(checkMigEquivalence(net, migMapped, gmap));
+  std::shared_ptr<GNet> migMapped = premap(net, gmap, PreBasis::MIG);
+  EXPECT_TRUE(checkEquivalence(net, migMapped, gmap));
 }
 
 TEST(MigMapperTest, MigMapperMajOf9Test) {
   Gate::SignalList inputs;
   Gate::Id outputId;
-  auto net = eda::gate::model::makeMaj(9, inputs, outputId);
+  auto net = makeMaj(9, inputs, outputId);
   //migMap(net);
   EXPECT_TRUE(net != nullptr);
 }
@@ -123,7 +84,7 @@ TEST(MigMapperTest, MigMapperMajOf9Test) {
 TEST(MigMapperTest, MigMapperMajOf11Test) {
   Gate::SignalList inputs;
   Gate::Id outputId;
-  auto net = eda::gate::model::makeMaj(11, inputs, outputId);
+  auto net = makeMaj(11, inputs, outputId);
   //migMap(net);
   EXPECT_TRUE(net != nullptr);
 }
@@ -131,7 +92,7 @@ TEST(MigMapperTest, MigMapperMajOf11Test) {
 TEST(MigMapperTest, MigMapperMajOf17Test) {
   Gate::SignalList inputs;
   Gate::Id outputId;
-  auto net = eda::gate::model::makeMaj(17, inputs, outputId);
+  auto net = makeMaj(17, inputs, outputId);
   //migMap(net);
   EXPECT_TRUE(net != nullptr);
 }
@@ -139,35 +100,42 @@ TEST(MigMapperTest, MigMapperMajOf17Test) {
 TEST(MigMapperTest, MigMapperNorTest) {
   Gate::SignalList inputs;
   Gate::Id outputId;
-  auto net = eda::gate::model::makeNor(1024, inputs, outputId);
+  auto net = makeNor(1024, inputs, outputId);
   GateIdMap gmap;
-  std::shared_ptr<GNet> migMapped = migMap(net, gmap);
-  EXPECT_TRUE(checkMigEquivalence(net, migMapped, gmap));
+  std::shared_ptr<GNet> migMapped = premap(net, gmap, PreBasis::MIG);
+  EXPECT_TRUE(checkEquivalence(net, migMapped, gmap));
 }
 
 TEST(MigMapperTest, MigMapperNandTest) {
   Gate::SignalList inputs;
   Gate::Id outputId;
-  auto net = eda::gate::model::makeNand(1024, inputs, outputId);
+  auto net = makeNand(1024, inputs, outputId);
   GateIdMap gmap;
-  std::shared_ptr<GNet> migMapped = migMap(net, gmap);
-  EXPECT_TRUE(checkMigEquivalence(net, migMapped, gmap));
+  std::shared_ptr<GNet> migMapped = premap(net, gmap, PreBasis::MIG);
+  EXPECT_TRUE(checkEquivalence(net, migMapped, gmap));
 }
 
 TEST(MigMapperTest, MigMapperOrnTest) {
   Gate::SignalList inputs;
   Gate::Id outputId;
-  auto net = eda::gate::model::makeOrn(1024, inputs, outputId);
+  auto net = makeOrn(1024, inputs, outputId);
   GateIdMap gmap;
-  std::shared_ptr<GNet> migMapped = migMap(net, gmap);
-  EXPECT_TRUE(checkMigEquivalence(net, migMapped, gmap));
+  std::shared_ptr<GNet> migMapped = premap(net, gmap, PreBasis::MIG);
+  EXPECT_TRUE(checkEquivalence(net, migMapped, gmap));
 }
 
 TEST(MigMapperTest, MigMapperAndnTest) {
   Gate::SignalList inputs;
   Gate::Id outputId;
-  auto net = eda::gate::model::makeAndn(1024, inputs, outputId);
+  auto net = makeAndn(1024, inputs, outputId);
   GateIdMap gmap;
-  std::shared_ptr<GNet> migMapped = migMap(net, gmap);
-  EXPECT_TRUE(checkMigEquivalence(net, migMapped, gmap));
+  std::shared_ptr<GNet> migMapped = premap(net, gmap, PreBasis::MIG);
+  EXPECT_TRUE(checkEquivalence(net, migMapped, gmap));
+}
+
+TEST(MigMapperTest, MigMapperXornTest) {
+  std::shared_ptr<GNet> net = makeSingleGateNetn(GateSymbol::XOR, 512);
+  GateIdMap gmap;
+  std::shared_ptr<GNet> migMapped = premap(net, gmap, PreBasis::MIG);
+  EXPECT_TRUE(checkEquivalence(net, migMapped, gmap));
 }

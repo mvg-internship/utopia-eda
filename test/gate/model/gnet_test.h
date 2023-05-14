@@ -52,4 +52,4 @@ std::shared_ptr<GNet> makeUdp(unsigned N,
 // Random hierarchical network.
 std::shared_ptr<GNet> makeRand(size_t nGates, size_t nSubnets);
 
-void dump(const GNet &net);
+} // namespace eda::gate::model
