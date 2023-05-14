@@ -85,7 +85,7 @@ TTBuilder::TruthTable TTBuilder::applyGateFunc(const GateSymbol::Value func,
     if (inputSize == 1) {
       result = inputList[0];
       break;
-      }
+    }
     if (inputSize == 3) {
       for (size_t i = 0; i < 3; ++i) {
         for (size_t j = 0; j < 8; ++j) {
