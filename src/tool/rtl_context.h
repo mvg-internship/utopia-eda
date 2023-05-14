@@ -8,6 +8,8 @@
 #include "gate/debugger/base_checker.h"
 #include "gate/debugger/checker.h"
 #include "gate/model/gnet.h"
+#include "gate/optimizer/optimizer.h"
+#include "gate/optimizer/strategy/exhaustive_search_optimizer.h"
 #include "gate/premapper/migmapper.h"
 #include "gate/premapper/premapper.h"
 #include "gate/premapper/xagmapper.h"
@@ -30,7 +32,7 @@ using AigMapper = eda::gate::premapper::AigMapper;
 using Checker = eda::gate::debugger::Checker;
 using Compiler = eda::rtl::compiler::Compiler;
 using LecType = eda::gate::debugger::options::LecType;
-using Library = eda::rtl::library::FLibraryDefault;
+using Library = eda::rtl::library::ArithmeticLibrary;
 using MigMapper = eda::gate::premapper::MigMapper;
 using PreBasis = eda::gate::premapper::PreBasis;
 using PreMapper = eda::gate::premapper::PreMapper;
@@ -51,6 +53,7 @@ struct RtlContext {
   std::shared_ptr<VNet> vnet;
   std::shared_ptr<GNet> gnet0;
   std::shared_ptr<GNet> gnet1;
+  std::shared_ptr <GNet> gnet2;
 
   PreMapper::GateIdMap gmap;
 
@@ -62,6 +65,8 @@ bool parse(RtlContext &context);
 bool compile(RtlContext &context);
 
 bool premap(RtlContext &context, PreBasis basis);
+
+bool optimize(RtlContext &context);
 
 bool check(RtlContext &context, LecType type);
 
