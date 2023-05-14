@@ -45,31 +45,31 @@ TEST(ISCAS, parse) {
   EXPECT_EQ(benchParser(), true);
 }
 
-TEST(gnetBuildTest, truthTableNot) {
+TEST(benchTranslator, parseNot) {
   auto notGate = buildGate("not.bench");
   std::vector<uint64_t> expected = { 1 };
   EXPECT_EQ(NetData::buildTruthTab(notGate.get()), expected);
 }
 
-TEST(gnetBuildTest, truthTableOr) {
+TEST(benchTranslator, parseOr) {
   auto orGate = buildGate("or.bench");
   std::vector<uint64_t> expected = { 14 };
   EXPECT_EQ(NetData::buildTruthTab(orGate.get()), expected);
 }
 
-TEST(gnetBuildTest, truthTableAnd) {
+TEST(benchTranslator, parseAnd) {
   auto andGate = buildGate("and.bench");
   std::vector<uint64_t> expected = { 8 };
   EXPECT_EQ(NetData::buildTruthTab(andGate.get()), expected);
 }
 
-TEST(gnetBuildTest, truthTableNand) {
+TEST(benchTranslator, parseNand) {
   auto nandGate = buildGate("nand.bench");
   std::vector<uint64_t> expected = { 4 };
   EXPECT_EQ(NetData::buildTruthTab(nandGate.get()), expected);
 }
 
-TEST(gnetBuildTest, truthTableNor) {
+TEST(benchTranslator, parseNor) {
   auto norGate = buildGate("nor.bench");
   std::vector<uint64_t> expected = { 7 };
   EXPECT_EQ(NetData::buildTruthTab(norGate.get()), expected);
