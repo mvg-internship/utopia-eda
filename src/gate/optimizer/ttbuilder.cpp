@@ -14,6 +14,7 @@ TTBuilder::TruthTable TTBuilder::applyGateFunc(const GateSymbol::Value func,
                                                const TruthTableList
                                                &inputList) {
   TruthTable result;
+  size_t counter = 0;
   switch (func) {
   case GateSymbol::ZERO:
     result = 0;
@@ -75,6 +76,18 @@ TTBuilder::TruthTable TTBuilder::applyGateFunc(const GateSymbol::Value func,
       result = result ^ inputList[i];
     }
     result = ~result;
+    break;
+  case GateSymbol::MAJ:
+    for (size_t i = 0; i < inputList.size(); i++) {
+      if(inputList[i] == 0) {
+        counter++;
+      }
+    }
+    if (2 * counter > inputList.size()) {
+      result = 0;
+    } else {
+      result = -1;
+    }
     break;
   default:
     assert(false && "Unsupported gate");
