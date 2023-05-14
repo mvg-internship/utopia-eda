@@ -173,7 +173,7 @@ struct RtlOptions final : public AppOptions {
         ->expected(1)
             ->transform(CLI::CheckedTransformer(preBasisMap, CLI::ignore_case));
     options->add_option(cli(PRINT_GRAPHML), printGraphml,
-                        "Print Gnet in GraphML format")
+                        "Print GNet in GraphML-format file")
         ->expected(1);
 
 

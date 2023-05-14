@@ -96,7 +96,7 @@ bool print(RtlContext &context, std::string file) {
 }
 
 int rtlMain(RtlContext &context, PreBasis basis, LecType type, 
-std::string file) {
+  std::string file) {
   if (!parse(context))   { return -1; }
   if (!compile(context)) { return -1; }
   if (!premap(context, basis))  { return -1; }
