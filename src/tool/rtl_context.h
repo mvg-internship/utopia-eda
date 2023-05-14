@@ -75,7 +75,8 @@ bool check(RtlContext &context, LecType type);
 bool print(RtlContext &context, std::string file);
 
 int rtlMain(RtlContext &context, PreBasis basis, LecType type, 
-std::string file);
+  std::string file);
+
 int rtlMain(RtlContext &context, const RtlOptions &options);
 
 } // namespace eda::tool
