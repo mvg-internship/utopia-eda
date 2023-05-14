@@ -18,25 +18,25 @@ using RtlContext = eda::tool::RtlContext;
 
 TEST(XagPremapperRilTest, XagAddTest) {
   RtlContext context("../test/data/ril/add.ril");
-  eda::tool::rtlMain(context, PreBasis::XAG, LecType::DEFAULT);
+  eda::tool::rtlMain(context, PreBasis::XAG, LecType::DEFAULT, "");
   EXPECT_TRUE(context.equal);
 }
 
 TEST(XagPremapperRilTest, XagSubTest) {
   RtlContext context("../test/data/ril/sub.ril");
-  eda::tool::rtlMain(context, PreBasis::XAG, LecType::DEFAULT);
+  eda::tool::rtlMain(context, PreBasis::XAG, LecType::DEFAULT, "");
   EXPECT_TRUE(context.equal);
 }
 
 TEST(XagPremapperRilTest, XagMulTest) {
   RtlContext context("../test/data/ril/mul.ril");
-  eda::tool::rtlMain(context, PreBasis::XAG, LecType::DEFAULT);
+  eda::tool::rtlMain(context, PreBasis::XAG, LecType::DEFAULT, "");
   EXPECT_TRUE(context.equal);
 }
 
 TEST(XagPremapperRilTest, XagTestTest) {
   RtlContext context("data/ril/test.ril");
-  eda::tool::rtlMain(context, PreBasis::XAG, LecType::DEFAULT);
+  eda::tool::rtlMain(context, PreBasis::XAG, LecType::DEFAULT, "");
   EXPECT_TRUE(context.equal);
 }
 
@@ -46,25 +46,25 @@ TEST(XagPremapperRilTest, XagTestTest) {
 
 TEST(XagPremapperRilTest, XagAddBddTest) {
   RtlContext context("../test/data/ril/add.ril");
-  eda::tool::rtlMain(context, PreBasis::XAG, LecType::BDD);
+  eda::tool::rtlMain(context, PreBasis::XAG, LecType::BDD, "");
   EXPECT_TRUE(context.equal);
 }
 
 TEST(XagPremapperRilTest, XagSubBddTest) {
   RtlContext context("../test/data/ril/sub.ril");
-  eda::tool::rtlMain(context, PreBasis::XAG, LecType::BDD);
+  eda::tool::rtlMain(context, PreBasis::XAG, LecType::BDD, "");
   EXPECT_TRUE(context.equal);
 }
 
 TEST(XagPremapperRilTest, XagMulBddTest) {
   RtlContext context("../test/data/ril/mul.ril");
-  eda::tool::rtlMain(context, PreBasis::XAG, LecType::BDD);
+  eda::tool::rtlMain(context, PreBasis::XAG, LecType::BDD, "");
   EXPECT_TRUE(context.equal);
 }
 
 TEST(XagPremapperRilTest, XagTestBddTest) {
   RtlContext context("data/ril/test.ril");
-  eda::tool::rtlMain(context, PreBasis::XAG, LecType::BDD);
+  eda::tool::rtlMain(context, PreBasis::XAG, LecType::BDD, "");
   EXPECT_TRUE(context.equal);
 }
 
@@ -74,24 +74,24 @@ TEST(XagPremapperRilTest, XagTestBddTest) {
 
 TEST(XagPremapperRilTest, XagAddRndTest) {
   RtlContext context("../test/data/ril/add.ril");
-  eda::tool::rtlMain(context, PreBasis::XAG, LecType::RND);
+  eda::tool::rtlMain(context, PreBasis::XAG, LecType::RND, "");
   EXPECT_TRUE(context.equal);
 }
 
 TEST(XagPremapperRilTest, XagSubRndTest) {
   RtlContext context("../test/data/ril/sub.ril");
-  eda::tool::rtlMain(context, PreBasis::XAG, LecType::RND);
+  eda::tool::rtlMain(context, PreBasis::XAG, LecType::RND, "");
   EXPECT_TRUE(context.equal);
 }
 
 TEST(XagPremapperRilTest, XagMulRndTest) {
   RtlContext context("../test/data/ril/mul.ril");
-  eda::tool::rtlMain(context, PreBasis::XAG, LecType::RND);
+  eda::tool::rtlMain(context, PreBasis::XAG, LecType::RND, "");
   EXPECT_TRUE(context.equal);
 }
 
 TEST(XagPremapperRilTest, XagTestRndTest) {
   RtlContext context("data/ril/test.ril");
-  eda::tool::rtlMain(context, PreBasis::XAG, LecType::RND);
+  eda::tool::rtlMain(context, PreBasis::XAG, LecType::RND, "");
   EXPECT_TRUE(context.equal);
 }

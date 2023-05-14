@@ -396,8 +396,8 @@ void GNet::addNet(const GNet &net) {
 
   for (const auto &[gid, flags] : net._flags) {
     auto newFlags = flags;
-    newFlags.subnet += nG;
-    newFlags.gindex += nS;
+    newFlags.subnet += nS;
+    newFlags.gindex += nG;
 
     _flags.insert({gid, newFlags});
   }

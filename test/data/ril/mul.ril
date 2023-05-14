@@ -1,8 +1,8 @@
 input  u:1 clock;
 input  u:1 reset;
-input  u:16 _dfc_wire_4852;
-input  u:16 _dfc_wire_4855;
-output  u:16 _dfc_wire_4859;
+input  u:8 _dfc_wire_4852;
+input  u:8 _dfc_wire_4855;
+output  u:8 _dfc_wire_4859;
 
 @(*) {
 _dfc_wire_4859 = _dfc_wire_4852 * _dfc_wire_4855;
