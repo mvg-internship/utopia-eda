@@ -62,7 +62,13 @@ struct RtlContext {
   bool equal;
 };
 
-bool parse(RtlContext &context);
+enum ParseResult {
+  PARSE_INVALID,
+  PARSE_RIL,
+  PARSE_NETLIST
+};
+
+ParseResult parse(RtlContext &context);
 
 bool compile(RtlContext &context);
 
