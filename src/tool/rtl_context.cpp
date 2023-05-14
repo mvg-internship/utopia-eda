@@ -90,7 +90,7 @@ bool check(RtlContext &context, LecType type) {
 bool print(RtlContext &context, std::string file) {
   std::ofstream fout;
   fout.open(file);
-  eda::printer::graphMl::toGraphMl::printer(fout, *context.gnet3);
+  eda::printer::graphMl::toGraphMl::printer(fout, *context.gnet1);
   fout.close();
   return true;
 }

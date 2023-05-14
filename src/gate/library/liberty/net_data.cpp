@@ -18,20 +18,18 @@ using eda::gate::model::GateSymbol;
 using eda::gate::simulator::Simulator;
 using eda::gate::optimizer::RWDatabase;
 
-static std::shared_ptr<GModel::GNet> makeNet(GateSymbol gate,
-                                     unsigned N,
-                                     Gate::SignalList &inputs,
-                                     Gate::Id &outputId) {
+static std::shared_ptr<GModel::GNet> makeNet(
+    GateSymbol gate,
+    unsigned N,
+    Gate::SignalList &inputs,
+    Gate::Id &outputId) {
   auto net = std::make_shared<GModel::GNet>();
-
   for (unsigned i = 0; i < N; i++) {
     const Gate::Id inputId = net->addIn();
     inputs.push_back(Gate::Signal::always(inputId));
   }
-
   auto gateId = net->addGate(gate, inputs);
   outputId = net->addOut(gateId);
-
   net->sortTopologically();
   return net;
 }

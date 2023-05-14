@@ -62,7 +62,7 @@ struct RtlContext {
   std::shared_ptr<GNet> gnet0;
   std::shared_ptr<GNet> gnet1;
   std::shared_ptr<GNet> gnet2;
-  std::shared_ptr <GNet> gnet3;
+  std::shared_ptr<GNet> gnet3;
 
   PreMapper::GateIdMap gmap;
 
