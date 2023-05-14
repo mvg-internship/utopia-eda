@@ -6,17 +6,11 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include <parser.h>
+#pragma once
 
-extern "C" int scan_token();
+#include "gate/model/gnet.h"
 
-int main(int argc, char* argv[]) {
-  for (int i = 1; i < argc; i++) {
-    try {
-        std::cout << *parseBenchFile(argv[i]);
-    } catch (std::exception& e) {
-        std::cerr <<  std::endl; 
-    }
-  }
-  return 0;
-}
+#include <memory>
+
+///defines the function that parses the bench file. 
+std::unique_ptr<eda::gate::model::GNet> parseBenchFile(const std::string &filename);

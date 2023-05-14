@@ -2,7 +2,7 @@ find_package(FLEX)
 FLEX_TARGET(BenchLexer
   lexer.l
   ${CMAKE_CURRENT_BINARY_DIR}/lexer.c
-  DEFINES_FILE "${CMAKE_CURRENT_BINARY_DIR}/headerFile"
+  DEFINES_FILE "${CMAKE_CURRENT_BINARY_DIR}/header_file"
 )
 
 add_library(BenchParser OBJECT

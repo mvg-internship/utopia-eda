@@ -9,7 +9,7 @@
 #include "gate/model/gate.h"
 #include "gate/model/gnet.h"
 #include "gate/model/gsymbol.h"
-#include "headerFile"
+#include "header_file"
 #include "tokens.h"
 
 #include <algorithm>

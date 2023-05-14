@@ -6,7 +6,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "gate/parser/bench/parser_foo.h"
+#include "gate/parser/bench/parser.h"
 #include "gate/library/liberty/net_data.h"
 #include "gtest/gtest.h"
 
@@ -17,17 +17,13 @@ namespace GModel = eda::gate::model;
 using eda::gate::model::GateSymbol;
 using GateId = eda::gate::model::Gate::Id;
 
-static std::unique_ptr<GModel::GNet> createLogicGate(GateSymbol symbol) {
+static std::unique_ptr<GModel::GNet> createLogicGate(const std::string file) {
   std::unique_ptr<GModel::GNet> net = std::make_unique<GModel::GNet>();
-  GateId a = net->addIn();
-  GateId out;
-  if (symbol != GateSymbol::DFF || symbol != GateSymbol::NOT) {
-    GateId b = net->addIn();
-    out = net->addGate(symbol, a, b);
-  } else {
-    out = net->addGate(symbol, a);
-  }
-  net->addOut(out);
+  const std::filesystem::path subCatalog = "test/data/bench";
+  const std::filesystem::path homePath = std::string(getenv("UTOPIA_HOME"));
+  const std::filesystem::path prefixPath = homePath / subCatalog;
+  const std::string filename = prefixPath / file;
+  net = parseBenchFile(filename);
   net->sortTopologically();
   return net;
 }
@@ -50,19 +46,25 @@ TEST(ISCAS, parse) {
 }
 
 TEST(gnetBuildTest, truthTableNot) {
-  auto notGate = createLogicGate(GateSymbol::NOT);
+  auto notGate = createLogicGate("not.bench");
   std::vector<uint64_t> expected = { 1 };
   EXPECT_EQ(NetData::buildTruthTab(notGate.get()), expected);
 }
 
 TEST(gnetBuildTest, truthTableOr) {
-  auto orGate = createLogicGate(GateSymbol::OR);
+  auto orGate = createLogicGate("or.bench");
   std::vector<uint64_t> expected = { 14 };
   EXPECT_EQ(NetData::buildTruthTab(orGate.get()), expected);
 }
 
 TEST(gnetBuildTest, truthTableAnd) {
-  auto andGate = createLogicGate(GateSymbol::AND);
+  auto andGate = createLogicGate("and.bench");
   std::vector<uint64_t> expected = { 8 };
+  EXPECT_EQ(NetData::buildTruthTab(andGate.get()), expected);
+}
+
+TEST(gnetBuildTest, truthTableNand) {
+  auto andGate = createLogicGate("nand.bench");
+  std::vector<uint64_t> expected = { 4 };
   EXPECT_EQ(NetData::buildTruthTab(andGate.get()), expected);
 }
