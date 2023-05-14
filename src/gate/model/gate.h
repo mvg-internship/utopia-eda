@@ -88,7 +88,7 @@ private:
   /// Invariant.
   bool invariant() const {
     return // Source <=> no inputs.
-           (isSource() == (arity() == 0))
+           ((isSource() || isValue()) == (arity() == 0))
            // Target ==> no outputs.
         && (!isTarget() || (fanout() == 0));
   }

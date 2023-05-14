@@ -17,6 +17,8 @@
 
 namespace fs = std::filesystem;
 
+using eda::gate::model::makeRand;
+
 struct FMAlgoConfig {
   int seed;
   int passes;

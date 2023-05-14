@@ -8,8 +8,11 @@
 
 #pragma once
 
+#include "gate/debugger/checker.h"
+#include "gate/premapper/aigmapper.h"
+#include "gate/premapper/migmapper.h"
 #include "gate/premapper/xagmapper.h"
-
+#include "gate/premapper/xmgmapper.h"
 
 using Gate = eda::gate::model::Gate;
 using GateBinding = std::unordered_map<Gate::Link, Gate::Link>;
@@ -17,17 +20,17 @@ using GateIdMap = std::unordered_map<Gate::Id, Gate::Id>;
 using GateSymbol = eda::gate::model::GateSymbol;
 using GNet = eda::gate::model::GNet;
 using Link = Gate::Link;
-
-void dump(const GNet &net);
+using PreBasis = eda::gate::premapper::PreBasis;
 
 std::shared_ptr<GNet> makeSingleGateNet(GateSymbol gate, const unsigned N);
 std::shared_ptr<GNet> makeSingleGateNetn(GateSymbol gate, const unsigned N);
-std::shared_ptr<GNet> premap(std::shared_ptr<GNet> net, GateIdMap &gmap);
+std::shared_ptr<GNet> makeSingleGateNetOppositeInputs(GateSymbol gate);
 
-void initializeBinds(const GNet &net,
-                     GateIdMap &gmap,
-                     GateBinding &ibind,
-                     GateBinding &obind);
+std::shared_ptr<GNet> premap(std::shared_ptr<GNet> net,
+                             GateIdMap &gmap,
+                             PreBasis basis);
+
 bool checkEquivalence(const std::shared_ptr<GNet> net,
                       const std::shared_ptr<GNet> premapped,
                       GateIdMap &gmap);
+
