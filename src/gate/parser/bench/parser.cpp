@@ -207,7 +207,7 @@ std::unique_ptr<GNet> builderGnet(std::map<std::string, SymbolInfo> &infos) {
   std::unique_ptr<GNet> net = std::make_unique<GNet>();
   bool dffFlag = false;
   Gate::Id dffClock = -1;
-  for (auto it = infos.begin(); it != infos.end(); it ++) {
+  for (auto it = infos.begin(); it != infos.end(); it++) {
     for (const auto &i : it->second.uses) {
       if (i.typeInit == TOK_INPUT) {
         it->second.gateId = net->addIn();
@@ -228,7 +228,7 @@ std::unique_ptr<GNet> builderGnet(std::map<std::string, SymbolInfo> &infos) {
       }
     }
     for (const auto &i : it->second.uses) {
-      if (i.def) {
+      if (i.def && i.typeInit != 1 && i.typeInit != 2) {
         tok = i.typeInit;
       }
     }
