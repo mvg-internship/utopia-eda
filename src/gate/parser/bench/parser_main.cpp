@@ -8,12 +8,6 @@
 
 #include <parser_foo.h>
 
-#include <algorithm>
-#include <iostream>
-#include <map>
-#include <memory>
-#include <vector>
-
 extern "C" int scan_token();
 
 int main(int argc, char* argv[]) {
