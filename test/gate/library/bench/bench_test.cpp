@@ -64,7 +64,13 @@ TEST(gnetBuildTest, truthTableAnd) {
 }
 
 TEST(gnetBuildTest, truthTableNand) {
-  auto andGate = createLogicGate("nand.bench");
+  auto nandGate = createLogicGate("nand.bench");
   std::vector<uint64_t> expected = { 4 };
-  EXPECT_EQ(NetData::buildTruthTab(andGate.get()), expected);
+  EXPECT_EQ(NetData::buildTruthTab(nandGate.get()), expected);
+}
+
+TEST(gnetBuildTest, truthTableNor) {
+  auto norGate = createLogicGate("nor.bench");
+  std::vector<uint64_t> expected = { 7 };
+  EXPECT_EQ(NetData::buildTruthTab(norGate.get()), expected);
 }
