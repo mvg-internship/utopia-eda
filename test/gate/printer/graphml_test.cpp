@@ -13,6 +13,8 @@
 
 using GNet = eda::gate::model::GNet;
 
+using eda::gate::model::makeRand;
+
 namespace eda::printer::graphMl {
 
 int graphMlTest() {

@@ -21,6 +21,8 @@
 using GateIdMap = eda::gate::premapper::MigMapper::GateIdMap;
 using MigMapper = eda::gate::premapper::MigMapper;
 
+using namespace eda::gate::model;
+
 TEST(MigMapperTest, MigMapperOrTest) {
   Gate::SignalList inputs;
   Gate::Id outputId;
