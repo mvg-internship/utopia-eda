@@ -6,7 +6,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "gate/parser/bench/parserFoo.h"
+#include "gate/parser/bench/parser_foo.h"
 #include "gate/library/liberty/net_data.h"
 #include "gtest/gtest.h"
 
