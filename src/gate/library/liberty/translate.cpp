@@ -33,7 +33,7 @@ static void fillInputs(
     GModel::GNet &net,
     std::map<size_t, GateId> &inputs) {
   std::vector<size_t> tmp;
-  for (auto [name, wire]: wires) {
+  for (const auto &[name, wire]: wires) {
     size_t index = name.index_;
     if (wire->port_input) {
       tmp.push_back(index);
@@ -388,7 +388,7 @@ bool translateModuleToGNet(
 void translateDesignToGNet(
     const RTlil::Design *des,
     NetData &vec) {
-  for (auto [IdString, Module]: des->modules_) {
+  for (const auto &[IdString, Module]: des->modules_) {
     std::unique_ptr<GModel::GNet> net = std::make_unique<GModel::GNet>();
     bool isMem = translateModuleToGNet(Module, *net);
     net->sortTopologically();
