@@ -25,7 +25,6 @@ ParseResult parse(RtlContext &context) {
   try {
     context.gnet0 = parseBenchFile(context.file);
   } catch (std::exception& e) {
-    fclose(benchin);
     std::cerr << "error in " << e.what() <<  std::endl; 
   }
   if (context.gnet0) {
