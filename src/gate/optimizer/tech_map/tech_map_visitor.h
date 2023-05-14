@@ -19,13 +19,12 @@
 
 namespace eda::gate::optimizer {
 /**
- * \brief Realization of interface Visitor.
+ * \brief Implementation of interface Visitor.
  * \author <a href="mailto:dgaryaev@ispras.ru"></a>
  */
 
   class TechMapVisitor : public Visitor {
   public:
-
     using BoundGNetList = RWDatabase::BoundGNetList;
     using BoundGNet = RWDatabase::BoundGNet;
 
@@ -56,7 +55,6 @@ namespace eda::gate::optimizer {
     GNet *net;
     GateID lastNode;
     int cutSize;
-
 
     virtual bool checkOptimize(const BoundGNet &superGate,
                                const std::unordered_map<GateID, GateID> &map) = 0;

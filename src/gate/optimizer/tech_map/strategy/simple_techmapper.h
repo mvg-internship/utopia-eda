@@ -12,6 +12,7 @@
 #include "gate/optimizer/tech_map/tech_map_visitor.h"
 
 #include <cassert>
+#include <limits>
 #include <memory>
 #include <string>
 #include <unordered_map>

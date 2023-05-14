@@ -19,7 +19,7 @@
 
 namespace eda::gate::optimizer {
 /**
- * \brief Realization of interface Visitor. Replacing with better cuts.
+ * \brief Implementation of interface Visitor. Replacing with better cuts.
  * \author <a href="mailto:dgaryaev@ispras.ru"></a>
  */
 

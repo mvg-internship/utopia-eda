@@ -15,23 +15,23 @@ namespace eda::gate::optimizer {
 
   ReplacementVisitor::ReplacementVisitor() {}
 
-  void ReplacementVisitor::set(CutStorage *cutStorage,
-      GNet *net, 
+  void ReplacementVisitor::set(
+      CutStorage *cutStorage,
+      GNet *net,
       std::unordered_map<GateID, Replacement> *bestReplacement,
       int cutSize) {
     this->cutStorage = cutStorage;
     this->net = net;
     this->cutSize = cutSize;
     this->bestReplacement = bestReplacement;
-                            }
-  
+  }
 
   VisitorFlags ReplacementVisitor::onNodeBegin(const GateID &node) {
     if (cutStorage->cuts.find(node) == cutStorage->cuts.end()) {
       // If node is not in cutStorage - means, that it is a new node.
       // So we recount cuts for that node.
-      CutsFindVisitor finder(cutSize, cutStorage);
-      finder.onNodeBegin(node);
+     CutsFindVisitor finder(cutSize, cutStorage);
+     finder.onNodeBegin(node);
     }
     lastNode = node;
     lastCuts = &(cutStorage->cuts[node]);
@@ -39,13 +39,11 @@ namespace eda::gate::optimizer {
   }
 
   VisitorFlags ReplacementVisitor::onCut(const Visitor::Cut &cut) {
-    return SUCCESS;
+   return SUCCESS;
   }
 
   VisitorFlags ReplacementVisitor::onNodeEnd(const GateID &) {
-
     finishTechMap();
-
     // Removing invalid nodes.
     for (const auto &it: toRemove) {
       lastCuts->erase(*it);
@@ -68,8 +66,6 @@ namespace eda::gate::optimizer {
   }
 
   void ReplacementVisitor::finishTechMap() {
-    std::cout << "Do replace\n";
-
     if (bestReplacement->count(lastNode) && net->hasNode(lastNode)) {
       Replacement &replacementInfo = bestReplacement->at(lastNode);
       substitute(replacementInfo.rootNode, replacementInfo.bestOptionMap, replacementInfo.subsNet, replacementInfo.net);

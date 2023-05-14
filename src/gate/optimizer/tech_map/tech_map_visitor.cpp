@@ -22,8 +22,8 @@ namespace eda::gate::optimizer {
     this->cutStorage = cutStorage;
     this->net = net;
     this->cutSize = cutSize;
-    this->bestReplacement = bestReplacement;}
-  
+    this->bestReplacement = bestReplacement;
+  }
 
   VisitorFlags TechMapVisitor::onNodeBegin(const GateID &node) {
     if (cutStorage->cuts.find(node) == cutStorage->cuts.end()) {
@@ -83,7 +83,6 @@ namespace eda::gate::optimizer {
 
   VisitorFlags TechMapVisitor::onNodeEnd(const GateID &) {
     finishTechMap();
-
     // Removing invalid nodes.
     for (const auto &it: toRemove) {
       lastCuts->erase(*it);
