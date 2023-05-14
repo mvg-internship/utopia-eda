@@ -10,20 +10,20 @@
 
 namespace eda::tool {
 
-bool parse(RtlContext &context) {
+ParseResult parse(RtlContext &context) {
   LOG(INFO) << "RTL parse: " << context.file;
 
   context.vnet = eda::rtl::parser::ril::parse(context.file);
 
-  if (context.vnet == nullptr) {
-    LOG(ERROR) << "Could not parse the file";;
-    return false;
+  if (context.vnet) {
+    std::cout << "------ P/V-nets ------" << std::endl;
+    std::cout << *context.vnet << std::endl;
+
+    return PARSE_RIL;
   }
 
-  std::cout << "------ P/V-nets ------" << std::endl;
-  std::cout << *context.vnet << std::endl;
-
-  return true;
+  LOG(ERROR) << "Could not parse the file";
+  return PARSE_INVALID;
 }
 
 bool compile(RtlContext &context) {
@@ -95,10 +95,17 @@ bool print(RtlContext &context, std::string file) {
   return true;
 }
 
-int rtlMain(RtlContext &context, PreBasis basis, LecType type, 
-  std::string file) {
-  if (!parse(context))   { return -1; }
-  if (!compile(context)) { return -1; }
+int rtlMain(
+    RtlContext &context, PreBasis basis, LecType type, std::string file) {
+  ParseResult rc = parse(context);
+  if (rc == PARSE_INVALID) {
+    return -1;
+  }
+  if (rc == PARSE_RIL) {
+    if (!compile(context)) {
+      return -1;
+    }
+  }
   if (!premap(context, basis))  { return -1; }
   if (!optimize(context)) { return -1; }
   if (!check(context, type))   { return -1; }
