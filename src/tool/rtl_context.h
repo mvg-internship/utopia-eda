@@ -12,6 +12,7 @@
 #include "gate/premapper/premapper.h"
 #include "gate/premapper/xagmapper.h"
 #include "gate/premapper/xmgmapper.h"
+#include "gate/printer/graphml.h"
 #include "options.h"
 #include "rtl/compiler/compiler.h"
 #include "rtl/library/arithmetic.h"
@@ -64,6 +65,8 @@ bool compile(RtlContext &context);
 bool premap(RtlContext &context, PreBasis basis);
 
 bool check(RtlContext &context, LecType type);
+
+bool print(RtlContext &context);
 
 int rtlMain(RtlContext &context, PreBasis basis, LecType type);
 int rtlMain(RtlContext &context, const RtlOptions &options);

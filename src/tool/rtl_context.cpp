@@ -74,11 +74,20 @@ bool check(RtlContext &context, LecType type) {
   return true;
 }
 
+bool print(RtlContext &context) {
+  std::ofstream fout;
+  fout.open(context.options.printGraphml);
+  eda::printer::graphMl::toGraphMl::printer(fout, *context.gnet1);
+  fout.close();
+  return true;
+}
+
 int rtlMain(RtlContext &context, PreBasis basis, LecType type) {
   if (!parse(context))   { return -1; }
   if (!compile(context)) { return -1; }
   if (!premap(context, basis))  { return -1; }
   if (!check(context, type))   { return -1; }
+  if (!print(context)) { return -1; }
 
   return 0;
 }
