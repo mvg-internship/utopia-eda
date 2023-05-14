@@ -7,6 +7,7 @@
 //===----------------------------------------------------------------------===//
 #include "tool/rtl_context.h"
 #include "gate/model/utils.h"
+#include "gate/parser/bench/parser.h"
 
 namespace eda::tool {
 
@@ -28,12 +29,6 @@ ParseResult parse(RtlContext &context) {
     std::cerr << "error in " << e.what() <<  std::endl; 
   }
   if (context.gnet0) {
-    return PARSE_NETLIST;
-  }
-
-  std::vector<std::unique_ptr<GNet>> nets;
-  if (parseGateVerilog(context.file, nets)) {
-    context.gnet0 = std::move(nets[0]);
     return PARSE_NETLIST;
   }
 

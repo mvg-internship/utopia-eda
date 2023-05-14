@@ -10,7 +10,6 @@
 #include "gate/model/gnet.h"
 #include "gate/optimizer/optimizer.h"
 #include "gate/optimizer/strategy/exhaustive_search_optimizer.h"
-#include "gate/parser/bench/parser.h"
 #include "gate/premapper/migmapper.h"
 #include "gate/premapper/premapper.h"
 #include "gate/premapper/xagmapper.h"
