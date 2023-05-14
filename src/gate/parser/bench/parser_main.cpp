@@ -1,0 +1,33 @@
+//===----------------------------------------------------------------------===//
+//
+// Part of the Utopia EDA Project, under the Apache License v2.0
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2023 ISP RAS (http://www.ispras.ru)
+//
+//===----------------------------------------------------------------------===//
+
+// #include "gate/model/gate.h"
+// #include "gate/model/gnet.h"
+// #include "gate/model/gsymbol.h"
+// #include "headerFile"
+// #include "tokens.h"
+
+#include <algorithm>
+#include <iostream>
+#include <map>
+#include <memory>
+#include <vector>
+#include <parserFoo.h>
+
+extern "C" int scan_token();
+
+int main(int argc, char* argv[]) {
+  for (int i = 1; i < argc; i++) {
+    try {
+        std::cout << *parseBenchFile(argv[i]);
+    } catch (std::exception& e) {
+        std::cerr <<  std::endl; 
+    }
+  }
+  return 0;
+}
