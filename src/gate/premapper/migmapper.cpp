@@ -461,5 +461,3 @@ Gate::Id MigMapper::mapMaj(const Gate::SignalList &newInputs,
 }
 
 } // namespace eda::gate::premapper
-
-} // namespace eda::gate::premapper

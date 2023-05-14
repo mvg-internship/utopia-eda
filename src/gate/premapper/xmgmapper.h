@@ -26,5 +26,3 @@ protected:
 };
 
 } // namespace eda::gate::premapper
-
-} // namespace eda::gate::premapper

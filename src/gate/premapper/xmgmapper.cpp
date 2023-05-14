@@ -51,5 +51,3 @@ Gate::Id XmgMapper::mapXor(const Gate::SignalList &newInputs,
 }
 
 } // namespace eda::gate::premapper
-
-} // namespace eda::gate::premapper
