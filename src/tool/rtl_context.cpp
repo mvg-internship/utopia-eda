@@ -10,20 +10,20 @@
 
 namespace eda::tool {
 
-bool parse(RtlContext &context) {
+ParseResult parse(RtlContext &context) {
   LOG(INFO) << "RTL parse: " << context.file;
 
   context.vnet = eda::rtl::parser::ril::parse(context.file);
 
-  if (context.vnet == nullptr) {
-    LOG(ERROR) << "Could not parse the file";;
-    return false;
+  if (context.vnet) {
+    std::cout << "------ P/V-nets ------" << std::endl;
+    std::cout << *context.vnet << std::endl;
+
+    return PARSE_RIL;
   }
 
-  std::cout << "------ P/V-nets ------" << std::endl;
-  std::cout << *context.vnet << std::endl;
-
-  return true;
+  LOG(ERROR) << "Could not parse the file";
+  return PARSE_INVALID;
 }
 
 bool compile(RtlContext &context) {
@@ -87,18 +87,36 @@ bool check(RtlContext &context, LecType type) {
   return true;
 }
 
-int rtlMain(RtlContext &context, PreBasis basis, LecType type) {
-  if (!parse(context))   { return -1; }
-  if (!compile(context)) { return -1; }
+bool print(RtlContext &context, std::string file) {
+  std::ofstream fout;
+  fout.open(file);
+  eda::printer::graphMl::toGraphMl::printer(fout, *context.gnet1);
+  fout.close();
+  return true;
+}
+
+int rtlMain(
+    RtlContext &context, PreBasis basis, LecType type, std::string file) {
+  ParseResult rc = parse(context);
+  if (rc == PARSE_INVALID) {
+    return -1;
+  }
+  if (rc == PARSE_RIL) {
+    if (!compile(context)) {
+      return -1;
+    }
+  }
   if (!premap(context, basis))  { return -1; }
   if (!optimize(context)) { return -1; }
   if (!check(context, type))   { return -1; }
+  if (!print(context, file)) { return -1; }
 
   return 0;
 }
 
 int rtlMain(RtlContext &context, const RtlOptions &options) {
-  return rtlMain(context, options.preBasis, options.lecType);
+  return rtlMain(context, options.preBasis, options.lecType,
+   options.printGraphml);
 }
 
 } // namespace eda::tool

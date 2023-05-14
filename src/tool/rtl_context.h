@@ -14,6 +14,7 @@
 #include "gate/premapper/premapper.h"
 #include "gate/premapper/xagmapper.h"
 #include "gate/premapper/xmgmapper.h"
+#include "gate/printer/graphml.h"
 #include "options.h"
 #include "rtl/compiler/compiler.h"
 #include "rtl/library/arithmetic.h"
@@ -61,7 +62,13 @@ struct RtlContext {
   bool equal;
 };
 
-bool parse(RtlContext &context);
+enum ParseResult {
+  PARSE_INVALID,
+  PARSE_RIL,
+  PARSE_NETLIST
+};
+
+ParseResult parse(RtlContext &context);
 
 bool compile(RtlContext &context);
 
@@ -71,7 +78,11 @@ bool optimize(RtlContext &context);
 
 bool check(RtlContext &context, LecType type);
 
-int rtlMain(RtlContext &context, PreBasis basis, LecType type);
+bool print(RtlContext &context, std::string file);
+
+int rtlMain(RtlContext &context, PreBasis basis, LecType type, 
+  std::string file);
+
 int rtlMain(RtlContext &context, const RtlOptions &options);
 
 } // namespace eda::tool
