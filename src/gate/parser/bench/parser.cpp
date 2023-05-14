@@ -221,14 +221,14 @@ std::unique_ptr<GNet> builderGnet(std::map<std::string, SymbolInfo> &infos) {
     }
   }
   for (auto it = infos.begin(); it != infos.end(); it++) {
-    Tokens tok;
+    Tokens tok = TOK_INPUT;
     for (const auto &i : it->second.uses) {
       if (i.typeInit == TOK_OUTPUT) {
         net->addOut(it->second.gateId);
       }
     }
     for (const auto &i : it->second.uses) {
-      if (i.def && i.typeInit != 1 && i.typeInit != 2) {
+      if (i.def && tok < 3) {
         tok = i.typeInit;
       }
     }
