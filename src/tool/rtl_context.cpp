@@ -60,6 +60,19 @@ bool premap(RtlContext &context, PreBasis basis) {
   return true;
 }
 
+bool optimize(RtlContext &context) {
+  GNet *gnet2 = context.gnet1->clone();
+
+  eda::gate::optimizer::optimize(gnet2, 4, ESOptimizer());
+
+  context.gnet2 = std::shared_ptr<GNet>(gnet2);
+
+  std::cout << "------ G-net #2 ------" << std::endl;
+  eda::gate::model::dump(*context.gnet2);
+
+  return true;
+}
+
 bool check(RtlContext &context, LecType type) {
   LOG(INFO) << "RTL check";
 
@@ -78,6 +91,7 @@ int rtlMain(RtlContext &context, PreBasis basis, LecType type) {
   if (!parse(context))   { return -1; }
   if (!compile(context)) { return -1; }
   if (!premap(context, basis))  { return -1; }
+  if (!optimize(context)) { return -1; }
   if (!check(context, type))   { return -1; }
 
   return 0;
