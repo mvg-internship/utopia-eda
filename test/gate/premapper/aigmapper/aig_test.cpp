@@ -6,150 +6,117 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "gate/premapper/mapper/mapper_test.h"
 #include "gate/debugger/checker.h"
 #include "gtest/gtest.h"
+#include "gate/premapper/mapper/mapper_test.h"
 
 #include <algorithm>
 #include <cassert>
 #include <memory>
 #include <random>
 
-using namespace eda::gate::premapper;
+// The tests check the equivalence of nets with single gates and their premapped nets
 
-using Gate = eda::gate::model::Gate;
-using GateBinding = std::unordered_map<Gate::Link, Gate::Link>;
-using GateIdMap = std::unordered_map<Gate::Id, Gate::Id>;
-using GNet = eda::gate::model::GNet;
-using Link = Gate::Link;
-
-/*
- * Check basis gate correct mapping
- */
-
-// Not gate tests
-TEST(XagPremapperTest, XagNotOneInputTest) {
-  // Create network
+TEST(AigPremapperTest, AigNotOneInputTest) {
   std::shared_ptr<GNet> net = makeSingleGateNet(GateSymbol::NOT, 1);
-  // Premapping
-  GateIdMap gmap;
-  std::shared_ptr<GNet> premapped = premap(net, gmap, PreBasis::AIG);
-  // Check equivalence
-  EXPECT_TRUE(checkEquivalence(net, premapped, gmap));
-}
-
-// And gate tests
-TEST(XagPremapperTest, XagAndOneInputTest) {
-  std::shared_ptr<GNet> net = makeSingleGateNet(GateSymbol::AND, 1);
   GateIdMap gmap;
   std::shared_ptr<GNet> premapped = premap(net, gmap, PreBasis::AIG);
   EXPECT_TRUE(checkEquivalence(net, premapped, gmap));
 }
 
-TEST(XagPremapperTest, XagAndTwoInputTest) {
+TEST(AigPremapperTest, AigAndTwoInputTest) {
   std::shared_ptr<GNet> net = makeSingleGateNet(GateSymbol::AND, 2);
   GateIdMap gmap;
   std::shared_ptr<GNet> premapped = premap(net, gmap, PreBasis::AIG);
   EXPECT_TRUE(checkEquivalence(net, premapped, gmap));
 }
 
-// Xor gate tests
-TEST(XagPremapperTest, XagXorOneInputTest) {
-  std::shared_ptr<GNet> net = makeSingleGateNet(GateSymbol::XOR, 1);
+TEST(AigPremapperTest, AigAndThreeInputTest) {
+  std::shared_ptr<GNet> net = makeSingleGateNet(GateSymbol::AND, 3);
   GateIdMap gmap;
   std::shared_ptr<GNet> premapped = premap(net, gmap, PreBasis::AIG);
   EXPECT_TRUE(checkEquivalence(net, premapped, gmap));
 }
 
-TEST(XagPremapperTest, XagXorTwoInputTest) {
-  std::shared_ptr<GNet> net = makeSingleGateNet(GateSymbol::XOR, 2);
-  GateIdMap gmap;
-  std::shared_ptr<GNet> premapped = premap(net, gmap, PreBasis::AIG);
-  EXPECT_TRUE(checkEquivalence(net, premapped, gmap));
-}
-
-/*
- * Check out of basis gates correct mapping
- */
-
-// Not gate tests
-TEST(XagPremapperTest, XagOrOneInputTest) {
-  std::shared_ptr<GNet> net = makeSingleGateNet(GateSymbol::OR, 1);
-  GateIdMap gmap;
-  std::shared_ptr<GNet> premapped = premap(net, gmap, PreBasis::AIG);
-  EXPECT_TRUE(checkEquivalence(net, premapped, gmap));
-}
-
-TEST(XagPremapperTest, XagOrTwoInputTest) {
+TEST(AigPremapperTest, AigOrTwoInputTest) {
   std::shared_ptr<GNet> net = makeSingleGateNet(GateSymbol::OR, 2);
   GateIdMap gmap;
   std::shared_ptr<GNet> premapped = premap(net, gmap, PreBasis::AIG);
   EXPECT_TRUE(checkEquivalence(net, premapped, gmap));
 }
 
-/*
- * Negative (inverted) inputs basis gates
- */
+TEST(AigPremapperTest, AigOrThreeInputTest) {
+  std::shared_ptr<GNet> net = makeSingleGateNet(GateSymbol::OR, 3);
+  GateIdMap gmap;
+  std::shared_ptr<GNet> premapped = premap(net, gmap, PreBasis::AIG);
+  EXPECT_TRUE(checkEquivalence(net, premapped, gmap));
+}
 
-// Not gate test with inverted inputs
-TEST(XagPremapperTest, XagNotOneNegativeInputTest) {
+TEST(AigPremapperTest, AigOrFourInputTest) {
+  std::shared_ptr<GNet> net = makeSingleGateNet(GateSymbol::OR, 4);
+  GateIdMap gmap;
+  std::shared_ptr<GNet> premapped = premap(net, gmap, PreBasis::AIG);
+  EXPECT_TRUE(checkEquivalence(net, premapped, gmap));
+}
+
+TEST(AigPremapperTest, AigXorTwoInputTest) {
+  std::shared_ptr<GNet> net = makeSingleGateNet(GateSymbol::XOR, 2);
+  GateIdMap gmap;
+  std::shared_ptr<GNet> premapped = premap(net, gmap, PreBasis::AIG);
+  EXPECT_TRUE(checkEquivalence(net, premapped, gmap));
+}
+
+TEST(AigPremapperTest, AigXorFourInputTest) {
+  std::shared_ptr<GNet> net = makeSingleGateNet(GateSymbol::XOR, 4);
+  GateIdMap gmap;
+  std::shared_ptr<GNet> premapped = premap(net, gmap, PreBasis::AIG);
+  EXPECT_TRUE(checkEquivalence(net, premapped, gmap));
+}
+
+TEST(AigPremapperTest, AigNotOneInvertedInputTest) {
   std::shared_ptr<GNet> net = makeSingleGateNetn(GateSymbol::NOT, 1);
   GateIdMap gmap;
   std::shared_ptr<GNet> premapped = premap(net, gmap, PreBasis::AIG);
   EXPECT_TRUE(checkEquivalence(net, premapped, gmap));
 }
 
-// And gate tests with inverted inputs
-TEST(XagPremapperTest, XagAndOneNegativeInputTest) {
-  std::shared_ptr<GNet> net = makeSingleGateNetn(GateSymbol::AND, 1);
-  GateIdMap gmap;
-  std::shared_ptr<GNet> premapped = premap(net, gmap, PreBasis::AIG);
-  EXPECT_TRUE(checkEquivalence(net, premapped, gmap));
-}
-
-TEST(XagPremapperTest, XagAndTwoNegativeInputTest) {
+TEST(AigPremapperTest, AigAndTwoInvertedInputTest) {
   std::shared_ptr<GNet> net = makeSingleGateNetn(GateSymbol::AND, 2);
   GateIdMap gmap;
   std::shared_ptr<GNet> premapped = premap(net, gmap, PreBasis::AIG);
   EXPECT_TRUE(checkEquivalence(net, premapped, gmap));
 }
 
-// Xor gate tests with inverted inputs
-TEST(XagPremapperTest, XagXorOneNegativeInputTest) {
-  std::shared_ptr<GNet> net = makeSingleGateNetn(GateSymbol::XOR, 1);
+TEST(AigPremapperTest, AigAndThreeInvertedInputTest) {
+  std::shared_ptr<GNet> net = makeSingleGateNetn(GateSymbol::AND, 3);
   GateIdMap gmap;
   std::shared_ptr<GNet> premapped = premap(net, gmap, PreBasis::AIG);
   EXPECT_TRUE(checkEquivalence(net, premapped, gmap));
 }
 
-TEST(XagPremapperTest, XagXorTwoNegativeInputTest) {
-  std::shared_ptr<GNet> net = makeSingleGateNetn(GateSymbol::XOR, 2);
-  GateIdMap gmap;
-  std::shared_ptr<GNet> premapped = premap(net, gmap, PreBasis::AIG);
-  EXPECT_TRUE(checkEquivalence(net, premapped, gmap));
-}
-
-/*
- * Check out of basis gates (inverted inputs) correct mapping
- */
-
-// Or gate tests with inverted inputs
-TEST(XagPremapperTest, XagOrOneNegativeInputTest) {
-  std::shared_ptr<GNet> net = makeSingleGateNetn(GateSymbol::OR, 1);
-  GateIdMap gmap;
-  std::shared_ptr<GNet> premapped = premap(net, gmap, PreBasis::AIG);
-  EXPECT_TRUE(checkEquivalence(net, premapped, gmap));
-}
-
-TEST(XagPremapperTest, XagOrTwoNegativeInputTest) {
+TEST(AigPremapperTest, AigOrTwoInvertedInputTest) {
   std::shared_ptr<GNet> net = makeSingleGateNetn(GateSymbol::OR, 2);
   GateIdMap gmap;
   std::shared_ptr<GNet> premapped = premap(net, gmap, PreBasis::AIG);
   EXPECT_TRUE(checkEquivalence(net, premapped, gmap));
 }
 
-TEST(XagPremapperTest, XagNandTwoOppositeInputsTest) {
-  std::shared_ptr<GNet> net = makeSingleGateNetOppositeInputs(GateSymbol::NAND);
+TEST(AigPremapperTest, AigOrFourInvertedInputTest) {
+  std::shared_ptr<GNet> net = makeSingleGateNetn(GateSymbol::OR, 4);
+  GateIdMap gmap;
+  std::shared_ptr<GNet> premapped = premap(net, gmap, PreBasis::AIG);
+  EXPECT_TRUE(checkEquivalence(net, premapped, gmap));
+}
+
+TEST(AigPremapperTest, AigXorTwoInvertedInputTest) {
+  std::shared_ptr<GNet> net = makeSingleGateNetn(GateSymbol::XOR, 2);
+  GateIdMap gmap;
+  std::shared_ptr<GNet> premapped = premap(net, gmap, PreBasis::AIG);
+  EXPECT_TRUE(checkEquivalence(net, premapped, gmap));
+}
+
+TEST(AigPremapperTest, AigXorFourInvertedInputTest) {
+  std::shared_ptr<GNet> net = makeSingleGateNetn(GateSymbol::XOR, 4);
   GateIdMap gmap;
   std::shared_ptr<GNet> premapped = premap(net, gmap, PreBasis::AIG);
   EXPECT_TRUE(checkEquivalence(net, premapped, gmap));
