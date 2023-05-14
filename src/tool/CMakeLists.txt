@@ -1,3 +1,4 @@
+set(MAIN_LIBRARY ueda)
 add_library(Tool OBJECT rtl_context.cpp)
 
 add_library(Utopia::Tool ALIAS Tool)
@@ -10,4 +11,5 @@ target_link_libraries(Tool
     Json
     minisat-lib-static
     sqlite3
+    Yosys::Yosys
 )

@@ -6,10 +6,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "gate/model/gsymbol.h"
 #include "gate/optimizer/substitute_visitor.h"
-
-using GateSymbol = eda::gate::model::GateSymbol;
 
 namespace eda::gate::optimizer {
 
@@ -54,15 +51,8 @@ namespace eda::gate::optimizer {
           changeGate = nodes[subGate->id()] = cutFor;
         } else {
           changeGate = nodes[subGate->id()] =  cutFor;
-          const GateSymbol sym = subGate->func();
-          if (cutForGate->func() != sym) {
-            if (sym == GateSymbol::ZERO) {
-              net->setZero(cutFor);
-            } else if (sym == GateSymbol::ONE) {
-              net->setOne(cutFor);
-            } else {
-              net->setGate(cutFor, sym, Gate::get(cutFor)->inputs());
-            }
+          if(cutForGate->func() != subGate->func()) {
+            net->setGate(cutFor, subGate->func(), Gate::get(cutFor)->inputs());
           }
         }
         // If input links coincide then don't rewrite anything.

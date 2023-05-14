@@ -7,9 +7,14 @@
 //===----------------------------------------------------------------------===//
 #include "gate/debugger/base_checker.h"
 #include "gate/debugger/checker.h"
+#include "gate/library/liberty/net_data.h"
+#include "gate/library/liberty/translate.h"
 #include "gate/model/gnet.h"
 #include "gate/optimizer/optimizer.h"
 #include "gate/optimizer/strategy/exhaustive_search_optimizer.h"
+#include "gate/optimizer/tech_map/strategy/replacement_cut.h"
+#include "gate/optimizer/tech_map/strategy/simple_techmapper.h"
+#include "gate/optimizer/tech_map/tech_mapper.h"
 #include "gate/premapper/migmapper.h"
 #include "gate/premapper/premapper.h"
 #include "gate/premapper/xagmapper.h"
@@ -32,6 +37,7 @@ using Link = Gate::Link;
 using AigMapper = eda::gate::premapper::AigMapper;
 using Checker = eda::gate::debugger::Checker;
 using Compiler = eda::rtl::compiler::Compiler;
+using RewriteManager = eda::gate::optimizer::RewriteManager;
 using LecType = eda::gate::debugger::options::LecType;
 using Library = eda::rtl::library::ArithmeticLibrary;
 using MigMapper = eda::gate::premapper::MigMapper;
@@ -56,10 +62,12 @@ struct RtlContext {
   std::shared_ptr<GNet> gnet0;
   std::shared_ptr<GNet> gnet1;
   std::shared_ptr<GNet> gnet2;
+  std::shared_ptr <GNet> gnet3;
 
   PreMapper::GateIdMap gmap;
 
   bool equal;
+  std::string techLib = "abc";
 };
 
 enum ParseResult {
@@ -79,6 +87,12 @@ bool optimize(RtlContext &context);
 bool check(RtlContext &context, LecType type);
 
 bool print(RtlContext &context, std::string file);
+
+bool techMap(RtlContext &context);
+
+std::string getName(std::string &path);
+
+void fillingTechLib(std::string path);
 
 int rtlMain(RtlContext &context, PreBasis basis, LecType type, 
   std::string file);

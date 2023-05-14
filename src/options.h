@@ -155,6 +155,7 @@ struct RtlOptions final : public AppOptions {
 
   static constexpr const char *PREMAP_BASIS  = "premap-basis";
   static constexpr const char *PRINT_GRAPHML  = "print-graphml";
+  static constexpr const char *LIBERTY  = "load-lib";
 
   const std::map<std::string, PreBasis> preBasisMap {
     {"aig", PreBasis::AIG},
@@ -175,6 +176,9 @@ struct RtlOptions final : public AppOptions {
     options->add_option(cli(PRINT_GRAPHML), printGraphml,
                         "Print GNet in GraphML-format file")
         ->expected(1);
+    options->add_option(cli(LIBERTY), libertyFile,
+        "Is used to filling Technical Library. Requires .lib files.")
+            ->expected(1);
 
 
     // Input file(s).
@@ -189,10 +193,12 @@ struct RtlOptions final : public AppOptions {
     get(json, LEC_TYPE, lecType);
     get(json, PREMAP_BASIS, preBasis);
     get(json, PRINT_GRAPHML, printGraphml);
+    get(json, LIBERTY,  libertyFile);
   }
 
   PreBasis preBasis = PreBasis::AIG;
   std::string printGraphml;
+  std::string libertyFile;
 };
 
 struct HlsOptions final : public AppOptions {

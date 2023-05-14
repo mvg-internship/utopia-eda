@@ -63,7 +63,7 @@ bool premap(RtlContext &context, PreBasis basis) {
 bool optimize(RtlContext &context) {
   GNet *gnet2 = context.gnet1->clone();
 
-  eda::gate::optimizer::optimize(gnet2, 4, ESOptimizer());
+  eda::gate::optimizer::optimize(gnet2, 4, ESOptimizer("abc"));
 
   context.gnet2 = std::shared_ptr<GNet>(gnet2);
 
@@ -90,9 +90,38 @@ bool check(RtlContext &context, LecType type) {
 bool print(RtlContext &context, std::string file) {
   std::ofstream fout;
   fout.open(file);
-  eda::printer::graphMl::toGraphMl::printer(fout, *context.gnet1);
+  eda::printer::graphMl::toGraphMl::printer(fout, *context.gnet3);
   fout.close();
   return true;
+}
+
+bool techMap(RtlContext &context) {
+  GNet *gnet3 = context.gnet2->clone();
+
+  if (context.techLib != "abc") {
+    eda::gate::optimizer::techMap(gnet3, 4,
+                            eda::gate::optimizer::SimpleTechMapper(context.techLib.c_str()),
+                            eda::gate::optimizer::ReplacementVisitor());
+  }
+
+  context.gnet3 = std::shared_ptr<GNet>(gnet3);
+
+  std::cout << "------ G-net #3 ------" << std::endl;
+  dump(*context.gnet3);
+
+  return true;
+}
+
+std::string getName(std::string &path) {
+  return std::filesystem::path(path).filename();
+}
+
+void fillingTechLib(std::string path) {
+  std::string namefile = getName(path);
+  auto db = RewriteManager::get().createDatabase(namefile);
+  NetData data;
+  translateLibertyToDesign(path, data);
+  data.fillDatabase(*db);
 }
 
 int rtlMain(
@@ -109,6 +138,7 @@ int rtlMain(
   if (!premap(context, basis))  { return -1; }
   if (!optimize(context)) { return -1; }
   if (!check(context, type))   { return -1; }
+  if (!techMap(context)) { return -1; }
   if (!print(context, file)) { return -1; }
 
   return 0;
