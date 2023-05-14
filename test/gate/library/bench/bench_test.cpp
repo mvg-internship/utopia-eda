@@ -17,7 +17,7 @@ namespace GModel = eda::gate::model;
 using eda::gate::model::GateSymbol;
 using GateId = eda::gate::model::Gate::Id;
 
-static std::unique_ptr<GModel::GNet> createLogicGate(const std::string file) {
+static std::unique_ptr<GModel::GNet> buildGate(const std::string file) {
   std::unique_ptr<GModel::GNet> net = std::make_unique<GModel::GNet>();
   const std::filesystem::path subCatalog = "test/data/bench";
   const std::filesystem::path homePath = std::string(getenv("UTOPIA_HOME"));
@@ -46,31 +46,31 @@ TEST(ISCAS, parse) {
 }
 
 TEST(gnetBuildTest, truthTableNot) {
-  auto notGate = createLogicGate("not.bench");
+  auto notGate = buildGate("not.bench");
   std::vector<uint64_t> expected = { 1 };
   EXPECT_EQ(NetData::buildTruthTab(notGate.get()), expected);
 }
 
 TEST(gnetBuildTest, truthTableOr) {
-  auto orGate = createLogicGate("or.bench");
+  auto orGate = buildGate("or.bench");
   std::vector<uint64_t> expected = { 14 };
   EXPECT_EQ(NetData::buildTruthTab(orGate.get()), expected);
 }
 
 TEST(gnetBuildTest, truthTableAnd) {
-  auto andGate = createLogicGate("and.bench");
+  auto andGate = buildGate("and.bench");
   std::vector<uint64_t> expected = { 8 };
   EXPECT_EQ(NetData::buildTruthTab(andGate.get()), expected);
 }
 
 TEST(gnetBuildTest, truthTableNand) {
-  auto nandGate = createLogicGate("nand.bench");
+  auto nandGate = buildGate("nand.bench");
   std::vector<uint64_t> expected = { 4 };
   EXPECT_EQ(NetData::buildTruthTab(nandGate.get()), expected);
 }
 
 TEST(gnetBuildTest, truthTableNor) {
-  auto norGate = createLogicGate("nor.bench");
+  auto norGate = buildGate("nor.bench");
   std::vector<uint64_t> expected = { 7 };
   EXPECT_EQ(NetData::buildTruthTab(norGate.get()), expected);
 }
