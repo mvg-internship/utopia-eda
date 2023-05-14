@@ -14,7 +14,10 @@ TTBuilder::TruthTable TTBuilder::applyGateFunc(const GateSymbol::Value func,
                                                const TruthTableList
                                                &inputList) {
   TruthTable result;
-  size_t counter = 0;
+  size_t counters[32];
+  for (size_t i = 0; i < 32; ++i) {
+    counters[i] = 0;
+  }
   switch (func) {
   case GateSymbol::ZERO:
     result = 0;
@@ -78,15 +81,45 @@ TTBuilder::TruthTable TTBuilder::applyGateFunc(const GateSymbol::Value func,
     result = ~result;
     break;
   case GateSymbol::MAJ:
-    for (size_t i = 0; i < inputList.size(); i++) {
-      if(inputList[i] == 0) {
-        counter++;
+    if (inputList.size() == 1) {
+        result = inputList[0];
+        break;
       }
-    }
-    if (2 * counter > inputList.size()) {
+    if (inputList.size() == 3) {
+      for (size_t i = 0; i < 3; ++i) {
+        for (size_t j = 0; j < 8; ++j) {
+          if (((inputList[i] >> j) & 1) != 0 ) {
+            ++counters[j];
+          }
+        }
+      }
       result = 0;
-    } else {
-      result = -1;
+      for (size_t j = 0; j < 8; ++j) {
+        if (counters[j] > 1) {
+          result |= (1 << j);
+        }
+      }
+      break;
+    }
+    if (inputList.size() == 5) {
+      for (size_t i = 0; i < 5; ++i) {
+        for (size_t j = 0; j < 32; ++j) {
+          if (((inputList[i] >> j) & 1) != 0 ) {
+            ++counters[j];
+          }
+        }
+      }
+      result = 0;
+      for (size_t j = 0; j < 32; ++j) {
+        if (counters[j] > 1) {
+          result |= (1 << j);
+        }
+      }
+      break;
+    }
+    result = inputList[0];
+    for (size_t i = 1; i < inputList.size(); i++) {
+      result = result & inputList[i];
     }
     break;
   default:
