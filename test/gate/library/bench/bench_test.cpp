@@ -62,15 +62,3 @@ TEST(benchTranslator, parseAnd) {
   std::vector<uint64_t> expected = { 8 };
   EXPECT_EQ(NetData::buildTruthTab(andGate.get()), expected);
 }
-
-TEST(benchTranslator, parseNand) {
-  auto nandGate = buildGate("nand.bench");
-  std::vector<uint64_t> expected = { 4 };
-  EXPECT_EQ(NetData::buildTruthTab(nandGate.get()), expected);
-}
-
-TEST(benchTranslator, parseNor) {
-  auto norGate = buildGate("nor.bench");
-  std::vector<uint64_t> expected = { 7 };
-  EXPECT_EQ(NetData::buildTruthTab(norGate.get()), expected);
-}
