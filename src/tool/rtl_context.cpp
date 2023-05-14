@@ -74,26 +74,28 @@ bool check(RtlContext &context, LecType type) {
   return true;
 }
 
-bool print(RtlContext &context) {
+bool print(RtlContext &context, std::string file) {
   std::ofstream fout;
-  fout.open(context.options.printGraphml);
+  fout.open(file);
   eda::printer::graphMl::toGraphMl::printer(fout, *context.gnet1);
   fout.close();
   return true;
 }
 
-int rtlMain(RtlContext &context, PreBasis basis, LecType type) {
+int rtlMain(RtlContext &context, PreBasis basis, LecType type, 
+std::string file) {
   if (!parse(context))   { return -1; }
   if (!compile(context)) { return -1; }
   if (!premap(context, basis))  { return -1; }
   if (!check(context, type))   { return -1; }
-  if (!print(context)) { return -1; }
+  if (!print(context, file)) { return -1; }
 
   return 0;
 }
 
 int rtlMain(RtlContext &context, const RtlOptions &options) {
-  return rtlMain(context, options.preBasis, options.lecType);
+  return rtlMain(context, options.preBasis, options.lecType,
+   options.printGraphml);
 }
 
 } // namespace eda::tool

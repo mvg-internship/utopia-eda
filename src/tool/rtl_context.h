@@ -66,9 +66,10 @@ bool premap(RtlContext &context, PreBasis basis);
 
 bool check(RtlContext &context, LecType type);
 
-bool print(RtlContext &context);
+bool print(RtlContext &context, std::string file);
 
-int rtlMain(RtlContext &context, PreBasis basis, LecType type);
+int rtlMain(RtlContext &context, PreBasis basis, LecType type, 
+std::string file);
 int rtlMain(RtlContext &context, const RtlOptions &options);
 
 } // namespace eda::tool
