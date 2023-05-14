@@ -175,7 +175,7 @@ bool optimize(RtlContext &context) {
 }
 
 bool techMap(RtlContext &context) {
-  GNet *gnet3 = context.gnet2->clone();
+  GNet *gnet3 = context.gnet0->clone();
 
   if (context.techLib != "abc") {
     eda::gate::optimizer::techMap(gnet3, 4,
@@ -199,7 +199,7 @@ bool check(RtlContext &context) {
   assert(context.gnet0->nSourceLinks() == context.gnet1->nSourceLinks());
   assert(context.gnet0->nTargetLinks() == context.gnet1->nTargetLinks());
 
-  context.equal = checker.areEqual(*context.gnet0, *context.gnet1, context.gmap);
+  context.equal = checker.areEqual(*context.gnet0, *context.gnet3, context.gmap);
 
   std::cout << "equivalent=" << context.equal << std::endl;
 
