@@ -23,8 +23,9 @@ void Encoder::encode(const Gate &gate, uint16_t version) {
 
   switch (gate.func()) {
   case GateSymbol::IN:
+    break;
   case GateSymbol::OUT:
-    // Ignore input and output gates.
+    encodeBuf(gate, true, version);
     break;
   case GateSymbol::ONE:
     encodeFix(gate, true, version);
@@ -55,6 +56,9 @@ void Encoder::encode(const Gate &gate, uint16_t version) {
     break;
   case GateSymbol::XNOR:
     encodeXor(gate, false, version);
+    break;
+  case GateSymbol::MAJ:
+    encodeMaj(gate, true, version);
     break;
   case GateSymbol::LATCH:
     encodeLatch(gate, version);
@@ -131,6 +135,15 @@ void Encoder::encodeXor(const Gate &gate, bool sign, uint16_t version) {
   }
 }
 
+void Encoder::encodeMaj(const Gate &gate, bool sign, uint16_t version) {
+  assert(gate.arity() == 3);
+  auto y = _context.var(gate, version, Context::SET);
+  auto x1 = _context.var(gate.input(0), version, Context::GET);
+  auto x2 = _context.var(gate.input(1), version, Context::GET);
+  auto x3 = _context.var(gate.input(2), version, Context::GET);
+  encodeMaj(y, x1, x2, x3, sign, true, true, true);
+}
+
 void Encoder::encodeLatch(const Gate &gate, uint16_t version) {
   if (version == 0) { return; }
 
@@ -204,6 +217,30 @@ void Encoder::encodeXor(uint64_t y, uint64_t x1, uint64_t x2, bool s, bool s1, b
   encode(Context::lit(y, !s), Context::lit(x1,  s1), Context::lit(x2,  s2));
   encode(Context::lit(y,  s), Context::lit(x1, !s1), Context::lit(x2,  s2));
   encode(Context::lit(y,  s), Context::lit(x1,  s1), Context::lit(x2, !s2));
+}
+
+void Encoder::encodeMaj(uint64_t y, uint64_t x1, uint64_t x2, uint64_t x3,
+                        bool s, bool s1, bool s2, bool s3) {
+  const auto t1 = _context.newVar();
+  const auto t2 = _context.newVar();
+  const auto t3 = _context.newVar();
+
+  // t1 = (x1 & x2), t2 = (x1 & x3), t3 = (x2 & x3).
+  encodeAnd(t1, x1, x2, true, s1, s2);
+  encodeAnd(t2, x1, x3, true, s1, s3);
+  encodeAnd(t3, x2, x3, true, s2, s3);
+
+  // y = maj(x1, x2, x3) = (t1 | t2 | t3).
+  Context::Clause clause;
+  clause.push(Context::lit(y, !s));
+  clause.push(Context::lit(t1, true));
+  clause.push(Context::lit(t2, true));
+  clause.push(Context::lit(t3, true));
+  encode(clause);
+
+  encode(Context::lit(y, s), Context::lit(t1, false));
+  encode(Context::lit(y, s), Context::lit(t2, false));
+  encode(Context::lit(y, s), Context::lit(t3, false));
 }
 
 void Encoder::encodeMux(uint64_t y, uint64_t c, uint64_t x1, uint64_t x2, bool s) {

@@ -12,7 +12,7 @@
 #include "gate/debugger/checker.h"
 #include "gate/parser/gate_verilog_parser.h"
 #include "gate/printer/dot.h"
-#include "gate/premapper/xagmapper/xag_test.h"
+#include "gate/premapper/mapper/mapper_test.h"
 
 #include "gtest/gtest.h"
 
@@ -45,7 +45,7 @@ bool parseFile(const std::string g) {
   net->sortTopologically();
   GateIdMap gmap;
 
-  std::shared_ptr<GNet> premapped = premap(net, gmap);
+  std::shared_ptr<GNet> premapped = premap(net, gmap, PreBasis::XAG);
   delete parser.getGnet();
   return checkEquivalence(net, premapped, gmap);
 }

@@ -19,5 +19,7 @@ Gate::SignalList getNewInputs(const Gate &oldGate,
                               const GNet::GateIdMap &oldToNewGates,
                               size_t &n0,
                               size_t &n1);
+
+void dump(const GNet &net);
                               
 } // namespace eda::gate::model
