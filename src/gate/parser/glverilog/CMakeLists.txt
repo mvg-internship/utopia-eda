@@ -6,7 +6,7 @@ FLEX_TARGET(GateVerilogLexer
 )
 
 # Создаем библиотеку без функции main
-add_library(GateVerilogParser OBJECT Parser_test.cpp
+add_library(GateVerilogParser OBJECT parser_glverilog.cpp
   ${FLEX_GateVerilogLexer_OUTPUTS}
 )
 

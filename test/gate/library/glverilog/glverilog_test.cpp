@@ -63,6 +63,12 @@ TEST(gnetBuildTest, truthTableOr) {
   EXPECT_EQ(NetData::buildTruthTab(orGate.get()), expected);
 }
 
+TEST(gnetBuildTest, truthTableXor) {
+  auto xorGate = createLogicGate(GateSymbol::XOR);
+  std::vector<uint64_t> expected = { 6 };
+  EXPECT_EQ(NetData::buildTruthTab(xorGate.get()), expected);
+}
+
 TEST(gnetBuildTest, truthTableAnd) {
   auto andGate = createLogicGate(GateSymbol::AND);
   std::vector<uint64_t> expected = { 8 };
