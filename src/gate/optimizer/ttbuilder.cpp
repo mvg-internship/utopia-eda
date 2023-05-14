@@ -10,6 +10,26 @@
 
 namespace eda::gate::optimizer {
 
+TTBuilder::TruthTable createMajTable(size_t inputSize,
+                    const TTBuilder::TruthTableList &inputList,
+                    size_t *counters) {
+  TTBuilder::TruthTable result = 0;
+  size_t iterationNumber = 1u << inputSize;
+  for (size_t i = 0; i < inputSize; ++i) {
+    for (size_t j = 0; j < iterationNumber; ++j) {
+      if (((inputList[i] >> j) & 1) != 0 ) {
+        ++counters[j];
+      }
+    }
+  }
+  for (size_t j = 0; j < iterationNumber; ++j) {
+    if (counters[j] > 1) {
+      result |= (1 << j);
+    }
+  }
+  return result;
+}
+
 TTBuilder::TruthTable TTBuilder::applyGateFunc(const GateSymbol::Value func,
                                                const TruthTableList
                                                &inputList) {
@@ -83,36 +103,8 @@ TTBuilder::TruthTable TTBuilder::applyGateFunc(const GateSymbol::Value func,
       result = inputList[0];
       break;
     }
-    if (inputSize == 3) {
-      for (size_t i = 0; i < inputSize; ++i) {
-        for (size_t j = 0; j < 8; ++j) {
-          if (((inputList[i] >> j) & 1) != 0 ) {
-            ++counters[j];
-          }
-        }
-      }
-      result = 0;
-      for (size_t j = 0; j < 8; ++j) {
-        if (counters[j] > 1) {
-          result |= (1 << j);
-        }
-      }
-      break;
-    }
-    if (inputSize == 5) {
-      for (size_t i = 0; i < inputSize; ++i) {
-        for (size_t j = 0; j < 32; ++j) {
-          if (((inputList[i] >> j) & 1) != 0 ) {
-            ++counters[j];
-          }
-        }
-      }
-      result = 0;
-      for (size_t j = 0; j < 32; ++j) {
-        if (counters[j] > 1) {
-          result |= (1 << j);
-        }
-      }
+    if ((inputSize == 3) || (inputSize == 5)) {
+      result = createMajTable(inputSize, inputList, counters);
       break;
     }
     result = inputList[0];
