@@ -91,6 +91,11 @@ bool GNet::hasCombFlow(GateId gid, const SignalList &inputs) const {
 }
 
 GNet::GateId GNet::addGate(GateSymbol func, const SignalList &inputs) {
+  // Outputs are not shared (even equivalent ones).
+  if (func == GateSymbol::OUT) {
+    return addGate(new Gate(func, inputs));
+  }
+
   // Search for the same gate.
   auto *gate = Gate::get(_id, func, inputs);
 
@@ -391,8 +396,8 @@ void GNet::addNet(const GNet &net) {
 
   for (const auto &[gid, flags] : net._flags) {
     auto newFlags = flags;
-    newFlags.subnet += nG;
-    newFlags.gindex += nS;
+    newFlags.subnet += nS;
+    newFlags.gindex += nG;
 
     _flags.insert({gid, newFlags});
   }
