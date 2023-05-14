@@ -27,6 +27,10 @@ add_library(Gate OBJECT
   optimizer/strategy/track_strategy.cpp
   optimizer/strategy/zero_optimizer.cpp
   optimizer/substitute_visitor.cpp
+  optimizer/tech_map/strategy/replacement_cut.cpp
+  optimizer/tech_map/strategy/simple_techmapper.cpp
+  optimizer/tech_map/tech_map_visitor.cpp
+  optimizer/tech_map/tech_mapper.cpp
   optimizer/tracker_visitor.cpp
   optimizer/ttbuilder.cpp
   optimizer/util.cpp

@@ -14,6 +14,9 @@
 #include "gate/model/gnet.h"
 #include "gate/optimizer/optimizer.h"
 #include "gate/optimizer/strategy/exhaustive_search_optimizer.h"
+#include "gate/optimizer/tech_map/strategy/replacement_cut.h"
+#include "gate/optimizer/tech_map/strategy/simple_techmapper.h"
+#include "gate/optimizer/tech_map/tech_mapper.h"
 #include "gate/premapper/migmapper.h"
 #include "gate/premapper/premapper.h"
 #include "gate/premapper/xagmapper.h"
@@ -69,6 +72,7 @@ struct RtlContext {
   std::shared_ptr <GNet> gnet0;
   std::shared_ptr <GNet> gnet1;
   std::shared_ptr <GNet> gnet2;
+  std::shared_ptr <GNet> gnet3;
 
   PreMapper::GateIdMap gmap;
 
@@ -160,12 +164,29 @@ bool optimize(RtlContext &context) {
   GNet *gnet2 = context.gnet1->clone();
 
   eda::gate::optimizer::optimize(gnet2, 4,
-                            eda::gate::optimizer::ExhausitiveSearchOptimizer(context.techLib.c_str()));
+                            eda::gate::optimizer::ExhausitiveSearchOptimizer("abc"));
 
   context.gnet2 = std::shared_ptr<GNet>(gnet2);
 
   std::cout << "------ G-net #2 ------" << std::endl;
   dump(*context.gnet2);
+
+  return true;
+}
+
+bool techMap(RtlContext &context) {
+  GNet *gnet3 = context.gnet2->clone();
+
+  if (context.techLib != "abc") {
+    eda::gate::optimizer::techMap(gnet3, 4,
+                            eda::gate::optimizer::SimpleTechMapper(context.techLib.c_str()),
+                            eda::gate::optimizer::ReplacementVisitor());
+  }
+
+  context.gnet3 = std::shared_ptr<GNet>(gnet3);
+
+  std::cout << "------ G-net #3 ------" << std::endl;
+  dump(*context.gnet3);
 
   return true;
 }
@@ -190,6 +211,7 @@ int rtlMain(RtlContext &context) {
   if (!compile(context)) { return -1; }
   if (!premap(context)) { return -1; }
   if (!optimize(context)) { return -1; }
+  if (!techMap(context)) { return -1; }
   if (!check(context)) { return -1; }
 
   return 0;
