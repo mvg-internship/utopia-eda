@@ -1,6 +1,6 @@
 find_package(FLEX)
 FLEX_TARGET(GateVerilogLexer
-  Lexer.l
+  lexer.l
   ${CMAKE_CURRENT_BINARY_DIR}/lex.yy.c
   DEFINES_FILE "${CMAKE_CURRENT_BINARY_DIR}/header_file"
 )

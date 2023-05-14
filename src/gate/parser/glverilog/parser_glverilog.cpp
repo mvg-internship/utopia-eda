@@ -426,18 +426,7 @@ void buildGnet(SymbolTable &symbolTable,
       symbolTable.setOutUsing(entry.first);
     }   
   }
-  //Shown of list elements with thouse gates numbers
-  std::cout << "All variables in/out: " << std::endl;
-  for (auto &element : symbolTable.table) { 
-    if(element.second.parent != LOGIC_GATE_) {
-    std::cout << "Gate name: " << gates[element.first];
-    std::cout << " Element in usage: " << 
-      symbolTable.table[element.first].hasIn;
-    std::cout << " Element out usage: " << 
-      symbolTable.table[element.first].hasOut;
-    std::cout << " Element name: "<< element.first << std::endl;  
-  }
-  }
+  
   for (auto &element : symbolTable.table) {  
         if (element.second.parent != WIRE_)
           continue;
