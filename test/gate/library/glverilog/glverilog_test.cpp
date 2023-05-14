@@ -49,50 +49,50 @@ TEST(glVerilogTranslator, ISCAS) {
 }
 
 TEST(glVerilogTranslator, parseNot) {
-  auto notGate = std::move(createLogicGate("logic_gates/not.v").front());
-  notGate->sortTopologically();
+  auto net = std::move(createLogicGate("logic_gates/not.v").front());
+  net->sortTopologically();
   std::vector<uint64_t> expected = { 1 };
-  EXPECT_EQ(NetData::buildTruthTab(notGate.get()), expected);
+  EXPECT_EQ(NetData::buildTruthTab(net.get()), expected);
+}
+
+TEST(glVerilogTranslator, parseNor) {
+  auto net = std::move(createLogicGate("logic_gates/nor.v").front());
+  net->sortTopologically();
+  std::vector<uint64_t> expected = { 1 };
+  EXPECT_EQ(NetData::buildTruthTab(net.get()), expected);
+}
+
+TEST(glVerilogTranslator, parseNand) {
+  auto net = std::move(createLogicGate("logic_gates/nand.v").front());
+  net->sortTopologically();
+  std::vector<uint64_t> expected = { 7 };
+  EXPECT_EQ(NetData::buildTruthTab(net.get()), expected);
+}
+
+TEST(glVerilogTranslator, parseXnor) {
+  auto net = std::move(createLogicGate("logic_gates/xnor.v").front());
+  net->sortTopologically();
+  std::vector<uint64_t> expected = { 9 };
+  EXPECT_EQ(NetData::buildTruthTab(net.get()), expected);
 }
 
 TEST(glVerilogTranslator, parseOr) {
-  auto notGate = std::move(createLogicGate("logic_gates/or.v").front());
-  notGate->sortTopologically();
+  auto net = std::move(createLogicGate("logic_gates/or.v").front());
+  net->sortTopologically();
   std::vector<uint64_t> expected = { 14 };
-  EXPECT_EQ(NetData::buildTruthTab(notGate.get()), expected);
+  EXPECT_EQ(NetData::buildTruthTab(net.get()), expected);
 }
 
 TEST(glVerilogTranslator, parseXor) {
-  auto notGate = std::move(createLogicGate("logic_gates/xor.v").front());
-  notGate->sortTopologically();
+  auto net = std::move(createLogicGate("logic_gates/xor.v").front());
+  net->sortTopologically();
   std::vector<uint64_t> expected = { 6 };
-  EXPECT_EQ(NetData::buildTruthTab(notGate.get()), expected);
+  EXPECT_EQ(NetData::buildTruthTab(net.get()), expected);
 }
 
 TEST(glVerilogTranslator, parseAnd) {
-  auto notGate = std::move(createLogicGate("logic_gates/and.v").front());
-  notGate->sortTopologically();
+  auto net = std::move(createLogicGate("logic_gates/and.v").front());
+  net->sortTopologically();
   std::vector<uint64_t> expected = { 8 };
-  EXPECT_EQ(NetData::buildTruthTab(notGate.get()), expected);
+  EXPECT_EQ(NetData::buildTruthTab(net.get()), expected);
 }
-
-
-
-
-// TEST(gnetBuildTest, truthTableOr) {
-//   auto orGate = createLogicGate(GateSymbol::OR);
-//   std::vector<uint64_t> expected = { 14 };
-//   EXPECT_EQ(NetData::buildTruthTab(orGate.get()), expected);
-// }
-
-// TEST(gnetBuildTest, truthTableXor) {
-//   auto xorGate = createLogicGate(GateSymbol::XOR);
-//   std::vector<uint64_t> expected = { 6 };
-//   EXPECT_EQ(NetData::buildTruthTab(xorGate.get()), expected);
-// }
-
-// TEST(gnetBuildTest, truthTableAnd) {
-//   auto andGate = createLogicGate(GateSymbol::AND);
-//   std::vector<uint64_t> expected = { 8 };
-//   EXPECT_EQ(NetData::buildTruthTab(andGate.get()), expected);
-// }
