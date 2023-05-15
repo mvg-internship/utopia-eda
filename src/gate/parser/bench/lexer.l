@@ -1,6 +1,5 @@
 %{
 #include "tokens.h"
-#define YY_DECL int scan_token()
 %}
 
 %option noyywrap 

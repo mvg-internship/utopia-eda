@@ -9,7 +9,9 @@
 #include "gate/model/gate.h"
 #include "gate/model/gnet.h"
 #include "gate/model/gsymbol.h"
+extern "C" {
 #include "header_file"
+}
 #include "tokens.h"
 
 #include <algorithm>
@@ -17,8 +19,6 @@
 #include <map>
 #include <memory>
 #include <vector>
-
-extern "C" int scan_token();
 
 ///define useful cerr-throw message.
 #define CERR(message) do {\
@@ -74,8 +74,8 @@ SymbolInfo& addVarUse(Tokens typeInit,
 }
 
 
-Tokens getNextToken() { 
-  return static_cast<Tokens>(scan_token());
+static Tokens getNextToken() { 
+  return static_cast<Tokens>(benchlex());
 }
 
 ///Defines the method for verifying the next token.

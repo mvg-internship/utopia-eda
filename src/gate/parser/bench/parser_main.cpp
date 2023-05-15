@@ -8,8 +8,6 @@
 
 #include <parser.h>
 
-extern "C" int scan_token();
-
 int main(int argc, char* argv[]) {
   for (int i = 1; i < argc; i++) {
     try {
