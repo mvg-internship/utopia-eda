@@ -50,7 +50,10 @@ add_library(Gate OBJECT
   library/liberty/net_data.cpp
 )
 add_library(Utopia::Gate ALIAS Gate)
+
+add_subdirectory(parser/bench)
 add_subdirectory(parser/glverilog)
+
 target_include_directories(Gate PUBLIC ${PROJECT_SOURCE_DIR}/src)
 target_link_libraries(Gate
   PUBLIC

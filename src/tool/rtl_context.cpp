@@ -12,6 +12,7 @@
 #include "gate/optimizer/tech_map/strategy/replacement_cut.h"
 #include "gate/optimizer/tech_map/strategy/simple_techmapper.h"
 #include "gate/optimizer/tech_map/tech_mapper.h"
+#include "gate/parser/bench/parser.h"
 #include "gate/parser/glverilog/parser.h"
 
 namespace eda::tool {
@@ -24,6 +25,16 @@ ParseResult parse(RtlContext &context) {
     nets[0]->sortTopologically();
     context.gnet0 = std::shared_ptr<GNet>(nets[0].release());
     
+    return PARSE_NETLIST;
+  }
+
+  try {
+    context.gnet0 = parseBenchFile(context.file);
+  } catch (std::exception& e) {
+    std::cerr << "error in " << e.what() <<  std::endl; 
+  }
+  if (context.gnet0) {
+    context.gnet0->sortTopologically();
     return PARSE_NETLIST;
   }
 

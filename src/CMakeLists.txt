@@ -41,6 +41,7 @@ add_library(Utopia::Lib ALIAS ${MAIN_LIBRARY})
 
 # The libraries to link with.
 target_link_libraries(${MAIN_LIBRARY}
+  BenchParser
   Utopia::Util
   GateVerilogParser
   Utopia::Gate

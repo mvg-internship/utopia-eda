@@ -1,0 +1,10 @@
+# 2 inputs
+# 1 outputs
+# 1 gates
+
+INPUT(G0)
+INPUT(G1)
+
+G2 = AND(G0, G1)
+
+OUTPUT(G2)
