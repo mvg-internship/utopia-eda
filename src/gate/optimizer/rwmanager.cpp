@@ -14,7 +14,7 @@ namespace eda::gate::optimizer {
 
 void RewriteManager::initialize(const std::string &library) {
   const auto i = db.find(library);
-  if (i==db.end()) {
+  if (i == db.end()) {
     if (library == DEFAULT) {
       auto database = std::make_shared<RWDatabase>();
       initializeAbcRwDatabase(*database);
