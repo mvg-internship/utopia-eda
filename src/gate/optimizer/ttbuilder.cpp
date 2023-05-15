@@ -10,10 +10,32 @@
 
 namespace eda::gate::optimizer {
 
+TTBuilder::TruthTable createMajTable(size_t inputSize,
+                    const TTBuilder::TruthTableList &inputList,
+                    size_t *counters) {
+  TTBuilder::TruthTable result = 0;
+  size_t iterationNumber = 1u << inputSize;
+  for (size_t i = 0; i < inputSize; ++i) {
+    for (size_t j = 0; j < iterationNumber; ++j) {
+      if (((inputList[i] >> j) & 1) != 0 ) {
+        ++counters[j];
+      }
+    }
+  }
+  for (size_t j = 0; j < iterationNumber; ++j) {
+    if (counters[j] > 1) {
+      result |= (1 << j);
+    }
+  }
+  return result;
+}
+
 TTBuilder::TruthTable TTBuilder::applyGateFunc(const GateSymbol::Value func,
                                                const TruthTableList
                                                &inputList) {
   TruthTable result;
+  size_t counters[32] = {0};
+  size_t inputSize = inputList.size();
   switch (func) {
   case GateSymbol::ZERO:
     result = 0;
@@ -22,59 +44,73 @@ TTBuilder::TruthTable TTBuilder::applyGateFunc(const GateSymbol::Value func,
     result = -1;
     break;
   case GateSymbol::NOP:
-    assert(inputList.size() == 1);
+    assert(inputSize == 1);
     result = inputList[0];
     break;
   case GateSymbol::IN:
-    assert(inputList.size() == 1);
+    assert(inputSize == 1);
     result = inputList[0];
     break;
   case GateSymbol::OUT:
-    assert(inputList.size() == 1);
+    assert(inputSize == 1);
     result = inputList[0];
     break;
   case GateSymbol::NOT:
-    assert(inputList.size() == 1);
+    assert(inputSize == 1);
     result = ~inputList[0];
     break;
   case GateSymbol::AND:
     result = inputList[0];
-    for (size_t i = 1; i < inputList.size(); i++) {
+    for (size_t i = 1; i < inputSize; i++) {
       result = result & inputList[i];
     }
     break;
   case GateSymbol::OR:
     result = inputList[0];
-    for (size_t i = 1; i < inputList.size(); i++) {
+    for (size_t i = 1; i < inputSize; i++) {
       result = result | inputList[i];
     }
     break;
   case GateSymbol::XOR:
     result = inputList[0];
-    for (size_t i = 1; i < inputList.size(); i++) {
+    for (size_t i = 1; i < inputSize; i++) {
       result = result ^ inputList[i];
     }
     break;
   case GateSymbol::NAND:
     result = inputList[0];
-    for (size_t i = 1; i < inputList.size(); i++) {
+    for (size_t i = 1; i < inputSize; i++) {
       result = result & inputList[i];
     }
     result = ~result;
     break;
   case GateSymbol::NOR:
     result = inputList[0];
-    for (size_t i = 1; i < inputList.size(); i++) {
+    for (size_t i = 1; i < inputSize; i++) {
       result = result | inputList[i];
     }
     result = ~result;
     break;
   case GateSymbol::XNOR:
     result = inputList[0];
-    for (size_t i = 1; i < inputList.size(); i++) {
+    for (size_t i = 1; i < inputSize; i++) {
       result = result ^ inputList[i];
     }
     result = ~result;
+    break;
+  case GateSymbol::MAJ:
+    if (inputSize == 1) {
+      result = inputList[0];
+      break;
+    }
+    if ((inputSize == 3) || (inputSize == 5)) {
+      result = createMajTable(inputSize, inputList, counters);
+      break;
+    }
+    result = inputList[0];
+    for (size_t i = 1; i < inputSize; i++) {
+      result = result & inputList[i];
+    }
     break;
   default:
     assert(false && "Unsupported gate");
