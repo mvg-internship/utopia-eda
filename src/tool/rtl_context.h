@@ -7,8 +7,6 @@
 //===----------------------------------------------------------------------===//
 #include "gate/debugger/base_checker.h"
 #include "gate/debugger/checker.h"
-#include "gate/library/liberty/net_data.h"
-#include "gate/library/liberty/translate.h"
 #include "gate/model/gnet.h"
 #include "gate/optimizer/optimizer.h"
 #include "gate/optimizer/strategy/exhaustive_search_optimizer.h"
