@@ -22,6 +22,7 @@ endif()
 enable_testing()
 
 add_executable(utest
+  gate/library/glverilog/glverilog_test.cpp
   gate/debugger/checker_test.cpp
   gate/debugger/rnd_checker_complex_test.cpp
   gate/debugger/rnd_checker_test.cpp

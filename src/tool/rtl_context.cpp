@@ -12,11 +12,20 @@
 #include "gate/optimizer/tech_map/strategy/replacement_cut.h"
 #include "gate/optimizer/tech_map/strategy/simple_techmapper.h"
 #include "gate/optimizer/tech_map/tech_mapper.h"
+#include "gate/parser/glverilog/parser.h"
 
 namespace eda::tool {
 
 ParseResult parse(RtlContext &context) {
   LOG(INFO) << "RTL parse: " << context.file;
+
+  std::vector<std::unique_ptr<GNet>> nets;
+  if (parseGateLevelVerilog(context.file, nets)) {
+    nets[0]->sortTopologically();
+    context.gnet0 = std::shared_ptr<GNet>(nets[0].release());
+    
+    return PARSE_NETLIST;
+  }
 
   context.vnet = eda::rtl::parser::ril::parse(context.file);
 
