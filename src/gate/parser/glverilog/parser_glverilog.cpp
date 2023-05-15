@@ -478,8 +478,9 @@ bool parseGateLevelVerilog(const std::string &path,
   }
   }
    if (rc == SUCCESS) {
-      for (const auto &gnet_entry : gnets) {
-          nets.push_back(std::make_unique<GNet>(*gnet_entry.second.net));
+  for (const auto &gnet_entry : gnets) {
+      
+      nets.push_back(std::make_unique<GNet>(*gnet_entry.second.net));    
       }
     }
   return rc == SUCCESS;
