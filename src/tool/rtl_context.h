@@ -32,6 +32,7 @@ using Link = Gate::Link;
 using AigMapper = eda::gate::premapper::AigMapper;
 using Checker = eda::gate::debugger::Checker;
 using Compiler = eda::rtl::compiler::Compiler;
+using RewriteManager = eda::gate::optimizer::RewriteManager;
 using LecType = eda::gate::debugger::options::LecType;
 using Library = eda::rtl::library::ArithmeticLibrary;
 using MigMapper = eda::gate::premapper::MigMapper;
@@ -56,10 +57,12 @@ struct RtlContext {
   std::shared_ptr<GNet> gnet0;
   std::shared_ptr<GNet> gnet1;
   std::shared_ptr<GNet> gnet2;
+  std::shared_ptr<GNet> gnet3;
 
   PreMapper::GateIdMap gmap;
 
   bool equal;
+  std::string techLib = "abc";
 };
 
 enum ParseResult {
@@ -79,6 +82,12 @@ bool optimize(RtlContext &context);
 bool check(RtlContext &context, LecType type);
 
 bool print(RtlContext &context, std::string file);
+
+bool techMap(RtlContext &context);
+
+std::string getName(std::string &path);
+
+void fillingTechLib(std::string path);
 
 int rtlMain(RtlContext &context, PreBasis basis, LecType type, 
   std::string file);
