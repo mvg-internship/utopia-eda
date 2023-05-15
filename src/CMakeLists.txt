@@ -43,10 +43,12 @@ add_library(Utopia::Lib ALIAS ${MAIN_LIBRARY})
 target_link_libraries(${MAIN_LIBRARY}
   BenchParser
   Utopia::Util
+  GateVerilogParser
   Utopia::Gate
   Utopia::RTL
   Utopia::RILParser
   Utopia::Tool
+  Yosys::Yosys
 )
 
 # The project executable.

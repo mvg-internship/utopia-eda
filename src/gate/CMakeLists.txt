@@ -31,6 +31,10 @@ add_library(Gate OBJECT
   optimizer/ttbuilder.cpp
   optimizer/util.cpp
   optimizer/walker.cpp
+  optimizer/tech_map/tech_mapper.cpp
+  optimizer/tech_map/tech_map_visitor.cpp
+  optimizer/tech_map/strategy/replacement_cut.cpp
+  optimizer/tech_map/strategy/simple_techmapper.cpp
   premapper/aigmapper.cpp
   premapper/migmapper.cpp
   premapper/premapper.cpp
@@ -46,7 +50,10 @@ add_library(Gate OBJECT
   library/liberty/net_data.cpp
 )
 add_library(Utopia::Gate ALIAS Gate)
+
 add_subdirectory(parser/bench)
+add_subdirectory(parser/glverilog)
+
 target_include_directories(Gate PUBLIC ${PROJECT_SOURCE_DIR}/src)
 target_link_libraries(Gate
   PUBLIC

@@ -43,9 +43,17 @@ int main(int argc, char **argv) {
   }
 
   int result = 0;
+  std::string nameFileLibrary;
 
+  if (!options.rtl.libertyFile.empty()) {
+    eda::tool::fillingTechLib(options.rtl.libertyFile);
+    nameFileLibrary = eda::tool::getName(options.rtl.libertyFile);
+  }
   for (auto file : options.rtl.files()) {
     RtlContext context(file);
+    if (!nameFileLibrary.empty()) {
+      context.techLib = nameFileLibrary;
+    }
     result |= eda::tool::rtlMain(context, options.rtl);
   }
 
