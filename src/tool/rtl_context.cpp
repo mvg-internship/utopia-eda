@@ -6,7 +6,12 @@
 //
 //===----------------------------------------------------------------------===//
 #include "tool/rtl_context.h"
+#include "gate/library/liberty/net_data.h"
+#include "gate/library/liberty/translate.h"
 #include "gate/model/utils.h"
+#include "gate/optimizer/tech_map/strategy/replacement_cut.h"
+#include "gate/optimizer/tech_map/strategy/simple_techmapper.h"
+#include "gate/optimizer/tech_map/tech_mapper.h"
 
 namespace eda::tool {
 
@@ -99,9 +104,11 @@ bool techMap(RtlContext &context) {
   GNet *gnet3 = context.gnet2->clone();
 
   if (context.techLib != "abc") {
-    eda::gate::optimizer::techMap(gnet3, 4,
-                            eda::gate::optimizer::SimpleTechMapper(context.techLib.c_str()),
-                            eda::gate::optimizer::ReplacementVisitor());
+    eda::gate::optimizer::techMap(
+        gnet3,
+        4,
+        eda::gate::optimizer::SimpleTechMapper(context.techLib.c_str()),
+        eda::gate::optimizer::ReplacementVisitor());
   }
 
   context.gnet3 = std::shared_ptr<GNet>(gnet3);
