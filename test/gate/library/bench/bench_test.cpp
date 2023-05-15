@@ -36,7 +36,7 @@ inline static bool benchParser() {
   const std::vector<std::string> files { "s27.bench", "s298.bench" };
   for (const auto &file : files) {
     const std::string filename = prefixPath / file;
-    answer *= (parseBenchFile(filename) == nullptr ? true : false);
+    answer *= (parseBenchFile(filename) == nullptr ? false : true);
   }
   return answer;
 }

@@ -212,8 +212,10 @@ std::unique_ptr<GNet> builderGnet(std::map<std::string, SymbolInfo> &infos) {
       if (i.typeInit == TOK_INPUT) {
         it->second.gateId = net->addIn();
       } else if (i.typeInit == TOK_DFF && !dffFlag) {
+        it->second.gateId = net->newGate();
         dffClock = net->addIn();
         dffFlag = true;
+        break;
       } else if (i.def){
         it->second.gateId = net->newGate();
         break;
