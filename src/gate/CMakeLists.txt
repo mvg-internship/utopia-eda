@@ -31,6 +31,10 @@ add_library(Gate OBJECT
   optimizer/ttbuilder.cpp
   optimizer/util.cpp
   optimizer/walker.cpp
+  optimizer/tech_map/tech_mapper.cpp
+  optimizer/tech_map/tech_map_visitor.cpp
+  optimizer/tech_map/strategy/replacement_cut.cpp
+  optimizer/tech_map/strategy/simple_techmapper.cpp
   premapper/aigmapper.cpp
   premapper/migmapper.cpp
   premapper/premapper.cpp

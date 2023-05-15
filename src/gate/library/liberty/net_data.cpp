@@ -14,19 +14,42 @@
 namespace GModel = eda::gate::model;
 
 using eda::gate::model::Gate;
+using eda::gate::model::GateSymbol;
 using eda::gate::simulator::Simulator;
 using eda::gate::optimizer::RWDatabase;
+
+static std::shared_ptr<GModel::GNet> makeNet(
+    GateSymbol gate,
+    unsigned N,
+    Gate::SignalList &inputs,
+    Gate::Id &outputId) {
+  auto net = std::make_shared<GModel::GNet>();
+  for (unsigned i = 0; i < N; i++) {
+    const Gate::Id inputId = net->addIn();
+    inputs.push_back(Gate::Signal::always(inputId));
+  }
+  auto gateId = net->addGate(gate, inputs);
+  outputId = net->addOut(gateId);
+  net->sortTopologically();
+  return net;
+}
 
 void NetData::fillDatabase(RWDatabase &database) {
   std::unordered_map<RWDatabase::TruthTable, RWDatabase::BoundGNetList> storage;
   for (auto &net: combNets) {
-    RWDatabase::InputId id = 0;
+    std::uint64_t N = net->nSourceLinks();
+    Gate::SignalList inputs1;
+    Gate::Id outputId1;
+    auto newNet = makeNet(GateSymbol::AND, N, inputs1, outputId1);
     RWDatabase::BoundGNet bounder;
-    for (auto link: net->sourceLinks()) {
-      bounder.bindings.emplace(id++, link.target);
+    std::uint64_t id = 0;
+    for (auto link: newNet->sourceLinks()) {
+      bounder.inputsDelay.emplace(id, 1);
+      bounder.bindings.emplace(id, link.target);
+      ++id;
     }
+    bounder.net.reset(newNet.get());
     RWDatabase::TruthTable key = NetData::buildTruthTab(net.get())[0];
-    bounder.net.reset(net.release());
     storage[key].push_back(bounder);
   }
   for (auto &it: storage) {
