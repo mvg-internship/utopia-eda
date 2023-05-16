@@ -9,6 +9,7 @@
 #include "gate/library/liberty/net_data.h"
 #include "gate/simulator/simulator.h"
 
+#include <cassert>
 #include <unordered_map>
 
 namespace GModel = eda::gate::model;
@@ -60,22 +61,45 @@ void NetData::fillDatabase(RWDatabase &database) {
 std::vector<RWDatabase::TruthTable> NetData::buildTruthTab(
     const GModel::GNet *net) {
   Gate::LinkList in, out;
+
+  // NOTICE: each link is assumed to be one-bit-wide
   for (auto link: net->sourceLinks()) {
     in.push_back(Gate::Link(link.target));
   }
+
   for (auto link: net->targetLinks()) {
     out.push_back(Gate::Link(link.source));
   }
+
   static Simulator simulator;
-  auto compiled = simulator.compile(*net, in, out);
-  std::vector<RWDatabase::TruthTable> tableMean(out.size(), 0);
-  uint64_t length = 1 << net->nSourceLinks();
-  for (uint64_t i = 0; i < length; ++i) {
-    RWDatabase::TruthTable mean;
-    compiled.simulate(mean, i);
-    for (uint64_t j = 0; j < tableMean.size(); ++j) {
-      tableMean[j] += ((mean >> j) % 2) << i;
+  auto compilationResult = simulator.compile(*net, in, out);
+
+  // Truth tables for each output
+  std::vector<RWDatabase::TruthTable> outputsTruthTables(out.size(), 0);
+  // The max value that can be applied via inputs.
+  // FIXME: what about the absence of sources?
+  assert(net->nSourceLinks() > 0);
+
+  const uint64_t _1 = 1;
+  const uint64_t maxInputValue = _1 << net->nSourceLinks();
+
+  // NOTICE: it is assumed that each GNet has exactly 6 inputs.
+  for (uint64_t inputValue = 0; inputValue < 64; ++inputValue) {
+    RWDatabase::TruthTable plainTruthTable;
+    // Calcaculate the truth table for the given input combination.
+    compilationResult.simulate(plainTruthTable, inputValue % maxInputValue);
+
+    // The truth table should be representable for the outputs.
+    assert(plainTruthTable < (_1 << out.size()));
+
+    // Save the truth table at the correspondent positions at outputs.
+    for (uint64_t outSelector = 0; outSelector < out.size(); ++outSelector) {
+      // Value bits for each output is arranged according to the combination
+      // of inputs (i=0 leads to the 0th position, etc.).
+      outputsTruthTables[outSelector] |=
+        ((plainTruthTable >> outSelector) & 0x1) << inputValue;
     }
   }
-  return tableMean;
+
+  return outputsTruthTables;
 }
